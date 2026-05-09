@@ -5,6 +5,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors());
+app.use(express.static(__dirname));
 app.use(express.json());
 
 
@@ -52,7 +53,6 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-app.use(express.static("."));
 
 app.listen(3000, () => {
   //console.log("Tienda funcionando en http://localhost:3000/tienda.html");//
