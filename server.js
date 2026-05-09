@@ -32,8 +32,11 @@ app.post("/create-checkout-session", async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: "http://localhost:3000/success.html",
-      cancel_url: "http://localhost:3000/cancel.html",
+      //success_url: "http://localhost:3000/success.html",//
+      //cancel_url: "http://localhost:3000/cancel.html",//
+      success_url: "https://cafedmedina-web.onrender.com/success.html",
+      cancel_url: "https://cafedmedina-web.onrender.com/cancel.html",
+
       shipping_address_collection: {
         allowed_countries: ["ES"]
       },
