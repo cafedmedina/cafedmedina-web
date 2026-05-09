@@ -55,7 +55,8 @@ app.post("/create-checkout-session", async (req, res) => {
 app.use(express.static("."));
 
 app.listen(3000, () => {
-  console.log("Tienda funcionando en http://localhost:3000/tienda.html");
+  //console.log("Tienda funcionando en http://localhost:3000/tienda.html");//
+  console.log("Tienda funcionando en https://cafedmedina-web.onrender.com/tienda.html");
 });
 
 const endpointSecret = "whsec_TU_WEBHOOK_SECRET";
