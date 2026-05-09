@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Café D’Medina | Café de Origen Colombiano</title>
+  <meta name="description" content="Café D’Medina: café de origen colombiano cultivado en Mistrató, Risaralda. 100% arábica, finca familiar, procesos artesanales y perfil de especialidad." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --coffee: #3a2418;
+      --cream: #f6f0e6;
+      --beige: #eadfce;
+      --white: #ffffff;
+      --green: #40573a;
+      --text: #2a2520;
+      --muted: #6d6258;
+      --shadow: 0 18px 45px rgba(30, 20, 10, 0.14);
+    }
+.info-hover {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(200,169,106,.08);
+  border: 1px solid rgba(200,169,106,.25);
+  max-width: 520px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all .3s ease;
+}
+
+.info-hover img {
+  width: 160px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 16px;
+  transform: scale(0.9);
+  transition: all .35s ease;
+  opacity: 0;
+}
+
+.info-hover.active img {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.info-hover p {
+  font-size: 14px;
+  color: var(--coffee);
+}
+
+
+
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      color: var(--text);
+      background: var(--cream);
+      line-height: 1.7;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      background: rgba(17, 16, 15, 0.92);
+      backdrop-filter: blur(10px);
+      color: var(--white);
+      padding: 14px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(200, 169, 106, 0.22);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
+      opacity: .96;
+    }
+
+    .brand span {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      color: var(--gold-light);
+      text-shadow: 0 2px 6px rgba(0,0,0,.35);
+    }
+
+    nav {
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: rgba(255,255,255,.86);
+      transition: .25s;
+    }
+
+    nav a:hover {
+      color: var(--gold-light);
+    }
+
+    .hero {
+      min-height: 92vh;
+      padding: 130px 7% 70px;
+      color: var(--white);
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 48px;
+      align-items: center;
+      background:
+        linear-gradient(90deg, rgba(17,16,15,.92), rgba(17,16,15,.58), rgba(17,16,15,.22)),
+        url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1800&q=85');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-logo {
+      width: 170px;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.38));
+      opacity: .96;
+    }
+
+    .eyebrow {
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Playfair Display', serif;
+      line-height: 1.12;
+    }
+
+    .hero h1 {
+      font-size: clamp(42px, 5.6vw, 78px);
+      max-width: 820px;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 span {
+      color: var(--gold-light);
+    }
+
+    .hero p {
+      font-size: 19px;
+      max-width: 680px;
+      color: rgba(255,255,255,.9);
+      margin-bottom: 32px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 13px 25px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 900;
+      transition: .25s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+      box-shadow: 0 12px 30px rgba(200,169,106,.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(226,196,125,.7);
+      color: var(--gold-light);
+      background: rgba(255,255,255,.05);
+    }
+
+    .hero-panel {
+      background: rgba(30,20,10,.68);
+      border: 1px solid rgba(226,196,125,.35);
+      border-radius: 30px;
+      padding: 34px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 28px 70px rgba(0,0,0,.28);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bird-hero {
+  position: absolute;
+  right: 28px;
+  top: 28px;
+  width: 170px;
+  opacity: 0.22;
+  border-radius: 18px;
+  filter: saturate(.8) contrast(.9);
+}
+
+    .package-showcase {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 44px;
+      align-items: center;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .package-image {
+      background: linear-gradient(135deg, #211a16, #0f0f0f);
+      border-radius: 34px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(200,169,106,.22);
+    }
+
+    .package-image img {
+      width: 100%;
+      max-width: 420px;
+      margin: auto;
+      filter: drop-shadow(0 24px 28px rgba(0,0,0,.35));
+    }
+
+    .price-note {
+      margin-top: 22px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--gold);
+      background: rgba(200,169,106,.12);
+      border-radius: 16px;
+      color: var(--coffee);
+      font-weight: 700;
+    }
+
+    .hero-panel h3 {
+      color: var(--gold-light);
+      font-size: 29px;
+      margin-bottom: 16px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .stat {
+      background: rgba(17,16,15,.35);
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--gold-light);
+      font-size: 22px;
+    }
+
+    .stat span {
+      font-size: 13px;
+      color: rgba(255,255,255,.82);
+    }
+
+    section {
+      padding: 86px 7%;
+    }
+
+    .section-head {
+      max-width: 820px;
+      margin: 0 auto 42px;
+      text-align: center;
+    }
+
+    .section-head h2 {
+      font-size: clamp(34px, 4vw, 54px);
+      color: var(--coffee);
+      margin-bottom: 14px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .white {
+      background: var(--white);
+    }
+
+    .cream {
+      background: var(--cream);
+    }
+
+    .dark {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .dark .section-head h2,
+    .dark h2,
+    .dark h3 {
+      color: var(--gold-light);
+    }
+
+    .dark .section-head p,
+    .dark p {
+      color: rgba(255,255,255,.82);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 52px;
+      align-items: center;
+    }
+
+    .image-card {
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      min-height: 430px;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 100%;
+      min-height: 430px;
+      object-fit: cover;
+    }
+
+    .text-block h2 {
+      font-size: clamp(34px, 4vw, 52px);
+      color: var(--coffee);
+      margin-bottom: 18px;
+    }
+
+    .text-block p {
+      color: var(--muted);
+      font-size: 17px;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 26px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(200,169,106,.18);
+    }
+
+    .card h3 {
+      color: var(--coffee);
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      color: var(--muted);
+    }
+
+    .dark .card {
+      background: #1d1916;
+      border-color: rgba(226,196,125,.22);
+    }
+
+    .dark .card h3 {
+      color: var(--gold-light);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .badge {
+      background: rgba(200,169,106,.14);
+      border: 1px solid rgba(200,169,106,.35);
+      color: var(--coffee);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .quote {
+      max-width: 960px;
+      margin: auto;
+      text-align: center;
+      padding: 48px;
+      border-radius: 34px;
+      background: linear-gradient(135deg, var(--coffee), var(--black));
+      color: var(--white);
+      box-shadow: 0 26px 60px rgba(0,0,0,.2);
+    }
+
+    .quote h2 {
+      color: var(--gold-light);
+      font-size: clamp(30px, 4vw, 50px);
+      margin-bottom: 16px;
+    }
+
+    .contact-box {
+      max-width: 980px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      background: var(--white);
+      padding: 38px;
+      border-radius: 34px;
+      box-shadow: var(--shadow);
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      margin-top: 34px;
+    }
+
+    .shop-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(200,169,106,.2);
+      text-align: center;
+    }
+
+    .shop-card h3 {
+      color: var(--coffee);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--gold);
+      margin: 14px 0;
+    }
+
+    .cart-box {
+      margin-top: 38px;
+      background: var(--black);
+      color: var(--white);
+      border-radius: 30px;
+      padding: 30px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.2);
+    }
+
+    .cart-box h3 {
+      color: var(--gold-light);
+      margin-bottom: 16px;
+      font-size: 30px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      padding: 10px 0;
+      color: rgba(255,255,255,.88);
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--gold-light);
+    }
+
+    .checkout-btn {
+      width: 100%;
+      border: 0;
+      margin-top: 22px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .contact-item {
+      padding: 22px;
+      border-radius: 22px;
+      background: var(--cream);
+    }
+
+    .contact-item strong {
+      color: var(--coffee);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    footer {
+      background: var(--black);
+      color: rgba(255,255,255,.75);
+      text-align: center;
+      padding: 28px 7%;
+      font-size: 14px;
+    }
+
+    @media (max-width: 950px) {
+      header {
+        position: static;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .brand span {
+        font-size: 32px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .hero,
+      .split,
+      .package-showcase,
+      .shop-grid,
+      .contact-box {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 70px;
+      }
+
+      .hero-panel {
+        padding: 24px;
+      }
+
+      .hero-stats,
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 64px 6%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="#inicio" class="brand">
+      <img src="logo.png" alt="Logo Café D’Medina" />
+      <span>Café D’Medina</span>
+    </a>
+    <nav>
+      <a href="#origen">Origen</a>
+      <a href="#proceso">Proceso</a>
+      <a href="#historia">Historia</a>
+      <a href="#cata">Cata</a>
+      <a href="#empaque">Producto</a>
+      <a href="#profesionales">Profesionales</a>
+      <a href="#contacto">Contacto</a>
+      <a href="tienda.html">Tienda</a>
+    </nav><!-- 👇 AQUÍ VA LA CESTA -->
+
+    <div onclick="scrollToCart()" style="position:relative; cursor:pointer; color:#e2c47d; font-size:22px;">
+  🛒
+  <span id="cart-count" style="
+    position:absolute;
+    top:-8px;
+    right:-12px;
+    background:#e2c47d;
+    color:#000;
+    font-size:12px;
+    font-weight:bold;
+    padding:3px 7px;
+    border-radius:50%;
+  ">0</span>
+</div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div>
+        <img src="logo.png" alt="Logo Café D’Medina" class="hero-logo" />
+        <div class="eyebrow">Café de origen colombiano · Mistrató, Risaralda</div>
+        <h1>El corazón de Colombia en cada <span>taza</span></h1>
+        <p>
+          Café 100% arábica de finca familiar, cultivado a 1550 msnm y elaborado con selección manual,
+          fermentación controlada y procesos artesanales que preservan la esencia natural del grano.
+        </p>
+        <div class="buttons">
+          <a href="#origen" class="btn btn-primary">Descubrir el origen</a>
+          <a href="#profesionales" class="btn btn-secondary">Para profesionales</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel">
+        <!-- <img src="ave.png" alt="Bangsia Negra y Oro, ave emblemática de Mistrató" class="bird-hero" /> -->
+        <h3>Café con historia, trazabilidad y carácter</h3>
+        <p>
+          Una propuesta premium para tiendas gourmet, cafeterías, distribuidores y amantes del café que buscan un origen auténtico.
+        </p>
+        <div class="hero-stats">
+          <div class="stat"><strong>1550</strong><span>msnm</span></div>
+          <div class="stat"><strong>86,75</strong><span>SCAA</span></div>
+          <div class="stat"><strong>100%</strong><span>Arábica</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="white" id="origen">
+      <div class="section-head">
+        <h2>Origen y calidad desde la finca</h2>
+        <p>
+          Nuestro café nace en Mistrató, Risaralda, en fincas familiares donde tradición, conocimiento y cuidado del cultivo se encuentran.
+        </p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <h3>Altitud</h3>
+          <p>Cultivado a 1550 msnm, en una zona montañosa que favorece aroma, dulzor y complejidad en taza.</p>
+        </article>
+        <article class="card">
+          <h3>Variedades</h3>
+          <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades resistentes a la roya y adaptadas al origen.</p>
+        </article>
+        <article class="card">
+          <h3>Cenicafé</h3>
+          <p>Semillas certificadas por CENICAFÉ, referente internacional en investigación cafetera.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cream split" id="proceso">
+      <div class="image-card">
+        <img src="https://images.unsplash.com/photo-1502462041640-b3d7e50d0662?auto=format&fit=crop&w=1100&q=85" alt="Café artesanal colombiano" />
+      </div>
+      <div class="text-block">
+        <div class="eyebrow">Proceso artesanal</div>
+        <h2>Seleccionado a mano, grano a grano</h2>
+        <p>
+          Nuestro café es cosechado manualmente por comunidades locales e indígenas en Mistrató.
+          Aplicamos una selección rigurosa y técnicas de fermentación controlada para resaltar los atributos más finos del grano.
+        </p>
+        <p>
+          Comprometidos con el medio ambiente, utilizamos métodos de mínimo consumo de agua,
+          preservando la esencia natural del café y trabajando cada lote de manera única.
+        </p>
+        
+        <div class="badge-row">
+          <span class="badge" onmouseover="mostrarInfo()"onmouseout="ocultarInfo()">Bangsia negra y oro</span>
+          <span class="badge">Selección manual</span>
+          <span class="badge">Fermentación controlada</span>
+          <span class="badge">Mínimo consumo de agua</span>
+      </div>
+      
+      <a href="proceso.html"
+   class="btn btn-primary section-btn"
+   style="margin-top:35px;">
+   Más información
+</a>
+      <div id="info-hover" class="info-hover">
+       
+      <img id="info-img" src="img/bangsia-negra-y-oro.jpg">
+        <p id="info-text">
+          La Bangsia negra y oro, ave emblemática de Mistrató, inspira nuestro concepto Black & Blond: elegancia, origen y contraste natural.
+        </p>
+      </div>
+      </div>
+    </section>
+
+    <section class="white">
+      <div class="section-head">
+        <h2>Procesos especiales</h2>
+        <p>Disponibles a solicitud, elaborados con dedicación durante varias semanas para alcanzar su máxima expresión de calidad.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>Lavado</h3>
+          <p>Perfil limpio, elegante y equilibrado. Ideal para resaltar claridad, acidez y delicadeza.</p>
+        </article>
+        <article class="card">
+          <h3>Honey</h3>
+          <p>Mayor dulzor, textura envolvente y complejidad aromática, con una taza más sedosa.</p>
+        </article>
+        <article class="card">
+          <h3>Natural</h3>
+          <p>Expresivo, frutal e intenso. Una experiencia sensorial con carácter y dulzor natural.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="dark split" id="historia">
+      
+      <div class="text-block">
+        <div class="eyebrow">Legado familiar</div>
+        <h2 style="color:#e2c47d !important;">
+          Nuestra historia
+        </h2>
+        <p>
+          Desde la década de 1930, nuestra familia ha estado ligada al café. Narciso Medina Grisales fue pionero en la comercialización
+          del café de Mistrató, transportándolo a lomo de mula hasta Andes, Antioquia.
+        </p>
+        <p>
+          En 1958, Luis Medina continuó la tradición con la finca “La Linda”. Hoy, tras más de 40 años de dedicación,
+          emprendemos un nuevo sueño: llevar el auténtico café de nuestras fincas de Colombia desde la siembra hasta tu taza.
+        </p>
+        <a href="historia.html" class="btn btn-primary section-btn">
+        Leer historia completa
+        </a>
+      </div>
+            
+      <div class="image-card">
+        <img src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1100&q=85" alt="Historia cafetera familiar" />
+      </div>
+        
+    </section>
+
+    <section class="cream" id="cata">
+      <div class="section-head">
+        <h2>Perfil sensorial</h2>
+        <p>Café de alta calidad con puntaje SCAA 86,75 y un perfil complejo, dulce y elegante.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>Fragancia</h3>
+          <p>Intensa, con notas a uvas pasas y avellanas.</p>
+        </article>
+        <article class="card">
+          <h3>Sabor</h3>
+          <p>Profundo, con recuerdos a licor de almendras y dulzor natural a moras azules.</p>
+        </article>
+        <article class="card">
+          <h3>Cuerpo y acidez</h3>
+          <p>Cuerpo suave, acidez tartárica viva y balance complejo.</p>
+        </article>
+      </div>
+    </section>
+
+    <!--TIENDA ANTIGUA (NO USAR - PENDIENTE NUEVA PAGINA) 
+    <section class="cream" id="tienda">
+      <div class="section-head">
+        <h2>Tienda online</h2>
+        <p>Compra Café D’Medina en nuestras presentaciones disponibles. También ofrecemos condiciones especiales para profesionales y distribuidores.</p>
+      </div>
+
+      <div class="shop-grid">
+        <article class="shop-card">
+          <h3>100 g</h3>
+          <p>Formato muestra o regalo.</p>
+          <div class="price">Consultar</div>
+          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 100 g', 0)">Añadir al carrito</button>
+        </article>
+
+        <article class="shop-card">
+          <h3>250 g</h3>
+          <p>Formato gourmet.</p>
+          <div class="price">Consultar</div>
+          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 250 g', 0)">Añadir al carrito</button>
+        </article>
+
+        <article class="shop-card">
+          <h3>500 g</h3>
+          <p>Formato familiar.</p>
+          <div class="price">Consultar</div>
+          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 500 g', 0)">Añadir al carrito</button>
+        </article>
+
+        <article class="shop-card">
+          <h3>1 kg</h3>
+          <p>Formato profesional.</p>
+          <div class="price">Consultar</div>
+          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 1 kg', 0)">Añadir al carrito</button>
+        </article>
+      </div>
+
+      <div class="cart-box">
+        <h3>Carrito de compra</h3>
+        <div id="cart-items"><p>Tu carrito está vacío.</p></div>
+        <div class="cart-total">
+          <span>Total</span>
+          <span id="cart-total">0,00 €</span>
+        </div>
+        <button class="btn btn-primary checkout-btn" onclick="checkout()">Solicitar pedido</button>
+      </div>
+    </section>-->
+
+    <section class="white" id="empaque">
+      <div class="section-head">
+        <h2>Empaque y presentaciones</h2>
+        <p>Un formato premium diseñado para conservar la frescura, destacar el origen y presentar Café D’Medina con una imagen elegante y profesional.</p>
+      </div>
+
+      <div class="package-showcase">
+        <div class="package-image">
+          <img src="empaque.png" alt="Empaque Café D’Medina" />
+        </div>
+        <div class="text-block">
+          <div class="eyebrow">Producto</div>
+          <h2>Presentaciones para venta y distribución</h2>
+          <p>
+            Café D’Medina está disponible en formatos pensados para clientes particulares, tiendas gourmet,
+            cafeterías y distribuidores que buscan un café colombiano de origen con identidad propia.
+          </p>
+          <div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-top: 24px;">
+            <article class="card"><h3>100 g</h3><p>Formato de cortesía o muestra comercial.</p></article>
+            <article class="card"><h3>250 g</h3><p>Formato ideal para venta gourmet.</p></article>
+            <article class="card"><h3>500 g</h3><p>Formato familiar o profesional.</p></article>
+            <article class="card"><h3>1 kg</h3><p>Formato profesional para cafeterías y distribución.</p></article>
+          </div>
+          <div class="price-note">
+            Precios y condiciones disponibles bajo consulta según volumen, canal y tipo de cliente.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="white" id="profesionales">
+      <div class="quote">
+        <h2>Café para profesionales</h2>
+        <p>
+          Una propuesta de origen premium para tiendas gourmet, cafeterías, hoteles, restaurantes y distribuidores que buscan
+          calidad, trazabilidad y una historia real detrás del producto.
+        </p>
+        <br>
+        <a href="#contacto" class="btn btn-primary">Solicitar información comercial</a>
+      </div>
+    </section>
+
+    <section class="cream" id="contacto">
+      <div class="section-head">
+        <h2>Contacto</h2>
+        <p>Hablemos de café, distribución y oportunidades comerciales.</p>
+      </div>
+      <div class="contact-box">
+        <div class="contact-item">
+          <strong>Marca</strong>
+          Café D’Medina
+        </div>
+        <div class="contact-item">
+          <strong>Empresa</strong>
+          D’Medina Trading S.L.
+        </div>
+        <div class="contact-item">
+          <strong>Email</strong>
+          juliana.medina416@gmail.com
+        </div>
+        <div class="contact-item">
+          <strong>Teléfono</strong>
+          +34 656 935 203
+        </div>
+        <div class="contact-item">
+          <strong>Ubicación</strong>
+          Arroyomolinos, España
+        </div>
+        <div class="contact-item">
+          <strong>Origen del café</strong>
+          Mistrató, Risaralda, Colombia
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 Café D’Medina · Café de origen colombiano
+  </footer>
+<script>
+    const cart = [];
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      renderCart();
+    }
+
+    function renderCart() {
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<p>Tu carrito está vacío.</p>';
+        cartTotal.textContent = '0,00 €';
+        return;
+      }
+
+      cartItems.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <span>${item.name}</span>
+          <button onclick="removeFromCart(${index})" style="background:none;border:0;color:#e2c47d;cursor:pointer;">Eliminar</button>
+        </div>
+      `).join('');
+
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      cartTotal.textContent = total.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+
+      document.getElementById('cart-count').textContent = cart.length;
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert('Tu carrito está vacío.');
+        return;
+      }
+
+      const products = cart.map(item => '- ' + item.name).join('%0A');
+      const subject = 'Solicitud de pedido Café D’Medina';
+      const body = `Hola,%0A%0AQuiero solicitar información para comprar:%0A${products}%0A%0AGracias.`;
+      window.location.href = `mailto:juliana.medina416@gmail.com?subject=${subject}&body=${body}`;
+    }
+
+    function scrollToCart(){
+       document.querySelector('.cart-box').scrollIntoView({behavior:'smooth'});
+    }
+    function renderCart() {
+  const cartItems = document.getElementById('cart-items');
+  const cartTotal = document.getElementById('cart-total');
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = '<p>Tu carrito está vacío.</p>';
+    cartTotal.textContent = '0,00 €';
+    document.getElementById('cart-count').textContent = 0;
+    return;
+  }
+
+  cartItems.innerHTML = cart.map((item, index) => `
+    <div class="cart-item">
+      <span>${item.name}</span>
+      <button onclick="removeFromCart(${index})">Eliminar</button>
+    </div>
+  `).join('');
+
+  document.getElementById('cart-count').textContent = cart.length;
+}
+
+function mostrarInfo() {
+  const box = document.getElementById("info-hover");
+  box.classList.add("active");
+  box.style.opacity = "1";
+  box.style.transform = "translateY(0)";
+}
+
+function ocultarInfo() {
+  const box = document.getElementById("info-hover");
+  box.classList.remove("active");
+  box.style.opacity = "0";
+  box.style.transform = "translateY(10px)";
+}
+  </script>
+</body>
+</html>
