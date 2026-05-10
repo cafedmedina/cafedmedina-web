@@ -91,7 +91,8 @@ app.post("/contacto", async (req, res) => {
 
       from: "onboarding@resend.dev",
 
-      to: "info@cafedmedina.com",
+      /*to: "info@cafedmedina.com",*/
+      to: "juliana.medina416@gmail.com"
 
       subject: "Nueva solicitud comercial Café D’Medina",
 
