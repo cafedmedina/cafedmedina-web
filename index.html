@@ -59,10 +59,6 @@
   color: var(--coffee);
 }
 
-
-
-
-
     * {
       box-sizing: border-box;
       margin: 0;
@@ -127,6 +123,7 @@
       text-shadow: 0 2px 6px rgba(0,0,0,.35);
     }
 
+  
     nav {
       display: flex;
       gap: 22px;
@@ -146,28 +143,53 @@
       color: var(--gold-light);
     }
 
-    .hero {
-      min-height: 92vh;
-      padding: 130px 7% 70px;
-      color: var(--white);
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 48px;
-      align-items: center;
-      background:
-        linear-gradient(90deg, rgba(17,16,15,.92), rgba(17,16,15,.58), rgba(17,16,15,.22)),
-        url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1800&q=85');
-      background-size: cover;
-      background-position: center;
-    }
+.hero {
+  min-height: 92vh;
+  padding: 130px 7% 70px;
+  color: var(--white);
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(17,16,15,.92), rgba(17,16,15,.58), rgba(17,16,15,.22)),
+    url('img/cafetales-padre.jpg');
+  background-size: cover;
+  background-position: center;
+}
 
-    .hero-logo {
-      width: 170px;
-      margin-bottom: 24px;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.38));
-      opacity: .96;
-    }
+.hero-copy{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto;
+}
 
+
+.hero-copy p{
+  max-width:700px;
+}
+
+.hero-logo{
+  width:180px;
+  margin:0 auto 22px;
+  display:block;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));
+}
+
+.hero-logo-center{
+  position:absolute;
+  left:50%;
+  top:25%;
+  transform:translate(-50%,-50%);
+  width:290px;
+  z-index:5;
+
+  filter:drop-shadow(0 12px 26px rgba(0,0,0,.5));
+}
     .eyebrow {
       color: var(--gold-light);
       text-transform: uppercase;
@@ -182,11 +204,13 @@
       line-height: 1.12;
     }
 
-    .hero h1 {
+   .hero h1 {
       font-size: clamp(42px, 5.6vw, 78px);
       max-width: 820px;
       margin-bottom: 22px;
     }
+
+
 
     .hero h1 span {
       color: var(--gold-light);
@@ -233,16 +257,20 @@
       background: rgba(255,255,255,.05);
     }
 
-    .hero-panel {
-      background: rgba(30,20,10,.68);
-      border: 1px solid rgba(226,196,125,.35);
-      border-radius: 30px;
-      padding: 34px;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 28px 70px rgba(0,0,0,.28);
-      position: relative;
-      overflow: hidden;
-    }
+.hero-panel {
+  background: rgba(30,20,10,.68);
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 30px;
+  padding: 34px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 28px 70px rgba(0,0,0,.28);
+  position: relative;
+  overflow: hidden;
+
+  text-align:center;
+  margin:0 auto;
+  max-width:900px;
+}
 
     .bird-hero {
   position: absolute;
@@ -609,13 +637,58 @@
         padding: 64px 6%;
       }
     }
+
+/* ---------------------------------------------------------------------------------------ABRE - BOTON FLOTANTE WHATSAPP----------------------------------------------------------------------------------- */
+
+.whatsapp-float{
+  position:fixed;
+  width:55px;
+  height:55px;
+  bottom:25px;
+  right:25px;
+  z-index:9999;
+}
+
+.whatsapp-float img{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+/* ---------------------------------------------------------------------------------------CIERRA - BOTON FLOTANTE WHATSAPP----------------------------------------------------------------------------------- */
+
+/*-------------------------------------------------------------------------------------ABRE - CENTRAR BLOQUE IZQUIERDO DEL HERO------------------------------------------------------------------------------- */
+
+.hero .hero-copy,
+.hero .hero-copy *{
+  text-align:center !important;
+}
+
+.hero .hero-copy{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 auto !important;
+}
+
+.hero .hero-copy p{
+  max-width:720px !important;
+}
+
+.hero .hero-actions,
+.hero .btn-row{
+  justify-content:center !important;
+}
+/*-------------------------------------------------------------------------------------CIERRA - CENTRAR BLOQUE IZQUIERDO DEL HERO------------------------------------------------------------------------------- */
+
+
   </style>
 </head>
 
 <body>
   <header>
     <a href="#inicio" class="brand">
-      <img src="logo.png" alt="Logo Café D’Medina" />
       <span>Café D’Medina</span>
     </a>
     <nav>
@@ -627,10 +700,21 @@
       <a href="#profesionales">Profesionales</a>
       <a href="#contacto">Contacto</a>
       <a href="tienda.html">Tienda</a>
-    </nav><!-- 👇 AQUÍ VA LA CESTA -->
+    </nav>
 
-    <div onclick="scrollToCart()" style="position:relative; cursor:pointer; color:#e2c47d; font-size:22px;">
+<!-- ----------------------------------------------------------------------------------ABRE - CESTA / CARRITO--------------------------------------------------------------------------- -->
+
+<a href="carrito.html"
+   style="
+   position:relative;
+   cursor:pointer;
+   color:#e2c47d;
+   font-size:22px;
+   text-decoration:none;
+   ">
+
   🛒
+
   <span id="cart-count" style="
     position:absolute;
     top:-8px;
@@ -641,25 +725,39 @@
     font-weight:bold;
     padding:3px 7px;
     border-radius:50%;
-  ">0</span>
-</div>
-  </header>
+  ">
+    0
+  </span>
+</a>
+<!-- ----------------------------------------------------------------------------------CIERRA - CESTA / CARRITO--------------------------------------------------------------------------- -->
+</header>
 
+<!-- ----------------------------------------------------------------------------------ABRE - BANNER PRESENTACIÓN--------------------------------------------------------------------------- -->
   <main>
+
     <section class="hero" id="inicio">
-      <div>
-        <img src="logo.png" alt="Logo Café D’Medina" class="hero-logo" />
-        <div class="eyebrow">Café de origen colombiano · Mistrató, Risaralda</div>
-        <h1>El corazón de Colombia en cada <span>taza</span></h1>
-        <p>
-          Café 100% arábica de finca familiar, cultivado a 1550 msnm y elaborado con selección manual,
-          fermentación controlada y procesos artesanales que preservan la esencia natural del grano.
-        </p>
-        <div class="buttons">
-          <a href="#origen" class="btn btn-primary">Descubrir el origen</a>
-          <a href="#profesionales" class="btn btn-secondary">Para profesionales</a>
-        </div>
-      </div>
+                      
+    <div class="hero-copy">
+      <img src="logo.png" alt="Logo Café D’Medina" class="hero-logo-center" />
+
+      <div class="eyebrow">
+        Café de origen colombiano · Mistrató, Risaralda
+    </div>
+
+    <h1>
+      El corazón de Colombia en cada <span>taza</span>
+    </h1>
+
+    <p>
+     En Café D’Medina te invitamos a un viaje a las fincas familiares de Mistrató, Risaralda. Descubre el sabor auténtico de nuestro café 100% arábica de especialidad, cuidadosamente seleccionado para ofrecer una experiencia única en cada taza. Más que una bebida, una historia de tradición y pasión en cada sorbo.
+    </p>
+
+    <div class="buttons">
+      <a href="#origen" class="btn btn-primary">Descubre nuestro origen</a>
+      <a href="#profesionales" class="btn btn-secondary">Para profesionales</a>
+    </div>
+
+    </div>
 
       <aside class="hero-panel">
         <!-- <img src="ave.png" alt="Bangsia Negra y Oro, ave emblemática de Mistrató" class="bird-hero" /> -->
@@ -674,6 +772,7 @@
         </div>
       </aside>
     </section>
+
 
     <section class="white" id="origen">
       <div class="section-head">
@@ -701,7 +800,8 @@
 
     <section class="cream split" id="proceso">
       <div class="image-card">
-        <img src="https://images.unsplash.com/photo-1502462041640-b3d7e50d0662?auto=format&fit=crop&w=1100&q=85" alt="Café artesanal colombiano" />
+        <!--<img src="https://images.unsplash.com/photo-1502462041640-b3d7e50d0662?auto=format&fit=crop&w=1100&q=85" alt="Café artesanal colombiano" />-->
+        <img src="img/Imagen recoleccion.jpg" alt="Café artesanal colombiano" />
       </div>
       <div class="text-block">
         <div class="eyebrow">Proceso artesanal</div>
@@ -723,12 +823,12 @@
       </div>
       
       <a href="proceso.html"
-   class="btn btn-primary section-btn"
-   style="margin-top:35px;">
-   Más información
-</a>
+        class="btn btn-primary section-btn"
+        style="margin-top:35px;">
+        Más información
+      </a>
+
       <div id="info-hover" class="info-hover">
-       
       <img id="info-img" src="img/bangsia-negra-y-oro.jpg">
         <p id="info-text">
           La Bangsia negra y oro, ave emblemática de Mistrató, inspira nuestro concepto Black & Blond: elegancia, origen y contraste natural.
@@ -736,7 +836,8 @@
       </div>
       </div>
     </section>
-
+    
+    <!-- ---------------------------------------------------------------------------------------ABRE - CAJA DE PROCESOS--------------------------------------------------------------------------->
     <section class="white">
       <div class="section-head">
         <h2>Procesos especiales</h2>
@@ -757,7 +858,10 @@
         </article>
       </div>
     </section>
+    <!-- ---------------------------------------------------------------------------------------CIERRA - CAJA DE PROCESOS--------------------------------------------------------------------------->
 
+
+  <!-- ---------------------------------------------------------------------------------------ABRE - CAJA DE NUESTRA HISTORIA--------------------------------------------------------------------------->
     <section class="dark split" id="historia">
       
       <div class="text-block">
@@ -765,14 +869,15 @@
         <h2 style="color:#e2c47d !important;">
           Nuestra historia
         </h2>
-        <p>
-          Desde la década de 1930, nuestra familia ha estado ligada al café. Narciso Medina Grisales fue pionero en la comercialización
-          del café de Mistrató, transportándolo a lomo de mula hasta Andes, Antioquia.
-        </p>
-        <p>
-          En 1958, Luis Medina continuó la tradición con la finca “La Linda”. Hoy, tras más de 40 años de dedicación,
-          emprendemos un nuevo sueño: llevar el auténtico café de nuestras fincas de Colombia desde la siembra hasta tu taza.
-        </p>
+      <p>
+        Desde la década de 1930, nuestra familia ha estado profundamente ligada al café. 
+        Generación tras generación, hemos cultivado no solo café de origen, sino también una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.
+      </p>
+
+      <p>
+        Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.
+    </p>
+      </p>
         <a href="historia.html" class="btn btn-primary section-btn">
         Leer historia completa
         </a>
@@ -783,7 +888,10 @@
       </div>
         
     </section>
+    <!-- ---------------------------------------------------------------------------------------CIERRA - CAJA DE NUESTRA HISTORIA--------------------------------------------------------------------------->
 
+
+    <!-- ------------------------------------------------------------------------------------------------ABRE - CAJA CATACIÓN------------------------------------------------------------------------------->
     <section class="cream" id="cata">
       <div class="section-head">
         <h2>Perfil sensorial</h2>
@@ -804,55 +912,10 @@
         </article>
       </div>
     </section>
+    <!-- ------------------------------------------------------------------------------------------------CIERRA - CAJA CATACIÓN------------------------------------------------------------------------------->
+    
 
-    <!--TIENDA ANTIGUA (NO USAR - PENDIENTE NUEVA PAGINA) 
-    <section class="cream" id="tienda">
-      <div class="section-head">
-        <h2>Tienda online</h2>
-        <p>Compra Café D’Medina en nuestras presentaciones disponibles. También ofrecemos condiciones especiales para profesionales y distribuidores.</p>
-      </div>
-
-      <div class="shop-grid">
-        <article class="shop-card">
-          <h3>100 g</h3>
-          <p>Formato muestra o regalo.</p>
-          <div class="price">Consultar</div>
-          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 100 g', 0)">Añadir al carrito</button>
-        </article>
-
-        <article class="shop-card">
-          <h3>250 g</h3>
-          <p>Formato gourmet.</p>
-          <div class="price">Consultar</div>
-          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 250 g', 0)">Añadir al carrito</button>
-        </article>
-
-        <article class="shop-card">
-          <h3>500 g</h3>
-          <p>Formato familiar.</p>
-          <div class="price">Consultar</div>
-          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 500 g', 0)">Añadir al carrito</button>
-        </article>
-
-        <article class="shop-card">
-          <h3>1 kg</h3>
-          <p>Formato profesional.</p>
-          <div class="price">Consultar</div>
-          <button class="btn btn-primary" onclick="addToCart('Café D’Medina 1 kg', 0)">Añadir al carrito</button>
-        </article>
-      </div>
-
-      <div class="cart-box">
-        <h3>Carrito de compra</h3>
-        <div id="cart-items"><p>Tu carrito está vacío.</p></div>
-        <div class="cart-total">
-          <span>Total</span>
-          <span id="cart-total">0,00 €</span>
-        </div>
-        <button class="btn btn-primary checkout-btn" onclick="checkout()">Solicitar pedido</button>
-      </div>
-    </section>-->
-
+    <!-- ------------------------------------------------------------------------------------------------ABRE - CAJA EMPAQUE------------------------------------------------------------------------------->
     <section class="white" id="empaque">
       <div class="section-head">
         <h2>Empaque y presentaciones</h2>
@@ -876,7 +939,10 @@
             <article class="card"><h3>500 g</h3><p>Formato familiar o profesional.</p></article>
             <article class="card"><h3>1 kg</h3><p>Formato profesional para cafeterías y distribución.</p></article>
           </div>
-          <!-- -----------------------------------ABRE - CAJA DE INFORMACION DE COMPRA DE PRODUCTOS-------------------------------------------------------- -->
+          <!-- ------------------------------------------------------------------------------------------------CIERRA - CAJA EMPAQUE------------------------------------------------------------------------------->
+
+
+          <!-- -----------------------------------------------------------------------------------ABRE - CAJA DE INFORMACION DE COMPRA DE PRODUCTOS------------------------------------------------------------- -->
           <div class="price-note">
           Condiciones especiales disponibles para distribuidores, horeca y pedidos de gran volumen.
           <br><br>
@@ -888,7 +954,7 @@
           Para clientes particulares →
           <a href="tienda.html">acceder a la tienda online</a>
           </div>
-          <!-- -----------------------------------CIERRA - CAJA DE INFORMACION DE COMPRA DE PRODUCTOS-------------------------------------------------------- -->
+          <!-- -----------------------------------------------------------------------------------CIERRA - CAJA DE INFORMACION DE COMPRA DE PRODUCTOS------------------------------------------------------------ -->
 
         </div>
       </div>
@@ -925,14 +991,26 @@
           <strong>Empresa</strong>
           D’Medina Trading S.L.
         </div>
+        <!-- -----------------------------------------------------------------------------------------ABRE - BOX CONTACTO CON LINK EMAIL----------------------------------------------------------- -->
         <div class="contact-item">
           <strong>Email</strong>
+          <a href="mailto:info@cafedmedina.com">
           info@cafedmedina.com
+          </a>
         </div>
+        <!-- -----------------------------------------------------------------------------------------CIERRA - BOX CONTACTO CON LINK EMAIL----------------------------------------------------------- -->
+
+         <!-- -----------------------------------------------------------------------------------------ABRE - BOX TELEFONO CON LINK LLAMAR ----------------------------------------------------------- -->
         <div class="contact-item">
           <strong>Teléfono</strong>
-          +34 660 736 866
+          <a href="tel:+34656935203">
+          +34 656 935 203
+          </a>
         </div>
+        <!-- -----------------------------------------------------------------------------------------CIERRA - BOX TELEFONO CON LINK LLAMAR ----------------------------------------------------------- -->
+
+      
+
         <div class="contact-item">
           <strong>Ubicación</strong>
           Arroyomolinos, España
@@ -993,7 +1071,7 @@
       const products = cart.map(item => '- ' + item.name).join('%0A');
       const subject = 'Solicitud de pedido Café D’Medina';
       const body = `Hola,%0A%0AQuiero solicitar información para comprar:%0A${products}%0A%0AGracias.`;
-      window.location.href = `mailto:juliana.medina416@gmail.com?subject=${subject}&body=${body}`;
+      //window.location.href = `mailto:juliana.medina416@gmail.com?subject=${subject}&body=${body}`;//
     }
 
     function scrollToCart(){
@@ -1034,5 +1112,40 @@ function ocultarInfo() {
   box.style.transform = "translateY(10px)";
 }
   </script>
+<!-- ---------------------------------------------------------------------------------------ABRE - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
+<a href="https://wa.me/34660736866"
+   class="whatsapp-float" 
+   target="_blank">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+</a>
+<!-- ------------------------------------------------------------------------------------CIERRA - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
+
+<script>
+
+/*-----------------------------------------------------------------------------------ABRE - ACTUALIZA CONTADOR CARRITO------------------------------------------------------------------------------- */
+
+function actualizarIconoCarrito() {
+
+  const cartCount =
+    document.getElementById("cart-count");
+
+  const carrito =
+    JSON.parse(localStorage.getItem("carrito")) || [];
+
+  let total = 0;
+
+  carrito.forEach(item => {
+    total += Number(item.cantidad || 1);
+  });
+
+  if(cartCount){
+    cartCount.textContent = total;
+  }
+}
+
+actualizarIconoCarrito();
+/*-----------------------------------------------------------------------------------CIERRA - ACTUALIZA CONTADOR CARRITO------------------------------------------------------------------------------- */
+</script>
+
 </body>
 </html>
