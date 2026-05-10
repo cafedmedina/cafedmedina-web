@@ -2,6 +2,7 @@ const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 const app = express();
 
@@ -13,7 +14,10 @@ app.use(express.json());
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 //-------------------------------------------------------------------------------------------------CIERRA - STRIPE TEST--------------------------------------------------------------------------------------------//
 
-//-------------------------------------------------------------------------------------------------ABRE - EMAIL IONOS--------------------------------------------------------------------------------------------//
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+
+/**-------------------------------------------------------------------------------------------------ABRE - EMAIL IONOS--------------------------------------------------------------------------------------------
 const transporter = nodemailer.createTransport({
   host: "smtp.ionos.es",
   port: 587,
@@ -26,7 +30,7 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 });
-//-------------------------------------------------------------------------------------------------CIERRA - EMAIL IONOS--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------CIERRA - EMAIL IONOS--------------------------------------------------------------------------------------------*/
 
 
 app.post("/create-checkout-session", async (req, res) => {
@@ -67,7 +71,7 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-app.post("/contacto", async (req, res) => {
+/*app.post("/contacto", async (req, res) => {
   try {
     const {
       nombre,
@@ -105,7 +109,66 @@ app.post("/contacto", async (req, res) => {
     console.log(error);
     res.status(500).json({ error: "Error enviando email" });
   }
+});*/
+
+
+app.post("/contacto", async (req, res) => {
+
+  try {
+
+    const {
+      nombre,
+      empresa,
+      email,
+      telefono,
+      pais,
+      tipo,
+      volumen,
+      mensaje
+    } = req.body;
+
+    await resend.emails.send({
+
+      from: "onboarding@resend.dev",
+
+      to: "info@cafedmedina.com",
+
+      subject: "Nueva solicitud comercial Café D’Medina",
+
+      html: `
+        <h2>Nueva solicitud comercial</h2>
+
+        <p><strong>Nombre:</strong> ${nombre}</p>
+        <p><strong>Empresa:</strong> ${empresa}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Teléfono:</strong> ${telefono}</p>
+        <p><strong>País:</strong> ${pais}</p>
+        <p><strong>Tipo:</strong> ${tipo}</p>
+        <p><strong>Volumen:</strong> ${volumen}</p>
+
+        <hr>
+
+        <p>${mensaje}</p>
+      `
+    });
+
+    res.status(200).json({
+      success: true
+    });
+
+  } catch(error){
+
+    console.log(error);
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 
