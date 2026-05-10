@@ -1,7 +1,6 @@
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 const { Resend } = require("resend");
 
 const app = express();
@@ -71,45 +70,6 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-/*app.post("/contacto", async (req, res) => {
-  try {
-    const {
-      nombre,
-      empresa,
-      email,
-      telefono,
-      pais,
-      tipo,
-      volumen,
-      mensaje
-    } = req.body;
-
-    await transporter.sendMail({
-      from: `"Café D'Medina" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
-      replyTo: email,
-      subject: "Nueva solicitud comercial Café D’Medina",
-      html: `
-        <h2>Nueva solicitud comercial</h2>
-        <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Empresa:</strong> ${empresa}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Teléfono:</strong> ${telefono}</p>
-        <p><strong>País:</strong> ${pais}</p>
-        <p><strong>Tipo:</strong> ${tipo}</p>
-        <p><strong>Volumen:</strong> ${volumen}</p>
-        <hr>
-        <p>${mensaje}</p>
-      `
-    });
-
-    res.status(200).json({ success: true });
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Error enviando email" });
-  }
-});*/
 
 
 app.post("/contacto", async (req, res) => {
