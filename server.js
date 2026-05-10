@@ -14,7 +14,7 @@ app.use(express.json());
 //TEST
 const stripe = Stripe("sk_test_51TUB833gq8inlL2zCJNSzI24FlD5k6lnVsgYqwgEkdF5R3jvPMBmjNh5HYgCeAT70g1BGJNoDrrRrHRxRUIfehq700T3HNrbM1");
 
-const transporter = nodemailer.createTransport({
+/*const transporter = nodemailer.createTransport({
   host: "smtp.ionos.es",
   port: 465,
   secure: true,
@@ -22,6 +22,19 @@ const transporter = nodemailer.createTransport({
     user: "info@cafedmedina.com",
     pass: "TU_CONTRASEÑA_EMAIL"
   }*/
+ 
+ const transporter = nodemailer.createTransport({
+  host: "smtp.ionos.es",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
   auth: {
   user: process.env.EMAIL_USER,
