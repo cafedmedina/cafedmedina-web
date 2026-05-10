@@ -18,10 +18,16 @@ const transporter = nodemailer.createTransport({
   host: "smtp.ionos.es",
   port: 465,
   secure: true,
-  auth: {
+ /* auth: {
     user: "info@cafedmedina.com",
     pass: "TU_CONTRASEÑA_EMAIL"
-  }
+  }*/
+
+  auth: {
+  user: process.env.EMAIL_USER,
+  pass: process.env.EMAIL_PASS
+}
+
 });
 
 app.post("/create-checkout-session", async (req, res) => {
