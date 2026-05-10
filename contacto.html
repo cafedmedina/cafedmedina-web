@@ -239,13 +239,23 @@ document.getElementById("contact-form").addEventListener("submit", async functio
     body:JSON.stringify(formData)
   });
 
-  if(response.ok){
+/*-------------------------------------------------------------------------------------------------------ABRE - ALERTA-------------------------------------------------------------------------------------
+if(response.ok){
     alert("Solicitud enviada correctamente.");
     document.getElementById("contact-form").reset();
   } else {
     alert("Error enviando solicitud.");
-  }
+  }*/
 
+
+  if(response.ok){
+  alert("Solicitud enviada correctamente.");
+  document.getElementById("contact-form").reset();
+} else {
+  const errorText = await response.text();
+  console.log("ERROR DEL SERVIDOR:", errorText);
+  alert("Error enviando solicitud. Mira la consola.");
+}
 });
 </script>
 </body>
