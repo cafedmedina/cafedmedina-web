@@ -2408,6 +2408,102 @@ footer {
   margin-top: 8px;
 }
 
+/* =====================================================
+   AJUSTES MÓVIL - HISTORIA + LOGO HERO
+===================================================== */
+
+@media (max-width: 950px) {
+
+  /* ---------- HERO / BANNER ---------- */
+
+  .hero {
+    min-height: auto !important;
+    padding: 55px 6% 45px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Oculta el logo lateral en móvil para que no tape el texto */
+  .hero-logo-side {
+    display: none !important;
+  }
+
+  .hero-copy {
+    max-width: 100% !important;
+    text-align: center !important;
+    padding: 0 !important;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 11vw, 54px) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .hero p {
+    font-size: 17px !important;
+    line-height: 1.55 !important;
+    max-width: 100% !important;
+    margin-bottom: 24px !important;
+  }
+
+  .hero .buttons {
+    justify-content: center !important;
+  }
+
+
+  /* ---------- NUESTRA HISTORIA EN MÓVIL ---------- */
+
+  .historia-clara {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    padding: 38px 6% !important;
+  }
+
+  .historia-texto {
+    max-width: 100% !important;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .historia-clara h2 {
+    font-size: clamp(34px, 10vw, 48px) !important;
+    line-height: 1.08 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .historia-clara p {
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+    max-width: 100% !important;
+  }
+
+  .historia-imagen {
+    width: 100% !important;
+    height: 260px !important;
+    border-radius: 26px !important;
+    margin: 0 auto !important;
+  }
+
+  .historia-imagen img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center bottom !important;
+  }
+
+  .historia-imagen::after {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(17,16,15,0) 65%,
+        rgba(17,16,15,.20) 100%
+      ) !important;
+  }
+}
+
 
   </style>
 </head>
