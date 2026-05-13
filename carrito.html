@@ -152,6 +152,7 @@ const stripe = Stripe("pk_test_51TUB833gq8inlL2zJkDNL2xz4yOq0WAExmweTl5sRDxmC69J
 
 const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
+
 function actualizarContador(){
   const cartCount = document.getElementById("cart-count");
   const unidades = carrito.reduce((sum, item) => sum + Number(item.cantidad), 0);
