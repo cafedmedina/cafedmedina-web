@@ -2649,6 +2649,40 @@ footer {
   }
 }
 
+/* Flecha flotante subir arriba */
+.back-to-top {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .back-to-top {
+    display: flex !important;
+    position: fixed;
+    right: 18px;
+    bottom: 86px;
+    z-index: 9998;
+
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(135deg, #e2c47d, #c8a96a);
+    color: #11100f;
+    text-decoration: none;
+    font-size: 26px;
+    font-weight: 900;
+
+    box-shadow: 0 10px 24px rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.25);
+  }
+
+  .back-to-top:hover {
+    transform: translateY(-2px);
+  }
+}
 
 
   </style>
