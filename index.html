@@ -2730,6 +2730,28 @@ section,
   border: 0 !important;
   cursor: pointer !important;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+section,
+#inicio,
+#origen,
+#proceso,
+#historia,
+#cata,
+#empaque,
+#area-profesional,
+#contacto {
+  scroll-margin-top: 20px !important;
+}
+
+
+.back-to-top {
+  border: 0 !important;
+  cursor: pointer !important;
+}
   </style>
 </head>
 
@@ -3362,7 +3384,7 @@ actualizarIconoCarrito();
 </script>
 
 
-<button type="button" class="back-to-top" onclick="subirArriba()" aria-label="Volver arriba">
+<button type="button" class="back-to-top" onclick="window.scrollTo({top:0, behavior:'smooth'})" aria-label="Volver arriba">
   ↑
 </button>
 
