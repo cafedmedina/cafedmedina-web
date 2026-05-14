@@ -2685,6 +2685,51 @@ footer {
 }
 
 
+/* =====================================================
+   ANCLAS CORRECTAS CON MENÚ FIJO
+===================================================== */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 92px;
+}
+
+/* Todas las secciones dejan espacio arriba al navegar desde el menú */
+section,
+#inicio,
+#origen,
+#proceso,
+#historia,
+#cata,
+#empaque,
+#area-profesional,
+#contacto {
+  scroll-margin-top: 92px;
+}
+
+/* En móvil el header ocupa más, ajustamos más margen */
+@media (max-width: 850px) {
+  html {
+    scroll-padding-top: 145px;
+  }
+
+  section,
+  #inicio,
+  #origen,
+  #proceso,
+  #historia,
+  #cata,
+  #empaque,
+  #area-profesional,
+  #contacto {
+    scroll-margin-top: 145px;
+  }
+}
+
+.back-to-top {
+  border: 0 !important;
+  cursor: pointer !important;
+}
   </style>
 </head>
 
@@ -3317,9 +3362,20 @@ actualizarIconoCarrito();
 </script>
 
 
-<a href="#inicio" class="back-to-top" aria-label="Volver arriba">
+<button type="button" class="back-to-top" onclick="subirArriba()" aria-label="Volver arriba">
   ↑
-</a>
+</button>
+
+<script>
+  function subirArriba() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+</script>
+
 
 </body>
 </html>
