@@ -555,6 +555,80 @@ header nav a:hover {
     margin-bottom: 0 !important;
   }
 }
+
+
+/* =====================================================
+   HISTORIA SOLO MÓVIL - ORDEN IMAGEN + TEXTO
+===================================================== */
+
+@media (max-width: 850px) {
+
+  .historia-grid {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Orden correcto SOLO en móvil */
+  .historia-grid > div:nth-child(1) {
+    order: 1 !important;
+  }
+
+  .historia-grid > div:nth-child(2) {
+    order: 2 !important;
+  }
+
+  .historia-grid > div:nth-child(4) {
+    order: 3 !important;
+  }
+
+  .historia-grid > div:nth-child(3) {
+    order: 4 !important;
+  }
+
+  .historia-grid > div:nth-child(5) {
+    order: 5 !important;
+  }
+
+  .historia-grid > div:nth-child(6) {
+    order: 6 !important;
+  }
+
+  .historia-img {
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 0 6% 18px !important;
+    background: #11100f !important;
+  }
+
+  .historia-img img {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    border-radius: 22px !important;
+    object-fit: cover !important;
+    filter: none !important;
+  }
+
+  .historia-text {
+    width: 100% !important;
+    padding: 26px 7% 46px !important;
+    background: #11100f !important;
+  }
+
+  .historia-text h2 {
+    font-size: 32px !important;
+    line-height: 1.12 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .historia-text p {
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+  }
+}
+
+
   </style>
 </head>
 
