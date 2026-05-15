@@ -199,6 +199,309 @@
     .volver-btn:hover{
     opacity:.8;
     }
+
+/* MENÚ VISIBLE EN TODAS LAS PÁGINAS */
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(17,16,15,.96) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(200,169,106,.25) !important;
+}
+
+/* MENÚ UNIFICADO CAFÉ D'MEDINA */
+
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+
+  height: 92px;
+  padding: 0 7% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  background: rgba(17,16,15,.97) !important;
+  border-bottom: 1px solid rgba(200,169,106,.25) !important;
+}
+
+header .brand {
+  text-decoration: none !important;
+}
+
+header .brand span {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  color: #e2c47d !important;
+  letter-spacing: .5px !important;
+}
+
+header nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+}
+
+header nav a {
+  color: #f5f5f5 !important;
+  text-decoration: none !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.3px !important;
+  text-transform: uppercase !important;
+}
+
+header nav a:hover {
+  color: #e2c47d !important;
+}
+
+.cart-link {
+  position: relative;
+  color: #e2c47d !important;
+  font-size: 22px !important;
+  text-decoration: none !important;
+}
+
+#cart-count {
+  position: absolute;
+  top: -12px;
+  right: -14px;
+
+  background: #e2c47d;
+  color: #11100f;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 2px 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+/* MÓVIL */
+@media (max-width: 850px) {
+  header {
+    height: auto;
+    min-height: 84px;
+    padding: 16px 6% !important;
+    flex-wrap: wrap;
+    justify-content: center !important;
+    gap: 10px;
+  }
+
+  header .brand {
+    width: 100%;
+    text-align: center;
+  }
+
+  header .brand span {
+    font-size: 30px !important;
+  }
+
+  header nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px 18px !important;
+  }
+
+  header nav a {
+    font-size: 12px !important;
+  }
+
+  .cart-link {
+    position: absolute;
+    right: 22px;
+    top: 30px;
+  }
+}
+
+
+/* MENÚ UNIFICADO CAFÉ D'MEDINA */
+
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+
+  height: 92px;
+  padding: 0 7% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  background: rgba(17,16,15,.97) !important;
+  border-bottom: 1px solid rgba(200,169,106,.25) !important;
+}
+
+header .brand {
+  text-decoration: none !important;
+}
+
+header .brand span {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 34px !important;
+  font-weight: 700 !important;
+  color: #e2c47d !important;
+  letter-spacing: .5px !important;
+}
+
+header nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+}
+
+header nav a {
+  color: #f5f5f5 !important;
+  text-decoration: none !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.3px !important;
+  text-transform: uppercase !important;
+}
+
+header nav a:hover {
+  color: #e2c47d !important;
+}
+
+.cart-link {
+  position: relative;
+  color: #e2c47d !important;
+  font-size: 22px !important;
+  text-decoration: none !important;
+}
+
+#cart-count {
+  position: absolute;
+  top: -12px;
+  right: -14px;
+
+  background: #e2c47d;
+  color: #11100f;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  min-width: 20px;
+  height: 20px;
+  padding: 2px 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+/* MÓVIL */
+@media (max-width: 850px) {
+  header {
+    height: auto;
+    min-height: 84px;
+    padding: 16px 6% !important;
+    flex-wrap: wrap;
+    justify-content: center !important;
+    gap: 10px;
+  }
+
+  header .brand {
+    width: 100%;
+    text-align: center;
+  }
+
+  header .brand span {
+    font-size: 30px !important;
+  }
+
+  header nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px 18px !important;
+  }
+
+  header nav a {
+    font-size: 12px !important;
+  }
+
+  .cart-link {
+    position: absolute;
+    right: 22px;
+    top: 30px;
+  }
+}
+
+
+/* =====================================================
+   HISTORIA MÓVIL - IMÁGENES BIEN SEPARADAS
+===================================================== */
+
+@media (max-width: 850px) {
+
+  .historia-content,
+  .historia-layout,
+  .history-content,
+  .history-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 28px !important;
+  }
+
+  .historia-img,
+  .historia-image,
+  .history-img,
+  .history-image,
+  .story-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto 26px !important;
+    display: block !important;
+  }
+
+  .historia-img img,
+  .historia-image img,
+  .history-img img,
+  .history-image img,
+  .story-image img {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    border-radius: 22px !important;
+    object-fit: cover !important;
+  }
+
+  /* separación extra entre imágenes consecutivas */
+  .historia-img + .historia-img,
+  .historia-image + .historia-image,
+  .history-img + .history-img,
+  .story-image + .story-image {
+    margin-top: 28px !important;
+  }
+
+  /* evita que dos columnas se queden lado a lado en móvil */
+  .historia-grid,
+  .history-grid,
+  .story-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+}
+
   </style>
 </head>
 
@@ -208,15 +511,29 @@
     <a href="index.html" class="volver-btn">
   ← Volver
     </a>
+    <a href="index.html#inicio" class="brand">
+    <span>Café D’Medina</span>
+  </a>
 
-    <nav>
-      <a href="index.html">Inicio</a>
-      <a href="index.html#origen">Origen</a>
-      <a href="index.html#proceso">Proceso</a>
-      <a href="index.html#contacto">Contacto</a>
-      <a href="tienda.html">Tienda</a>
+     <nav id="main-menu">
+    <a href="index.html#origen">Origen</a>
+    <a href="index.html#proceso">Proceso</a>
+    <a href="index.html#historia">Historia</a>
+    <a href="index.html#cata">Cata</a>
+    <a href="index.html#empaque">Producto</a>
+    <a href="index.html#area-profesional">Profesionales</a>
+    <a href="index.html#contacto">Contacto</a>
+    <a href="tienda.html">Tienda</a>
     </nav>
-  </header>
+  
+
+  <a href="carrito.html" class="cart-link">
+    🛒
+    <span id="cart-count">0</span>
+  </a>
+</header>
+
+  
 
   <main>
 
@@ -292,6 +609,24 @@
   <footer>
     © 2026 Café D’Medina · Café de origen colombiano
   </footer>
+
+<script>
+function actualizarIconoCarrito() {
+  const cartCount = document.getElementById("cart-count");
+  const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+
+  const unidades = carritoGuardado.reduce((sum, item) => {
+    return sum + Number(item.cantidad || 0);
+  }, 0);
+
+  if (cartCount) {
+    cartCount.textContent = unidades;
+  }
+}
+
+actualizarIconoCarrito();
+</script>
+
 
 </body>
 </html>
