@@ -502,6 +502,59 @@ header nav a:hover {
   }
 }
 
+
+/* =====================================================
+   HISTORIA SOLO MÓVIL
+   Orden: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
+===================================================== */
+
+@media (max-width: 850px) {
+
+  .historia-bloque {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    margin-bottom: 46px !important;
+  }
+
+  /* En móvil anulamos cualquier orden alternado del escritorio */
+  .historia-bloque .historia-foto {
+    order: 1 !important;
+  }
+
+  .historia-bloque .historia-texto {
+    order: 2 !important;
+  }
+
+  .historia-foto,
+  .historia-texto {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .historia-foto img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    border-radius: 22px !important;
+    object-fit: cover !important;
+    margin: 0 !important;
+  }
+
+  .historia-texto h2,
+  .historia-texto h3 {
+    font-size: 30px !important;
+    line-height: 1.12 !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .historia-texto p {
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+    margin-bottom: 0 !important;
+  }
+}
   </style>
 </head>
 
