@@ -2718,6 +2718,76 @@ section,
   scroll-margin-top: -35px !important;
 }
 
+/* MENÚ SIEMPRE VISIBLE */
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(17,16,15,.96) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+
+
+/* =====================================================
+   BOTONES FLOTANTES MÓVIL
+   WhatsApp izquierda / Subir derecha
+===================================================== */
+
+.whatsapp-float {
+  position: fixed !important;
+  width: 54px !important;
+  height: 54px !important;
+  left: 18px !important;
+  right: auto !important;
+  bottom: 22px !important;
+  z-index: 9998 !important;
+}
+
+.whatsapp-float img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.25) !important;
+}
+
+.back-to-top {
+  position: fixed !important;
+  right: 18px !important;
+  left: auto !important;
+  bottom: 22px !important;
+  z-index: 9998 !important;
+
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: linear-gradient(135deg, #e2c47d, #c8a96a) !important;
+  color: #11100f !important;
+
+  border: 1px solid rgba(255,255,255,.35) !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.25) !important;
+
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+}
+
+/* Solo móvil */
+@media (min-width: 851px) {
+  .back-to-top {
+    display: none !important;
+  }
+}
+
+
   </style>
 </head>
 
@@ -3316,8 +3386,9 @@ actualizarIconoCarrito
   </script>
 <!-- ---------------------------------------------------------------------------------------ABRE - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
 <a href="https://wa.me/34660736866"
-   class="whatsapp-float" 
-   target="_blank">
+   class="whatsapp-float"
+   target="_blank"
+   aria-label="WhatsApp">
   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
 </a>
 <!-- ------------------------------------------------------------------------------------CIERRA - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
