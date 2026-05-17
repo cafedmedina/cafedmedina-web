@@ -2755,6 +2755,81 @@ header {
 }
 
 
+/* -------------------------------------------------------------------------------------------ABRE - MENÚ HAMBURGUESA SOLO MÓVIL---------------------------------------------------------------------- */
+
+.menu-toggle,
+.mobile-menu {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  header nav#main-menu {
+    display: none !important;
+  }
+
+  .menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+
+    position: absolute;
+    left: 18px;
+    top: 20px;
+
+    background: transparent;
+    border: 1px solid rgba(226,196,125,.35);
+    border-radius: 50%;
+
+    color: #e2c47d;
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+    z-index: 10001;
+  }
+
+  .mobile-menu {
+    display: none !important;
+    position: fixed;
+    top: 84px;
+    left: 16px;
+    right: 16px;
+    z-index: 10000;
+
+    background: rgba(17,16,15,.98);
+    border: 1px solid rgba(226,196,125,.25);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  }
+
+  .mobile-menu.open {
+    display: flex !important;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .mobile-menu a {
+    color: #f5f5f5 !important;
+    text-decoration: none !important;
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1.6px !important;
+    text-transform: uppercase !important;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .mobile-menu a:last-child {
+    border-bottom: 0;
+  }
+}
+/* -------------------------------------------------------------------------------------------CIERRA - MENÚ HAMBURGUESA SOLO MÓVIL---------------------------------------------------------------------- */
+
+
+
   </style>
 </head>
 
@@ -2805,23 +2880,18 @@ header {
 </a>
 
 
-<!-- ---------------------------------------------------------------------------------------ABRE - MENU MOVIL TIPO AMBURGUESA----------------------------------------------------------------->
-<script>
-function toggleMenu() {
-  const menu = document.getElementById("mobile-menu");
-  if (menu) {
-    menu.classList.toggle("open");
-  }
-}
+<button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+  ☰
+</button>
 
-function closeMenu() {
-  const menu = document.getElementById("mobile-menu");
-  if (menu) {
-    menu.classList.remove("open");
-  }
-}
-</script>
-<!-- ---------------------------------------------------------------------------------------CIERRA - MENU MOVIL TIPO AMBURGUESA----------------------------------------------------------------->
+<nav id="mobile-menu" class="mobile-menu">
+  <a href="#origen" onclick="closeMenu()">Origen</a>
+  <a href="#historia" onclick="closeMenu()">Historia</a>
+  <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+  <a href="#area-profesional" onclick="closeMenu()">Profesionales</a>
+  <a href="#contacto" onclick="closeMenu()">Contacto</a>
+</nav>
+
 
 
 <!-- ----------------------------------------------------------------------------------CIERRA - CESTA / CARRITO--------------------------------------------------------------------------- -->
@@ -3289,6 +3359,24 @@ actualizarIconoCarrito();
   }
 
 </script>
+
+<!-- ---------------------------------------------------------------------------------------ABRE - MENU MOVIL TIPO HAMBURGUESA----------------------------------------------------------------->
+<script>
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+</script>
+<!-- ---------------------------------------------------------------------------------------CIERRA - MENU MOVIL TIPO HAMBURGUESA----------------------------------------------------------------->
 
 
 </body>
