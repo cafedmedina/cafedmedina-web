@@ -24,40 +24,7 @@
       --muted: #6d6258;
       --shadow: 0 18px 45px rgba(30, 20, 10, 0.14);
     }
-/*.info-hover {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  margin-top: 20px;
-  padding: 16px;
-  border-radius: 20px;
-  background: rgba(200,169,106,.08);
-  border: 1px solid rgba(200,169,106,.25);
-  max-width: 520px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all .3s ease;
-}
 
-.info-hover img {
-  width: 160px;
-  height: 110px;
-  object-fit: cover;
-  border-radius: 16px;
-  transform: scale(0.9);
-  transition: all .35s ease;
-  opacity: 0;
-}
-
-.info-hover.active img {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.info-hover p {
-  font-size: 14px;
-  color: var(--coffee);
-}*/
 
     * {
       box-sizing: border-box;
@@ -2836,6 +2803,27 @@ header {
     0
   </span>
 </a>
+
+
+<!-- ---------------------------------------------------------------------------------------ABRE - MENU MOVIL TIPO AMBURGUESA----------------------------------------------------------------->
+<script>
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+</script>
+<!-- ---------------------------------------------------------------------------------------CIERRA - MENU MOVIL TIPO AMBURGUESA----------------------------------------------------------------->
+
+
 <!-- ----------------------------------------------------------------------------------CIERRA - CESTA / CARRITO--------------------------------------------------------------------------- -->
 </header>
 
@@ -2875,20 +2863,6 @@ header {
 
     </div>
 
-      <!-- ------------------------------------------------------PANEL CATA PARA BORRAR  ---------------------------------------------------------------------------
-    <aside class="hero-panel">
-        '///<img src="ave.png" alt="Bangsia Negra y Oro, ave emblemática de Mistrató" class="bird-hero" /> 
-        <h3>Café con historia, trazabilidad y carácter</h3>
-        <p>
-          Una propuesta premium para tiendas gourmet, cafeterías, distribuidores y amantes del café que buscan un origen auténtico.
-        </p>
-        <div class="hero-stats">
-          <div class="stat"><strong>1550</strong><span>msnm</span></div>
-          <div class="stat"><strong>86,75</strong><span>SCAA</span></div>
-          <div class="stat"><strong>100%</strong><span>Arábica</span></div>
-        </div>
-
-      </aside>-->
     </section>
 
 
@@ -2935,26 +2909,6 @@ header {
           preservando la esencia natural del café y trabajando cada lote de manera única.
         </p>
         
-       <!-- ------------------------------------------------------------ABRE - PROCESO CON IMAGEN AVE--------------------------------------------------------------------------------
-        <div class="badge-row">
-          <span class="badge" onmouseover="mostrarInfo()"onmouseout="ocultarInfo()">Bangsia negra y oro</span>
-          <span class="badge">Selección manual</span>
-          <span class="badge">Fermentación controlada</span>
-          <span class="badge">Mínimo consumo de agua</span>
-      </div>
-      
-      <a href="proceso.html"
-        class="btn btn-primary section-btn"
-        style="margin-top:35px;">
-        Más información
-      </a>
-
-      <div id="info-hover" class="info-hover">
-      <img id="info-img" src="img/bangsia-negra-y-oro.jpg">
-        <p id="info-text">
-          La Bangsia negra y oro, ave emblemática de Mistrató, inspira nuestro concepto Black & Blond: elegancia, origen y contraste natural.
-        </p>
-      </div>-->
 
 <div class="badge-row">
   <span class="badge">Selección manual</span>
@@ -2992,84 +2946,6 @@ header {
         </article>
       </div>
     </section>
-    <!-- ---------------------------------------------------------------------------------------CIERRA - CAJA DE PROCESOS--------------------------------------------------------------------------->
-
-
-  <!-- ---------------------------------------------------------------------------------------ABRE - CAJA DE NUESTRA HISTORIA--------------------------------------------------------------------------->
-    <!--<section class="dark split" id="historia">
-      
-      <div class="text-block">
-        <div class="eyebrow">Legado familiar</div>
-        <h2 style="color:#e2c47d !important;">
-          Nuestra historia
-        </h2>
-      <p>
-        Desde la década de 1930, nuestra familia ha estado profundamente ligada al café. 
-        Generación tras generación, hemos cultivado no solo café de origen, sino también una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.
-      </p>
-
-      <p>
-        Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.
-    </p>
-      </p>
-        <a href="historia.html" class="btn btn-primary section-btn">
-        Leer historia completa
-        </a>
-      </div>
-            
-      <div class="image-card">
-        <img src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1100&q=85" alt="Historia cafetera familiar" />
-      </div>
-        
-    </section>-->
-
-
-<!-- <section class="historia-mistrato" id="historia">
-  <div class="historia-overlay">
-    <div class="eyebrow">Legado familiar</div>
-
-    <h2>Nuestra historia</h2>
-
-    <p>
-      Desde la década de 1930, nuestra familia ha estado profundamente ligada al café.
-      Generación tras generación, hemos cultivado no solo café de origen, sino también
-      una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.
-    </p>
-
-    <p>
-      Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando
-      el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.
-    </p>
-
-    <a href="historia.html" class="btn btn-primary section-btn">
-      Leer historia completa
-    </a>
-  </div>
-</section>-->
-
-
-<!--<section class="historia-mistrato" id="historia">
-  <div class="historia-overlay">
-    <div class="eyebrow">Legado familiar</div>
-
-    <h2>Nuestra historia</h2>
-
-    <p>
-      Desde la década de 1930, nuestra familia ha estado profundamente ligada al café.
-      Generación tras generación, hemos cultivado no solo café de origen, sino también
-      una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.
-    </p>
-
-    <p>
-      Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando
-      el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.
-    </p>
-
-    <a href="historia.html" class="btn btn-primary section-btn">
-      Leer historia completa
-    </a>
-  </div>
-</section>-->
 
 <section class="historia-clara" id="historia">
   <div class="historia-texto">
@@ -3234,11 +3110,8 @@ header {
         Ir a la tienda online
       </a>
     </div>
-
   </div>
 </section>
-
-
 
 
 <!-- ------------------------------------------------------------------------------------------------CIERRA - EMPAQUES ------------------------------------------------------------------------------->
@@ -3276,7 +3149,6 @@ header {
         <!-- -----------------------------------------------------------------------------------------CIERRA - BOX TELEFONO CON LINK LLAMAR ----------------------------------------------------------- -->
 
       
-
         <div class="contact-item">
           <strong>Ubicación</strong>
           Arroyomolinos, España
@@ -3288,8 +3160,6 @@ header {
       </div>
     </section>
   </main>
-
-  
 
   <footer>
     © 2026 Café D’Medina · Café de origen colombiano
@@ -3366,21 +3236,6 @@ header {
   document.getElementById('cart-count').textContent = cart.length;
 }
 
-/**---------------------------------------------------------------------------------------ABRE - MOSTRAR EL AVE Y QUE SE VUELVA A OCULTAR-----------------------------------------------------
-  function mostrarInfo() {
-  const box = document.getElementById("info-hover");
-  box.classList.add("active");
-  box.style.opacity = "1";
-  box.style.transform = "translateY(0)";
-}
-
-function ocultarInfo() {
-  const box = document.getElementById("info-hover");
-  box.classList.remove("active");
-  box.style.opacity = "0";
-  box.style.transform = "translateY(10px)";
-}
-  */
 
 actualizarIconoCarrito
   </script>
