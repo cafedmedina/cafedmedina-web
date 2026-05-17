@@ -2981,6 +2981,49 @@ header {
 
 
 
+
+/* =====================================================
+   ANCLAS MÓVIL - QUE EL TÍTULO NO QUEDE TAPADO
+===================================================== */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 110px;
+}
+
+/* Escritorio */
+section,
+#inicio,
+#origen,
+#proceso,
+#historia,
+#cata,
+#empaque,
+#area-profesional,
+#contacto {
+  scroll-margin-top: 110px !important;
+}
+
+/* Móvil */
+@media (max-width: 850px) {
+  html {
+    scroll-padding-top: 165px !important;
+  }
+
+  section,
+  #inicio,
+  #origen,
+  #proceso,
+  #historia,
+  #cata,
+  #empaque,
+  #area-profesional,
+  #contacto {
+    scroll-margin-top: 165px !important;
+  }
+}
+
+
   </style>
 </head>
 
