@@ -1,1615 +1,1029 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Tienda | Café D’Medina</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      margin: 0;
-      font-family: 'Lato', sans-serif;
-      background: #11100f;
-      color: #f5f5f5;
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --coffee: #3a2418;
+      --cream: #f3eadc;
+      --card: #fffaf2;
+      --beige: #efe5d2;
+      --text: #2a2520;
+      --muted: #6d6258;
+      --white: #ffffff;
     }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* =====================================================
+       HEADER UNIFICADO
+    ===================================================== */
 
     header {
-      padding: 20px 7%;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+
+      height: 92px;
+      padding: 0 7%;
+
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      background: #0f0f0f;
+      justify-content: space-between;
+      gap: 22px;
+
+      background: rgba(17,16,15,.97);
       border-bottom: 1px solid rgba(200,169,106,.25);
+
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    header a {
-      color: #c8a96a;
+    .brand {
+      flex-shrink: 0;
       text-decoration: none;
-      font-weight: 900;
     }
 
-    header span {
-      color: #c8a96a;
+    .brand span {
       font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--gold-light);
+      white-space: nowrap;
+      line-height: 1;
     }
+
+    #main-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    #main-menu a {
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      transition: .25s;
+    }
+
+    #main-menu a:hover {
+      color: var(--gold-light);
+    }
+
+    .cart-link {
+      position: relative;
+
+      width: 34px;
+      height: 34px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: var(--gold-light);
+      font-size: 22px;
+      text-decoration: none;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+
+      width: 20px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--gold-light);
+      color: var(--black);
+
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+
+      border-radius: 50%;
+    }
+
+    .menu-toggle,
+    .mobile-menu {
+      display: none;
+    }
+
+    /* =====================================================
+       VOLVER DEBAJO DEL HEADER
+    ===================================================== */
+
+    .page-back-wrap {
+      background: var(--black);
+      padding: 12px 7% 0;
+      margin: 0;
+    }
+
+.page-back-link {
+  display: inline-block;
+  color: var(--gold-light);
+  text-decoration: none;
+
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .5px;
+}
+
+@media (max-width: 850px) {
+  .page-back-link {
+    font-size: 18px;
+  }
+}
+
+    .page-back-link:hover {
+      opacity: .75;
+    }
+
+    /* =====================================================
+       PÁGINA TIENDA
+    ===================================================== */
 
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 52px;
+      font-size: clamp(38px, 4vw, 52px);
       text-align: center;
-      margin: 55px 0 15px;
-      color: #c8a96a;
+      margin: 24px 0 8px;
+      color: var(--coffee);
     }
 
     .intro {
       text-align: center;
-      color: #ddd;
-      margin-bottom: 45px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      padding: 0 22px;
     }
 
     .container {
-      max-width: 1180px;
+      max-width: 1120px;
       margin: auto;
-      padding: 0 24px 80px;
+      padding: 0 24px 48px;
     }
 
     .product {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: center;
-      background: #1a1a1a;
-      padding: 34px;
-      border-radius: 30px;
-      border: 1px solid rgba(200,169,106,.22);
+      grid-template-columns: 360px 1fr;
+      gap: 42px;
+      align-items: start;
+
+      background: linear-gradient(135deg, rgba(255,250,240,.92), rgba(234,223,206,.9));
+      padding: 30px;
+      border-radius: 32px;
+      border: 1px solid rgba(200,169,106,.38);
+      box-shadow: 0 22px 55px rgba(58,36,24,.16);
+    }
+
+    .product-left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .product-image {
+      text-align: center;
     }
 
     .product-image img {
-      width: 100%;
+      width: auto;
+      max-width: 270px;
+      max-height: 430px;
+      object-fit: contain;
+      margin: 0 auto 12px;
       border-radius: 22px;
-      box-shadow: 0 25px 60px rgba(0,0,0,.35);
+      box-shadow: 0 22px 48px rgba(0,0,0,.22);
+    }
+
+    .product-right,
+    .product-info {
+      width: 100%;
     }
 
     .product-info h2 {
       font-family: 'Playfair Display', serif;
-      color: #e2c47d;
-      font-size: 38px;
-      margin-bottom: 18px;
+      color: var(--coffee);
+      font-size: clamp(34px, 3vw, 44px);
+      line-height: 1.05;
+      margin: 0 0 14px;
     }
 
-    .product-info p {
-      color: #ddd;
-      margin: 0 0 11px;
-      font-size: 16px;
+    .static-info,
+    .lote-box,
+    .cata-box,
+    .process-info,
+    .tostion-info {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 18px;
+
+      background: var(--card);
+      border: 1px solid rgba(200,169,106,.30);
+      border-left: 4px solid var(--gold);
+
+      color: #4f3729;
+      font-size: 13.5px;
+      line-height: 1.45;
+
+      box-shadow: 0 6px 16px rgba(0,0,0,.04);
     }
 
-    .product-info strong {
-      color: #ffffff;
+    .static-info {
+      margin-bottom: 0;
     }
 
-    .notes {
-      margin-top: 18px !important;
+    .static-info p,
+    .lote-box p,
+    .cata-box p {
+      margin: 0 0 6px;
+      color: #4f3729;
+      font-size: 13.5px;
+      line-height: 1.45;
     }
 
-    .price {
-      font-size: 36px;
+    .static-info strong,
+    .lote-box strong,
+    .cata-box strong,
+    .process-info strong,
+    .tostion-info strong {
+      color: #2f1b12;
       font-weight: 900;
-      color: #c8a96a;
-      margin: 24px 0 4px;
     }
 
-    .tax {
-      color: #aaa !important;
-      font-size: 14px !important;
-      margin-bottom: 20px !important;
+    .lote-box,
+    .cata-box,
+    .process-info,
+    .tostion-info {
+      margin-bottom: 12px;
     }
 
-    .lote-box {
-      margin: 22px 0;
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(200,169,106,.08);
-      border: 1px solid rgba(200,169,106,.25);
-      font-size: 14px;
+    .process-info,
+    .tostion-info {
+      font-size: 12.8px;
+      line-height: 1.38;
     }
 
-    .lote-box p {
-      margin-bottom: 8px;
+    .ficha-btn {
+      display: inline-block;
+      margin-top: 8px;
+      color: #7b4c15;
+      font-weight: 900;
+      text-decoration: underline;
+      font-size: 13px;
+    }
+
+    .option-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+      align-items: end;
+    }
+
+    .option-field {
+      width: 100%;
     }
 
     label {
       display: block;
-      margin-top: 16px;
-      margin-bottom: 7px;
-      font-size: 13px;
-      letter-spacing: 1.7px;
-      color: #c8a96a;
+      margin-top: 14px;
+      margin-bottom: 6px;
+
+      color: #9a6f24;
+      font-size: 12px;
       font-weight: 900;
+      letter-spacing: 1.4px;
       text-transform: uppercase;
+    }
+
+    .option-field label {
+      margin-top: 0;
     }
 
     select,
     input {
       width: 100%;
-      max-width: 360px;
-      padding: 13px 16px;
-      background: #11100f;
-      color: #f5f5f5;
-      border: 1px solid #c8a96a;
-      border-radius: 8px;
-      font-size: 15px;
+      max-width: 100%;
+      height: 44px;
+      padding: 10px 12px;
+
+      background: var(--card);
+      color: #2f1b12;
+
+      border: 1px solid rgba(200,169,106,.75);
+      border-radius: 10px;
+
+      font-size: 14px;
       outline: none;
     }
 
     select:focus,
     input:focus {
-      border-color: #e2c47d;
-      box-shadow: 0 0 0 3px rgba(200,169,106,.16);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(200,169,106,.18);
+    }
+
+    .price {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--coffee);
+      margin: 22px 0 4px;
+    }
+
+    .tax {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .cantidad-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .cantidad-row input {
+      flex: 1;
     }
 
     .btn {
-      display: inline-block;
-      padding: 14px 28px;
-      background: #c8a96a;
-      color: #000;
-      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 46px;
+      padding: 13px 28px;
+
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+
       border: 0;
-      border-radius: 30px;
+      border-radius: 999px;
+
       font-weight: 900;
-      margin-top: 22px;
-      cursor: pointer;
       font-size: 15px;
+      cursor: pointer;
+
+      box-shadow: 0 14px 30px rgba(58,36,24,.18);
+      transition: .25s;
     }
 
     .btn:hover {
-      background: #e2c47d;
+      transform: translateY(-2px);
+      background: var(--gold-light);
     }
 
-    @media(max-width: 850px){
-      .product {
-        grid-template-columns: 1fr;
+    .cantidad-row .btn {
+      width: 210px;
+      margin: 0;
+    }
+
+    /* =====================================================
+       BOTÓN WHATSAPP
+    ===================================================== */
+
+    .whatsapp-float {
+      position: fixed;
+      width: 55px;
+      height: 55px;
+      bottom: 25px;
+      right: 25px;
+      z-index: 9998;
+    }
+
+    .whatsapp-float img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+    }
+
+    /* =====================================================
+       MÓVIL
+    ===================================================== */
+
+    @media (max-width: 850px) {
+
+      header {
+        height: 72px;
+        min-height: 72px;
+        padding: 0 18px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #main-menu {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        position: absolute;
+        left: 18px;
+        top: 14px;
+
+        width: 44px;
+        height: 44px;
+
+        background: transparent;
+        border: 1px solid rgba(226,196,125,.35);
+        border-radius: 50%;
+
+        color: var(--gold-light);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1;
+
+        z-index: 10001;
+        cursor: pointer;
+      }
+
+      header .brand {
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      header .brand span {
+        font-size: 25px;
+        line-height: 1;
+      }
+
+      .cart-link {
+        position: absolute;
+        right: 20px;
+        top: 19px;
+
+        width: 34px;
+        height: 34px;
+
+        font-size: 21px;
+        z-index: 10001;
+      }
+
+      .cart-count {
+        top: -8px;
+        right: -8px;
+
+        width: 19px;
+        min-width: 19px;
+        height: 19px;
+
+        font-size: 10px;
+      }
+
+      .mobile-menu {
+        display: none;
+
+        position: fixed;
+        top: 82px;
+        left: 22px;
+
+        width: 230px;
+        max-width: calc(100vw - 44px);
+
+        background: rgba(17,16,15,.98);
+        border: 1px solid rgba(226,196,125,.28);
+        border-radius: 18px;
+
+        padding: 12px 16px;
+        z-index: 10000;
+
+        box-shadow: 0 14px 34px rgba(0,0,0,.35);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .mobile-menu.open {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .mobile-menu a {
+        display: block;
+
+        color: #f5f5f5;
+        text-decoration: none;
+
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+
+        padding: 10px 2px;
+        text-align: left;
+
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .mobile-menu a:last-child {
+        border-bottom: 0;
+      }
+
+      .page-back-wrap {
+        padding: 12px 22px 0;
+      }
+
+      .page-back-link {
+        font-size: 13px;
       }
 
       h1 {
-        font-size: 42px;
+        font-size: 38px;
+        margin: 28px 0 8px;
+      }
+
+      .intro {
+        font-size: 15px;
+        line-height: 1.4;
+        margin-bottom: 22px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 14px 38px;
+      }
+
+      .product {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+
+        width: 100%;
+        padding: 18px;
+        border-radius: 26px;
+
+        background: var(--beige);
+        border: 1px solid rgba(200,169,106,.28);
+      }
+
+      .product-left,
+      .product-right,
+      .product-info,
+      .product-image {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .product-image img {
+        max-width: 230px;
+        max-height: 300px;
+        margin: 0 auto 14px;
+      }
+
+      .product-info h2 {
+        font-size: 32px;
+        line-height: 1.08;
+        margin: 4px 0 16px;
+        text-align: center;
+      }
+
+      .static-info,
+      .lote-box,
+      .cata-box,
+      .process-info,
+      .tostion-info {
+        padding: 14px 16px;
+        border-radius: 18px;
+        margin: 0 0 14px;
+
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .process-info,
+      .tostion-info {
+        font-size: 13px;
+        line-height: 1.38;
+      }
+
+      .option-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      select,
+      input {
+        height: 46px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        font-size: 15px;
+      }
+
+      .price {
+        font-size: 28px;
+        margin: 18px 0 2px;
+      }
+
+      .tax {
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+
+      .cantidad-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .cantidad-row .btn,
+      button.btn {
+        width: 100%;
+        height: 48px;
+        margin: 0;
+      }
+
+      .whatsapp-float {
+        width: 52px;
+        height: 52px;
+        bottom: 18px;
+        right: 18px;
       }
     }
 
-  .cart-box {
-  margin-top: 30px;
-  padding: 20px;
-  border-radius: 18px;
-  background: rgba(200,169,106,.08);
-  border: 1px solid rgba(200,169,106,.25);
-}
-
-
-/* -------------------------------------------------------------ABRE - CAJA NOTAS DE CATA--------------------------------------------------------------*/
-.cata-box{
-  margin-top:24px;
-  padding:24px;
-  border-radius:22px;
-  background:rgba(200,169,106,.08);
-  border:1px solid rgba(200,169,106,.18);
-  line-height:1.8;
-}
-
-.cata-box p{
-  margin-bottom:14px;
-  color:#f3f3f3;
-}
-
-.cata-box strong{
-  color:#c8a96a;
-}
-
-/* -------------------------------------------------------------CIERRA - CAJA NOTAS DE CATA-------------------------------------------------------------- */
-
-.cart-total {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 18px;
-  font-size: 20px;
-  color: #c8a96a;
-  font-weight: 900;
-}
-
-/*  -------------------------------------------------------------ABRE - IMAGEN MAS PEQUEÑA + CARRITO ARRIBA--------------------------------------------------------------*/
-.product-left img{
-  width:72%;
-  max-width:360px;
-  display:block;
-  margin:0 auto 24px;
-  border-radius:22px;
-  box-shadow:0 25px 60px rgba(0,0,0,.35);
-}
-
-.cart-icon {
-  position: relative;
-  cursor: pointer;
-  color: #c8a96a;
-  font-size: 22px;
-  font-weight: 900;
-}
-
-.cart-count {
-  position: absolute;
-  top: -10px;
-  right: -14px;
-  background: #c8a96a;
-  color: #000;
-  font-size: 12px;
-  padding: 3px 7px;
-  border-radius: 50%;
-}
-
-.cart-box {
-  width: 100%;
-  max-width: 430px;
-  margin-top: 34px;
-}
-
-.process-info{
-  margin-top:14px;
-  margin-bottom:24px;
-  padding:18px;
-  border-radius:18px;
-  background:rgba(200,169,106,.08);
-  border:1px solid rgba(200,169,106,.2);
-  color:#ddd;
-  line-height:1.6;
-  font-size:15px;
-}
-
-/* ---------------------------------------------------------------------------------------ABRE - BOTON FLOTANTE WHATSAPP----------------------------------------------------------------------------------- */
-
-.whatsapp-float{
-  position:fixed;
-  width:55px;
-  height:55px;
-  bottom:25px;
-  right:25px;
-  z-index:9999;
-}
-
-.whatsapp-float img{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  box-shadow:0 8px 20px rgba(0,0,0,.25);
-}
-/* ---------------------------------------------------------------------------------------CIERRA - BOTON FLOTANTE WHATSAPP----------------------------------------------------------------------------------- */
 
 /* =====================================================
-   AJUSTE FINAL TIENDA - MÁS CLARA, COMPACTA Y VISIBLE
+   VOLVER DEBAJO DEL HEADER
 ===================================================== */
 
-body {
-  background: #f6f0e6 !important;
-  color: #2a2520 !important;
+.page-back-wrap {
+  background: var(--black);
+  padding: 12px 7% 0;
+  margin: 0;
 }
 
-header {
-  background: rgba(17,16,15,.96) !important;
-}
-
-h1 {
-  color: #3a2418 !important;
-  margin: 32px 0 8px !important;
-  font-size: clamp(38px, 4vw, 52px) !important;
-}
-
-.intro {
-  color: #6d6258 !important;
-  margin-bottom: 28px !important;
-}
-
-.container {
-  max-width: 1120px !important;
-  padding: 0 24px 45px !important;
-}
-
-.product {
-  grid-template-columns: .82fr 1.18fr !important;
-  gap: 30px !important;
-  align-items: start !important;
-
-  background: linear-gradient(135deg, #fffaf0 0%, #eadfce 100%) !important;
-  color: #2a2520 !important;
-
-  padding: 26px !important;
-  border-radius: 28px !important;
-  border: 1px solid rgba(200,169,106,.35) !important;
-  box-shadow: 0 18px 45px rgba(58,36,24,.12) !important;
-}
-
-/* Imagen del empaque más pequeña */
-.product-image {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-}
-
-.product-image > img {
-  width: auto !important;
-  max-width: 230px !important;
-  max-height: 315px !important;
-  object-fit: contain !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  filter: drop-shadow(0 20px 24px rgba(0,0,0,.20)) !important;
-  margin: 0 auto 16px !important;
-}
-
-/* Texto principal */
-.product-info h2 {
-  color: #3a2418 !important;
-  font-size: clamp(30px, 3vw, 40px) !important;
-  margin-bottom: 12px !important;
-}
-
-.product-info p {
-  color: #4c4037 !important;
-  font-size: 15px !important;
-  line-height: 1.45 !important;
-  margin-bottom: 7px !important;
-}
-
-.product-info strong {
-  color: #3a2418 !important;
-}
-
-/* Caja lote y cata más compactas */
-.lote-box {
-  margin: 14px 0 !important;
-  padding: 13px 15px !important;
-  background: rgba(255,255,255,.58) !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  color: #3a2418 !important;
-}
-
-.lote-box p {
-  margin-bottom: 5px !important;
-}
-
-.cata-box {
-  margin-top: 14px !important;
-  margin-bottom: 16px !important;
-  padding: 15px 16px !important;
-  border-radius: 18px !important;
-  background: rgba(255,255,255,.58) !important;
-  border: 1px solid rgba(200,169,106,.25) !important;
-  line-height: 1.45 !important;
-}
-
-.cata-box p {
-  color: #4c4037 !important;
-  margin-bottom: 8px !important;
-}
-
-.cata-box strong {
-  color: #3a2418 !important;
-}
-
-/* Descripción del proceso visible y compacta */
-.process-info {
-  width: 100% !important;
-  max-width: 360px !important;
-  margin-top: 10px !important;
-  margin-bottom: 0 !important;
-  padding: 14px 15px !important;
-  border-radius: 18px !important;
-  background: rgba(255,255,255,.68) !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  color: #4c4037 !important;
-  line-height: 1.45 !important;
-  font-size: 13.8px !important;
-}
-
-/* =====================================================
-   TIENDA - ESTILO MIXTO PREMIUM
-===================================================== */
-
-body {
-  background: #f3eadc !important;
-  color: #2a2520 !important;
-}
-
-h1 {
-  color: #3a2418 !important;
-  margin: 34px 0 8px !important;
-}
-
-.intro {
-  color: #6d6258 !important;
-  margin-bottom: 28px !important;
-}
-
-/* Caja principal más premium */
-.product {
-  background:
-    linear-gradient(135deg, rgba(255,250,240,.92) 0%, rgba(234,223,206,.88) 100%) !important;
-  border: 1px solid rgba(200,169,106,.38) !important;
-  box-shadow: 0 22px 55px rgba(58,36,24,.16) !important;
-  border-radius: 32px !important;
-  padding: 30px !important;
-  gap: 34px !important;
-  align-items: start !important;
-}
-
-/* Imagen algo más grande, pero controlada */
-.product-image > img {
-  max-width: 285px !important;
-  max-height: 390px !important;
-  width: auto !important;
-  object-fit: contain !important;
-  border-radius: 22px !important;
-  box-shadow: 0 22px 48px rgba(0,0,0,.22) !important;
-  filter: none !important;
-  margin-bottom: 18px !important;
-}
-
-/* Caja de proceso: clara pero más integrada */
-.process-info {
-  max-width: 390px !important;
-  background: rgba(255,255,255,.62) !important;
-  border: 1px solid rgba(200,169,106,.30) !important;
-  color: #3a2418 !important;
-  font-size: 14px !important;
-  line-height: 1.48 !important;
-  padding: 15px 17px !important;
-  border-radius: 20px !important;
-}
-
-/* Título producto */
-.product-info h2 {
-  color: #3a2418 !important;
-  font-size: clamp(34px, 3vw, 44px) !important;
-  margin-bottom: 14px !important;
-}
-
-/* Textos */
-.product-info p {
-  color: #3f342d !important;
-  font-size: 15.5px !important;
-  line-height: 1.45 !important;
-}
-
-.product-info strong {
-  color: #21150f !important;
-}
-
-/* Cajas interiores */
-.lote-box,
-.cata-box {
-  background: rgba(255,255,255,.68) !important;
-  border: 1px solid rgba(200,169,106,.30) !important;
-  color: #3a2418 !important;
-  border-radius: 18px !important;
-}
-
-.cata-box p,
-.lote-box p {
-  color: #3f342d !important;
-}
-
-.cata-box strong,
-.lote-box strong {
-  color: #2a1a12 !important;
-}
-
-/* Selectores */
-label {
-  color: #9a7a35 !important;
-}
-
-select,
-input {
-  background: #fffaf0 !important;
-  color: #2a2520 !important;
-  border: 1px solid rgba(200,169,106,.75) !important;
-  border-radius: 10px !important;
-}
-
-/* Precio */
-.price {
-  color: #3a2418 !important;
-}
-
-/* Botón */
-.btn {
-  background: linear-gradient(135deg, #e2c47d, #c8a96a) !important;
-  color: #11100f !important;
-  box-shadow: 0 14px 30px rgba(58,36,24,.18) !important;
-}
-
-/* Móvil */
-@media (max-width: 850px) {
-  .product {
-    padding: 18px !important;
-    gap: 18px !important;
-  }
-
-  .product-image > img {
-    max-width: 190px !important;
-    max-height: 260px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .process-info {
-    max-width: 100% !important;
-    font-size: 13.5px !important;
-    line-height: 1.42 !important;
-    padding: 13px 14px !important;
-  }
-
-  .product-info h2 {
-    font-size: 30px !important;
-  }
-}
-
-/* SOLO reducir imagen del empaque */
-.product-image img {
-  width: auto !important;
-  max-width: 360px !important;
-  max-height: 460px !important;
-  object-fit: contain !important;
-  margin: 0 auto 24px !important;
-}
-@media(max-width: 850px){
-  .product-image img {
-    max-width: 240px !important;
-    max-height: 320px !important;
-  }
-}
-
-
-/********************************************************************************prueba colores**********************************************************************************************/
-
-/* =========================
-   TIENDA - NUEVA DISTRIBUCIÓN
-========================= */
-
-.product {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 46px;
-  align-items: start;
-  background: #efe5d2;
-  padding: 34px;
-  border-radius: 30px;
-  border: 1px solid rgba(160,120,70,.20);
-  box-shadow: 0 18px 40px rgba(0,0,0,.08);
-}
-
-.product-left {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.product-image {
-  text-align: center;
-}
-
-.product-image img {
-  width: 100%;
-  max-width: 310px;
-  border-radius: 24px;
-  box-shadow: 0 18px 38px rgba(0,0,0,.20);
-}
-
-.static-info {
-  background: #f7f0e4;
-  border: 1px solid rgba(200,169,106,.35);
-  border-radius: 18px;
-  padding: 20px 22px;
-  line-height: 1.65;
-  color: #4a2d1f;
-}
-
-.static-info p {
-  margin: 0 0 8px;
-  font-size: 16px;
-}
-
-.static-info strong {
-  color: #2f1b12;
-}
-
-.product-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.product-info h2 {
-  font-family: 'Playfair Display', serif;
-  color: #4a2d1f;
-  font-size: 56px;
-  line-height: 1.05;
-  margin: 0 0 18px;
-}
-
-/* CAJAS DINÁMICAS MÁS VISIBLES */
-.lote-box,
-.cata-box,
-.process-info {
-  background: #fffaf2;
-  border: 1px solid rgba(200,169,106,.35);
-  border-left: 5px solid #c8a96a;
-  border-radius: 18px;
-  padding: 18px 20px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
-}
-
-.lote-box {
-  margin-bottom: 16px;
-}
-
-.cata-box {
-  margin-bottom: 16px;
-}
-
-.process-info {
-  margin-bottom: 22px;
-  font-size: 15.5px;
-  line-height: 1.7;
-  color: #4f3729;
-}
-
-.cata-box p,
-.lote-box p {
-  margin: 0 0 10px;
-  color: #4f3729;
-  font-size: 16px;
-}
-
-.cata-box strong,
-.lote-box strong {
-  color: #2f1b12;
-}
-
-.ficha-btn {
+.page-back-link {
   display: inline-block;
-  margin-top: 8px;
-  color: #7b4c15;
-  font-weight: 700;
-  text-decoration: underline;
-}
-
-/* FORMULARIO */
-label {
-  display: block;
-  margin-top: 14px;
-  margin-bottom: 7px;
-  font-size: 13px;
-  letter-spacing: 1.6px;
-  color: #a8742a;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-select,
-input {
-  width: 100%;
-  max-width: 420px;
-  padding: 13px 16px;
-  background: #fffaf2;
-  color: #2f1b12;
-  border: 1px solid rgba(200,169,106,.75);
-  border-radius: 10px;
-  font-size: 15px;
-  outline: none;
-}
-
-select:focus,
-input:focus {
-  border-color: #c8a96a;
-  box-shadow: 0 0 0 3px rgba(200,169,106,.18);
-}
-
-.btn {
-  display: inline-block;
-  padding: 14px 28px;
-  background: #c8a96a;
-  color: #000;
+  color: var(--gold-light);
   text-decoration: none;
-  border: 0;
-  border-radius: 30px;
+
+  font-size: 18px;
   font-weight: 900;
-  margin-top: 22px;
-  cursor: pointer;
-  font-size: 15px;
-  box-shadow: 0 10px 22px rgba(200,169,106,.28);
+  letter-spacing: .5px;
 }
 
-.btn:hover {
-  background: #e2c47d;
+.page-back-link:hover {
+  opacity: .75;
 }
 
-.price {
-  font-size: 34px;
-  font-weight: 900;
-  color: #8e611c;
-  margin: 22px 0 4px;
-}
-
-.tax {
-  color: #7a6658 !important;
-  font-size: 14px !important;
-  margin-bottom: 0 !important;
-}
-
-/* MÓVIL */
-@media (max-width: 900px) {
-  .product {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding: 24px;
+@media (max-width: 850px) {
+  .page-back-wrap {
+    padding: 12px 22px 0;
   }
 
-  .product-left,
-  .product-right {
-    width: 100%;
-  }
-
-  .product-image img {
-    max-width: 240px;
-  }
-
-  .product-info h2 {
-    font-size: 38px;
-    line-height: 1.08;
-  }
-
-  .static-info,
-  .lote-box,
-  .cata-box,
-  .process-info {
-    padding: 16px;
-  }
-
-  select,
-  input {
-    max-width: 100%;
-  }
-}
-
-
-
-/* =========================
-   TIENDA - CAJAS MÁS COMPACTAS Y UNIFORMES
-========================= */
-
-.static-info,
-.lote-box,
-.cata-box,
-.process-info {
-  padding: 12px 14px !important;
-  border-radius: 15px !important;
-  font-size: 13.5px !important;
-  line-height: 1.38 !important;
-  background: #fffaf2 !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  border-left: 4px solid #c8a96a !important;
-  box-shadow: 0 6px 16px rgba(0,0,0,.04) !important;
-}
-
-/* Textos internos iguales */
-.static-info p,
-.lote-box p,
-.cata-box p,
-.process-info {
-  font-size: 13.5px !important;
-  line-height: 1.38 !important;
-  margin: 0 0 5px !important;
-  color: #4f3729 !important;
-}
-
-.static-info strong,
-.lote-box strong,
-.cata-box strong {
-  color: #2f1b12 !important;
-  font-weight: 900 !important;
-}
-
-/* Menos separación entre cajas */
-.static-info,
-.lote-box,
-.cata-box {
-  margin-bottom: 10px !important;
-}
-
-.process-info {
-  margin-top: 0 !important;
-  margin-bottom: 14px !important;
-}
-
-/* Imagen algo más pequeña */
-.product-image img {
-  max-width: 270px !important;
-}
-
-/* Título menos alto */
-.product-info h2 {
-  font-size: clamp(34px, 3vw, 44px) !important;
-  margin-bottom: 12px !important;
-}
-
-
-/* Caja de proceso igualada al tamaño de las demás */
-.process-info {
-  height: 105px !important;
-  max-height: 105px !important;
-  min-height: 105px !important;
-
-  padding: 12px 14px !important;
-  border-radius: 15px !important;
-
-  font-size: 13px !important;
-  line-height: 1.35 !important;
-
-  background: #fffaf2 !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  border-left: 4px solid #c8a96a !important;
-
-  color: #4f3729 !important;
-
-  /*overflow-y: auto !important;*/
-  box-sizing: border-box !important;
-}
-
-
-.process-info {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-height: 118px !important;
-  height: 118px !important;
-  max-height: 118px !important;
-
-  padding: 16px 18px !important;
-  box-sizing: border-box !important;
-
-  border-radius: 18px !important;
-  background: #fffaf2 !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  border-left: 4px solid #c8a96a !important;
-
-  color: #4f3729 !important;
-  font-size: 15px !important;
-  line-height: 1.5 !important;
-
-  /*overflow-y: auto !important;*/
-  overflow-x: hidden !important;
-}
-
-.process-info {
-  min-height: 140px !important;
-  height: 140px !important;
-  max-height: 140px !important;
-}
-
-
-/*******************************************************************************************************************************************************************************/
-
-.process-info {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-height: 118px !important;
-  height: 118px !important;
-  max-height: 118px !important;
-
-  padding: 16px 18px !important;
-  box-sizing: border-box !important;
-
-  border-radius: 18px !important;
-  background: #fffaf2 !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  border-left: 4px solid #c8a96a !important;
-
-  color: #4f3729 !important;
-  font-size: 15px !important;
-  line-height: 1.5 !important;
-
-  /*overflow-y: auto !important;*/
-  overflow-x: hidden !important;
-}
-
-
-.process-info {
-  font-size: 12.8px !important;
-  line-height: 1.35 !important;
-}
-
-/* Caja proceso sin scroll */
-.process-info {
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-
-  overflow: visible !important;
-
-  font-size: 12.5px !important;
-  line-height: 1.35 !important;
-
-  padding: 14px 16px !important;
-}
-
-.cantidad-row {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.cantidad-row input {
-  flex: 1;
-}
-
-.cantidad-row .btn {
-  width: 210px;
-  margin-top: 0 !important;
-}
-
-@media(max-width: 850px) {
-  .cantidad-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .cantidad-row .btn {
-    width: 100% !important;
-  }
-}
-
-
-/* Opciones en línea: Peso / Molienda / Tostión */
-.option-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 10px;
-}
-
-.option-field label {
-  margin-top: 0 !important;
-}
-
-.option-field select {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Precio y compra más compactos */
-.price {
-  margin-top: 18px !important;
-  margin-bottom: 2px !important;
-}
-
-.tax {
-  margin-bottom: 12px !important;
-}
-
-/* Cantidad + botón en línea */
-.cantidad-row {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.cantidad-row input {
-  flex: 1;
-}
-
-.cantidad-row .btn {
-  width: 210px;
-  margin-top: 0 !important;
-}
-
-/* Móvil: vuelve a columna para que no se aplaste */
-@media(max-width: 850px) {
-  .option-row {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .cantidad-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .cantidad-row .btn {
-    width: 100% !important;
-  }
-}
-
-
-.option-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 12px;
-}
-
-.option-field label {
-  margin-top: 0 !important;
-}
-
-.option-field select {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-.cantidad-row {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.cantidad-row input {
-  flex: 1;
-}
-
-.cantidad-row .btn {
-  width: 210px;
-  margin-top: 0 !important;
-}
-
-@media(max-width: 850px) {
-  .option-row {
-    grid-template-columns: 1fr;
-  }
-
-  .cantidad-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .cantidad-row .btn {
-    width: 100% !important;
-  }
-}
-
-.option-row {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 12px !important;
-  margin-top: 14px !important;
-  align-items: end !important;
-}
-
-.option-field {
-  width: 100% !important;
-}
-
-.option-field label {
-  margin-top: 0 !important;
-  margin-bottom: 6px !important;
-  font-size: 12px !important;
-  letter-spacing: 1.5px !important;
-}
-
-.option-field select {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 44px !important;
-  padding: 10px 12px !important;
-  font-size: 14px !important;
-}
-
-@media(max-width: 850px) {
-  .option-row {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-
-  .option-field select {
-    height: 44px !important;
+  .page-back-link {
+    font-size: 16px;
   }
 }
 
 /* =====================================================
-   TIENDA MÓVIL - ARREGLO FINAL
+   MENÚ HAMBURGUESA MÓVIL - ARREGLO FINAL COMPACTO
 ===================================================== */
-
 @media (max-width: 850px) {
 
-  body {
-    background: #f3eadc !important;
-    color: #2a2520 !important;
+  .mobile-menu {
+    display: none !important;
+
+    position: fixed !important;
+    top: 82px !important;
+    left: 22px !important;
+
+    width: 220px !important;
+    max-width: calc(100vw - 44px) !important;
+
+    background: rgba(17,16,15,.98) !important;
+    border: 1px solid rgba(226,196,125,.28) !important;
+    border-radius: 18px !important;
+
+    padding: 10px 14px !important;
+    z-index: 10000 !important;
+
+    box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
   }
 
-  header {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-    padding: 14px 6% !important;
+  .mobile-menu.open {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
   }
 
-  header span {
-    font-size: 22px !important;
+  .mobile-menu a {
+    display: block !important;
+
+    color: #f5f5f5 !important;
+    text-decoration: none !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1.1px !important;
+    text-transform: uppercase !important;
+
+    padding: 8px 2px !important;
+    text-align: left !important;
+
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
   }
 
-  h1 {
-    font-size: 42px !important;
-    margin: 28px 0 8px !important;
-    color: #3a2418 !important;
+  .mobile-menu a:last-child {
+    border-bottom: 0 !important;
   }
 
-  .intro {
-    font-size: 15px !important;
-    line-height: 1.4 !important;
-    padding: 0 22px !important;
-    margin-bottom: 22px !important;
-    color: #6d6258 !important;
+  .mobile-menu a:hover {
+    color: #e2c47d !important;
   }
 
-  .container {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 14px 38px !important;
-    box-sizing: border-box !important;
+  .page-back-wrap {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  /* QUITAR ESPACIO SOLO EN MÓVIL */
+  .static-info {
+    margin-bottom: 6px !important;
+  }
+
+  .lote-box {
+    margin-top: 0 !important;
+  }
+
+  .product-left {
+    gap: 6px !important;
   }
 
   .product {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 18px !important;
-
-    width: 100% !important;
-    padding: 18px !important;
-    border-radius: 26px !important;
-    box-sizing: border-box !important;
-
-    background: #efe5d2 !important;
-    border: 1px solid rgba(200,169,106,.28) !important;
-  }
-
-  .product-left,
-  .product-right,
-  .product-info,
-  .product-image {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .product-image {
-    text-align: center !important;
-  }
-
-  .product-image img {
-    width: auto !important;
-    max-width: 230px !important;
-    max-height: 300px !important;
-    object-fit: contain !important;
-    margin: 0 auto 16px !important;
-    border-radius: 22px !important;
-  }
-
-  .product-info h2 {
-    font-size: 34px !important;
-    line-height: 1.08 !important;
-    margin: 4px 0 16px !important;
-    text-align: center !important;
-    color: #3a2418 !important;
-  }
-
-  .static-info,
-  .lote-box,
-  .cata-box,
-  .process-info {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-
-    padding: 14px 16px !important;
-    border-radius: 18px !important;
-    margin: 0 0 14px !important;
-
-    background: #fffaf2 !important;
-    border: 1px solid rgba(200,169,106,.30) !important;
-    border-left: 4px solid #c8a96a !important;
-
-    font-size: 14px !important;
-    line-height: 1.45 !important;
-    color: #4f3729 !important;
-
-    height: auto !important;
-    min-height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  .static-info p,
-  .lote-box p,
-  .cata-box p {
-    font-size: 14px !important;
-    line-height: 1.45 !important;
-    margin: 0 0 6px !important;
-  }
-
-  .process-info {
-    font-size: 13px !important;
-    line-height: 1.38 !important;
-  }
-
-  label {
-    margin-top: 12px !important;
-    margin-bottom: 6px !important;
-    font-size: 12px !important;
-    letter-spacing: 1.4px !important;
-    color: #9a6f24 !important;
-  }
-
-  .option-row {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
     gap: 10px !important;
-    margin-top: 12px !important;
-  }
-
-  .option-field {
-    width: 100% !important;
-  }
-
-  select,
-  input {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 46px !important;
-    padding: 11px 14px !important;
-    box-sizing: border-box !important;
-
-    background: #fffaf2 !important;
-    color: #2f1b12 !important;
-    border: 1px solid rgba(200,169,106,.70) !important;
-    border-radius: 12px !important;
-    font-size: 15px !important;
-  }
-
-  .price {
-    font-size: 28px !important;
-    margin: 18px 0 2px !important;
-    color: #3a2418 !important;
-    text-align: left !important;
-  }
-
-  .tax {
-    font-size: 13px !important;
-    margin-bottom: 12px !important;
-    color: #6d6258 !important;
-  }
-
-  .cantidad-row {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    width: 100% !important;
-  }
-
-  .cantidad-row input {
-    width: 100% !important;
-  }
-
-  .cantidad-row .btn,
-  button.btn {
-    width: 100% !important;
-    height: 48px !important;
-    margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border-radius: 999px !important;
-    font-size: 15px !important;
-  }
-
-  .whatsapp-float {
-    width: 52px !important;
-    height: 52px !important;
-    bottom: 18px !important;
-    right: 18px !important;
-  }
-}
-/*-----------------------------------------------------------------------ABRE - CAJA DE INFO TOSTION---------------------------------------------------------------------------------------------------- */
-
-.process-info,
-.tostion-info {
-  width: 100% !important;
-  box-sizing: border-box !important;
-
-  margin: 0 0 12px !important;
-  padding: 13px 15px !important;
-
-  border-radius: 15px !important;
-  background: #fffaf2 !important;
-  border: 1px solid rgba(200,169,106,.28) !important;
-  border-left: 4px solid #c8a96a !important;
-
-  color: #4f3729 !important;
-  font-size: 12.8px !important;
-  line-height: 1.38 !important;
-
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-/* -----------------------------------------------------------------------CIERRRA - CAJA DE INFO TOSTION----------------------------------------------------------------------------------------------------*/
-
-.tostion-info strong {
-  color: #2f1b12;
-  font-weight: 900;
-}
-
-/* MENÚ VISIBLE EN TODAS LAS PÁGINAS */
-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 9999 !important;
-  background: rgba(17,16,15,.96) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(200,169,106,.25) !important;
-}
-
-/* CONTADOR CARRITO MÁS PEQUEÑO EN MÓVIL */
-@media (max-width: 850px) {
-  .cart-count,
-  #cart-count {
-    font-size: 10px !important;
-    min-width: 18px !important;
-    height: 18px !important;
-    padding: 1px 5px !important;
-    top: -8px !important;
-    right: -10px !important;
-  }
-
-  .cart-icon,
-  .cart-link {
-    font-size: 20px !important;
   }
 }
 
 
-</style>
-<!-- -------------------------------------------------------------CIERRA - IMAGEN MAS PEQUEÑA + CARRITO ARRIBA-------------------------------------------------------------- -->
 
 
 
+  </style>
 </head>
+
 <body>
 
-<header>
-  <a href="index.html">← Volver</a>
-  <span>Café D’Medina</span>
-<!-- ------------------------------------------------------------------ ABRE - HEADER + AÑADE EL CARRITO ------------------------------------------------------------------ -->
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+      ☰
+    </button>
 
-<div class="cart-icon" onclick="window.location.href='carrito.html'">
-  🛒
-  <span id="cart-count" class="cart-count">0</span>
-</div>
+    <a href="index.html#inicio" class="brand">
+      <span>Café D’Medina</span>
+    </a>
 
-<!-- ------------------------------------------------------------------ CIRRA - HEADER + AÑADE EL CARRITO ------------------------------------------------------------------ -->
-</header>
+    <nav id="main-menu">
+      <a href="index.html#origen">Origen</a>
+      <a href="index.html#proceso">Proceso</a>
+      <a href="index.html#historia">Historia</a>
+      <a href="index.html#cata">Cata</a>
+      <a href="index.html#empaque">Producto</a>
+      <a href="index.html#area-profesional">Profesionales</a>
+      <a href="index.html#contacto">Contacto</a>
+      <a href="tienda.html">Tienda</a>
+    </nav>
 
-<h1>Tienda</h1>
-<p class="intro">Selecciona el proceso, peso, molienda y tostión de tu café.</p>
+    <a href="carrito.html" class="cart-link">
+      🛒
+      <span id="cart-count" class="cart-count">0</span>
+    </a>
 
-<div class="container">
+    <nav id="mobile-menu" class="mobile-menu">
+      <a href="index.html#origen" onclick="closeMenu()">Origen</a>
+      <a href="index.html#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="index.html#historia" onclick="closeMenu()">Historia</a>
+      <a href="index.html#cata" onclick="closeMenu()">Cata</a>
+      <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
+      <a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a>
+      <a href="index.html#contacto" onclick="closeMenu()">Contacto</a>
+      <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+    </nav>
+  </header>
 
-  <!--<div class="product">
-
-     SOLO UNA IMAGEN
-    <div class="product-image">
-      <img src="empaque.png" alt="Empaque Café D’Medina">
-    </div>
-
-    <div class="product-info">
-      <h2>Café D’Medina · Colombia</h2>
-
-      <p><strong>Café de especialidad de Colombia</strong></p>
-      <p><strong>Recomendado:</strong> Espresso / Filtro</p>
-      <p><strong>Origen:</strong> Mistrató, Risaralda, Colombia</p>
-      <p><strong>Variedad:</strong> 100% Arábica</p>
-      <p><strong>Productor:</strong> Familia Medina</p>
-
-      ------------------------------------------------------------------ ABRE - CAJA DE CATA ------------------------------------------------------------------
-      
-    <div class="lote-box">
-      <p><strong>Lote / Muestra:</strong> 265</p>
-      <p><strong>Recolección:</strong> Marzo 2025</p>
-    </div>
-
-    <div class="cata-box">
-      <p><strong>Fecha de cata:</strong> <span id="fecha-cata"></span></p>
-      <p><strong>Puntaje SCA:</strong> <span id="puntaje"></span></p>
-      <p><strong>Perfil sensorial:</strong> <span id="perfil"></span></p>
-
-      <a id="ficha-cata" href="#" class="ficha-btn" download>
-      Descargar ficha de cata profesional
-      </a>
-    </div>
-    ------------------------------------------------------------------ CIERRA - CAJA DE CATA ------------------------------------------------------------------ -->
-
-
-
-<div class="product">
-
-  <!-- COLUMNA IZQUIERDA -->
-  <div class="product-left">
-    <div class="product-image">
-      <img src="empaque.png" alt="Empaque Café D’Medina">
-    </div>
-
-    <!-- DATOS FIJOS DEBAJO DE LA IMAGEN -->
-    <div class="static-info">
-    
-      <p><strong>Recomendado:</strong> Espresso / Filtro</p>
-      <p><strong>Origen:</strong> Mistrató, Risaralda, Colombia</p>
-      <p><strong>Variedad:</strong> 100% Arábica</p>
-      <p><strong>Productor:</strong> Familia Medina</p>
-    </div>
+  <div class="page-back-wrap">
+    <a href="index.html#empaque" class="page-back-link">
+      ← Volver
+    </a>
   </div>
 
-  <!-- COLUMNA DERECHA -->
-  <div class="product-right">
-    <div class="product-info">
-      <h2>Café D’Medina · Colombia</h2>
+  <h1>Tienda</h1>
+  <p class="intro">Selecciona el proceso, peso, molienda y tostión de tu café.</p>
 
-      <div class="lote-box">
-        <p><strong>Lote / Muestra:</strong> 265</p>
-        <p><strong>Recolección:</strong> Marzo 2025</p>
+  <div class="container">
+
+    <div class="product">
+
+      <div class="product-left">
+        <div class="product-image">
+          <img src="empaque.png" alt="Empaque Café D’Medina">
+        </div>
+
+        <div class="static-info">
+          <p><strong>Recomendado:</strong> Espresso / Filtro</p>
+          <p><strong>Origen:</strong> Mistrató, Risaralda, Colombia</p>
+          <p><strong>Variedad:</strong> 100% Arábica</p>
+          <p><strong>Productor:</strong> Familia Medina</p>
+        </div>
       </div>
 
-      <div class="cata-box">
-        <p><strong>Fecha de cata:</strong> <span id="fecha-cata"></span></p>
-        <p><strong>Puntaje SCA:</strong> <span id="puntaje"></span></p>
-        <p><strong>Perfil sensorial:</strong> <span id="perfil"></span></p>
+      <div class="product-right">
+        <div class="product-info">
+          
+          <div class="lote-box">
+            <p><strong>Lote / Muestra:</strong> <span id="lote">265</span></p>
+            <p><strong>Recolección:</strong> Marzo 2025</p>
+          </div>
 
-        <a id="ficha-cata" href="#" class="ficha-btn" download>
-          Descargar ficha de cata profesional
-        </a>
+          <div class="cata-box">
+            <p><strong>Fecha de cata:</strong> <span id="fecha-cata"></span></p>
+            <p><strong>Puntaje SCA:</strong> <span id="puntaje"></span></p>
+            <p><strong>Perfil sensorial:</strong> <span id="perfil"></span></p>
+
+            <a id="ficha-cata" href="#" class="ficha-btn" download>
+              Descargar ficha de cata profesional
+            </a>
+          </div>
+
+          <div class="process-info" id="process-info"></div>
+          <div class="tostion-info" id="tostion-info"></div>
+
+          <div class="option-row">
+
+            <div class="option-field">
+              <label>Proceso</label>
+              <select id="proceso" onchange="actualizarPrecioYLote()">
+                <option value="lavado">Lavado</option>
+                <option value="honey">Honey</option>
+                <option value="natural">Natural</option>
+              </select>
+            </div>
+
+            <div class="option-field">
+              <label>Peso</label>
+              <select id="peso" onchange="actualizarPrecioYLote()">
+                <option value="">Selecciona peso</option>
+                <option value="250">250 g</option>
+                <option value="500">500 g</option>
+                <option value="1000">1 kg</option>
+              </select>
+            </div>
+
+            <div class="option-field">
+              <label>Molienda</label>
+              <select id="molienda">
+                <option>En grano</option>
+                <option>Molido</option>
+              </select>
+            </div>
+
+            <div class="option-field">
+              <label>Tipo de tostión</label>
+              <select id="tostion" onchange="actualizarTostionInfo()">
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+                <option value="baja">Baja</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="price" id="precio">Selecciona peso</div>
+          <p class="tax">Impuestos incluidos</p>
+
+          <label>Cantidad</label>
+          <div class="cantidad-row">
+            <input id="cantidad" type="number" value="1" min="1">
+
+            <button class="btn" onclick="addToCart()">
+              Añadir al carrito
+            </button>
+          </div>
+
+        </div>
       </div>
 
-<!-- DATOS DINÁMICOS MÁS VISIBLES -->
-<div class="process-info" id="process-info"></div>
+    </div>
 
-<div class="tostion-info" id="tostion-info"></div>
-
-<div class="option-row">
-  <div class="option-field">
-    <label>Proceso</label>
-    <select id="proceso" onchange="actualizarPrecioYLote()">
-      <option value="lavado">Lavado</option>
-      <option value="honey">Honey</option>
-      <option value="natural">Natural</option>
-    </select>
   </div>
 
-  <div class="option-field">
-    <label>Peso</label>
-    <select id="peso" onchange="actualizarPrecioYLote()">
-      <option value="">Selecciona peso</option>
-      <option value="250">250 g</option>
-      <option value="500">500 g</option>
-      <option value="1000">1 kg</option>
-    </select>
-  </div>
+  <a href="https://wa.me/34660736866"
+     class="whatsapp-float"
+     target="_blank"
+     aria-label="WhatsApp">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+  </a>
 
-  <div class="option-field">
-    <label>Molienda</label>
-    <select id="molienda">
-      <option>En grano</option>
-      <option>Molido</option>
-    </select>
-  </div>
-
-  <!-- -----------------------------------------------------------------------ABRE - TIPO TOSTION ANTIGUO------------------------------------------------------------------------------------------------
-  <div class="option-field">
-    <label>Tipo de tostión</label>
-    <select id="tostion">
-      <option>Tostión media</option>
-      <option>Tostión alta</option>
-      <option>Tostión baja</option>
-    </select>
-  </div>-->
-<!-- -----------------------------------------------------------------------ABRE - TIPO TOSTION------------------------------------------------------------------------------------------------------- -->
-<div class="option-field">
-  <label>Tipo de tostión</label>
-  <select id="tostion" onchange="actualizarTostionInfo()">
-    <option value="media">Media</option>
-    <option value="alta">Alta</option>
-    <option value="baja">Baja</option>
-  </select>
-</div>
-
-
-
-</div>
-
-<div class="price" id="precio">Selecciona peso</div>
-<p class="tax">Impuestos incluidos</p>
-
-<label>Cantidad</label>
-<div class="cantidad-row">
-  <input id="cantidad" type="number" value="1" min="1">
-
-  <button class="btn" onclick="addToCart()">
-    Añadir al carrito
-  </button>
-</div>
-
-      </div> <!-- cierra product-info -->
-    </div> <!-- cierra product-right -->
-  </div> <!-- cierra product -->
-</div> <!-- cierra container -->
-
-
-
-<script>
-const cafes = {
-  lavado: {
-    nombre: "Lavado",
-    descripcion: "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado. El resultado es un café equilibrado, sedoso y sofisticado, con notas de frutos deshidratados, arándanos y una delicada acidez tartárica.",
-    lote: "265",
-    fecha: "16/05/2025",
-    puntaje: "86",
-    perfil: "Frutos deshidratados, arándanos, dátiles, uvas pasas, acidez tartárica y cuerpo sedoso.",
-    ficha: "cata-cafe-dmedina-lote-265.pdf",
-    precios: { "250": 18.50, "500": 34.00, "1000": 64.00 }
-  },
-  honey: {
-    nombre: "Honey",
-    descripcion: "El proceso Honey conserva parte del mucílago natural de la cereza durante el secado, aportando mayor dulzor, cuerpo y complejidad aromática. Mediante técnicas artesanales y un control preciso de humedad y temperatura, obtenemos una taza envolvente y aterciopelada, con notas frutales intensas, miel y azúcar moreno. Un perfil elegante que combina dulzor natural y gran profundidad sensorial.",
-    lote: "266",
-    fecha: "20/05/2025",
-    puntaje: "87",
-    perfil: " Miel, panela, frutos maduros y cuerpo sedoso.",
-    ficha: "cata-cafe-dmedina-lote-266.pdf",
-    precios: { "250": 19.50, "500": 36.00, "1000": 68.00 }
-  },
-  natural: {
-    nombre: "Natural",
-    descripcion: "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente sobre camas africanas, permitiendo que el grano absorba todos los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosas y afrutada, con gran cuerpo, textura sedosa y notas maduras que recuerdan frutos rojos, cacao y frutas tropicales.",
-    lote: "267",
-    fecha: "25/05/2025",
-    puntaje: "86.5",
-    perfil: " Perfil más intenso, afrutado y complejo.",
-    ficha: "cata-cafe-dmedina-lote-267.pdf",
-    precios: { "250": 21.00, "500": 39.00, "1000": 74.00 }
-  }
-};
+  <script>
+    let cafes = {};
 
 const tostiones = {
-  media: "<strong>Tostión media:  </strong>  Opción <strong>recomendada</strong>. Equilibra aroma, dulzor, acidez y cuerpo, manteniendo el carácter del café de origen sin perder intensidad.",
-  alta: "<strong>Tostión alta:  </strong>  Aporta mayor intensidad, cuerpo y notas tostadas, con menor acidez. Pensada para quienes prefieren un café más fuerte y tradicional.",
-  baja: "<strong>Tostión baja:  </strong>  Resalta las notas propias del origen, con mayor acidez, aromas frutales y una taza más delicada y compleja."
+  media: "<strong>Tostión media · Recomendada:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
+  alta: "<strong>Tostión alta:</strong> perfil más intenso, con mayor cuerpo, menor acidez y notas más tostadas. Pensada para quienes prefieren una taza fuerte.",
+  baja: "<strong>Tostión baja:</strong> perfil más frutal y aromático, con acidez más viva y mayor expresión del origen."
 };
 
-function actualizarTostionInfo() {
-  const tostion = document.getElementById("tostion").value;
-  const cajaTostion = document.getElementById("tostion-info");
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
-  if (cajaTostion) {
-    cajaTostion.innerHTML = tostiones[tostion];
+async function cargarDatosCafe() {
+  try {
+    const respuesta = await fetch("cafes.json?v=" + Date.now());
+
+    if (!respuesta.ok) {
+      throw new Error("No se pudo cargar cafes.json");
+    }
+
+    cafes = await respuesta.json();
+
+    actualizarPrecioYLote();
+    actualizarTostionInfo();
+    actualizarIconoCarrito();
+
+  } catch (error) {
+    console.error("Error cargando datos del café:", error);
+    alert("No se pudieron cargar los datos del café. Revisa el archivo cafes.json.");
   }
-}
+};
+
+    const tostiones = {
+      media: "<strong>Tostión media · Recomendada:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
+      alta: "<strong>Tostión alta:</strong> perfil más intenso, con mayor cuerpo, menor acidez y notas más tostadas. Pensada para quienes prefieren una taza fuerte.",
+      baja: "<strong>Tostión baja:</strong> perfil más frutal y aromático, con acidez más viva y mayor expresión del origen."
+    };
+
+    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
 function actualizarPrecioYLote() {
   const proceso = document.getElementById("proceso").value;
   const peso = document.getElementById("peso").value;
+
+  if (!cafes || !cafes[proceso]) {
+    return;
+  }
+
   const cafe = cafes[proceso];
 
   document.getElementById("process-info").textContent = cafe.descripcion;
+  document.getElementById("lote").textContent = cafe.lote;
   document.getElementById("fecha-cata").textContent = cafe.fecha;
   document.getElementById("puntaje").textContent = cafe.puntaje;
   document.getElementById("perfil").textContent = cafe.perfil;
@@ -1626,66 +1040,69 @@ function actualizarPrecioYLote() {
     precio.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
 }
 
-actualizarPrecioYLote();
-actualizarTostionInfo();
-</script>
-<script>
-let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+    function actualizarTostionInfo() {
+      const tostion = document.getElementById("tostion").value;
+      document.getElementById("tostion-info").innerHTML = tostiones[tostion];
+    }
 
-function addToCart() {
-  const procesoKey = document.getElementById("proceso").value;
-  const peso = document.getElementById("peso").value;
-  const molienda = document.getElementById("molienda").value;
-  const tostion = document.getElementById("tostion").value;
-  const cantidad = Number(document.getElementById("cantidad").value);
-  const cafe = cafes[procesoKey];
+    function addToCart() {
+      const procesoKey = document.getElementById("proceso").value;
+      const peso = document.getElementById("peso").value;
+      const molienda = document.getElementById("molienda").value;
+      const tostion = document.getElementById("tostion").value;
+      const cantidad = Number(document.getElementById("cantidad").value);
+      const cafe = cafes[procesoKey];
 
-  if (!peso) {
-    alert("Selecciona el peso.");
-    return;
-  }
+      if (!peso) {
+        alert("Selecciona el peso.");
+        return;
+      }
 
-  const precio = cafe.precios[peso];
+      const precio = cafe.precios[peso];
 
-  carrito.push({
-    nombre: "Café D’Medina",
-    proceso: cafe.nombre,
-    peso,
-    molienda,
-    tostion,
-    cantidad,
-    precio
-  });
+      carrito.push({
+        nombre: "Café D’Medina",
+        proceso: cafe.nombre,
+        peso,
+        molienda,
+        tostion,
+        cantidad,
+        precio
+      });
 
-  localStorage.setItem("carrito", JSON.stringify(carrito));
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+      actualizarIconoCarrito();
+    }
 
-  actualizarIconoCarrito();
+    function actualizarIconoCarrito() {
+      const cartCount = document.getElementById("cart-count");
+      const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
 
-}
+      const unidades = carritoGuardado.reduce((sum, item) => {
+        return sum + Number(item.cantidad || 0);
+      }, 0);
 
-function actualizarIconoCarrito() {
-  const cartCount = document.getElementById("cart-count");
-  const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+      if (cartCount) {
+        cartCount.textContent = unidades;
+      }
+    }
 
-  const unidades = carritoGuardado.reduce((sum, item) => {
-    return sum + Number(item.cantidad);
-  }, 0);
+    function toggleMenu() {
+      const menu = document.getElementById("mobile-menu");
+      if (menu) {
+        menu.classList.toggle("open");
+      }
+    }
 
-  if (cartCount) {
-    cartCount.textContent = unidades;
-  }
-}
+    function closeMenu() {
+      const menu = document.getElementById("mobile-menu");
+      if (menu) {
+        menu.classList.remove("open");
+      }
+    }
 
-actualizarIconoCarrito();
-</script>
-
-<!-- ---------------------------------------------------------------------------------------ABRE - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
-<a href="https://wa.me/34660736866"
-   class="whatsapp-float" 
-   target="_blank">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
-</a>
-<!-- ------------------------------------------------------------------------------------CIERRA - CONTACTO WHATSAPP------------------------------------------------------------------------------------>
+cargarDatosCafe();
+  </script>
 
 </body>
 </html>

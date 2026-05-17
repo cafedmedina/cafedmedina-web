@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Nuestra Historia | Café D’Medina</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,623 +11,559 @@
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --gold:#c8a96a;
-      --gold-light:#e2c47d;
-      --black:#11100f;
-      --cream:#f6f0e6;
-      --white:#ffffff;
-      --muted:#cfc2ae;
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --black-soft: #151311;
+      --white: #ffffff;
+      --muted: rgba(255,255,255,.82);
     }
 
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    body{
-      font-family:'Lato', Arial, sans-serif;
-      background:var(--black);
-      color:var(--white);
-      line-height:1.7;
+    html {
+      scroll-behavior: smooth;
     }
 
-    img{
-      width:100%;
-      display:block;
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.7;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
+    img {
+      width: 100%;
+      display: block;
     }
 
-    header{
-      background:rgba(17,16,15,.96);
-      color:var(--white);
-      padding:20px 7%;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border-bottom:1px solid rgba(200,169,106,.25);
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .brand{
-      font-family:'Playfair Display', serif;
-      font-size:38px;
-      font-weight:800;
-      color:var(--gold-light);
+    /* =====================================================
+       HEADER ORDENADOR
+    ===================================================== */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+
+      height: 92px;
+      padding: 0 7%;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+
+      background: rgba(17,16,15,.97);
+      border-bottom: 1px solid rgba(200,169,106,.25);
+
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    nav{
-      display:flex;
-      gap:22px;
-      font-size:14px;
-      text-transform:uppercase;
-      letter-spacing:.8px;
+    .brand {
+      flex-shrink: 0;
+      text-decoration: none;
     }
 
-    nav a:hover{
-      color:var(--gold-light);
+    .brand span {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--gold-light);
+      white-space: nowrap;
+      line-height: 1;
     }
 
-    .historia-hero{
-      text-align:center;
-      padding:70px 7% 55px;
-      background:#1a1714;
+    #main-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
     }
 
-    .historia-hero h1{
-      font-family:'Playfair Display', serif;
-      font-size:clamp(34px,4vw,58px);
-      color:var(--gold-light);
-      margin-bottom:16px;
+    #main-menu a {
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      transition: .25s;
     }
 
-    .historia-hero p{
-      max-width:850px;
-      margin:auto;
-      color:rgba(255,255,255,.82);
-      font-size:18px;
+    #main-menu a:hover {
+      color: var(--gold-light);
     }
 
-    .historia-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      background:var(--black);
+    .cart-link {
+      position: relative;
+      flex-shrink: 0;
+      color: var(--gold-light);
+      font-size: 22px;
+      text-decoration: none;
+      line-height: 1;
     }
 
-    .historia-img{
-      min-height:430px;
-      overflow:hidden;
+    .cart-count {
+      position: absolute;
+      top: -12px;
+      right: -14px;
+
+      min-width: 20px;
+      height: 20px;
+      padding: 2px 6px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--gold-light);
+      color: var(--black);
+
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 50%;
+      line-height: 1;
     }
 
-    .historia-img img{
-      height:100%;
-      min-height:430px;
-      object-fit:cover;
-      filter:grayscale(100%) contrast(1.05);
+    .menu-toggle,
+    .mobile-menu {
+      display: none;
     }
 
-    .historia-img.color img{
-      filter:contrast(1.05) saturate(1.05);
+    /* =====================================================
+       BOTÓN VOLVER DENTRO DE LA PÁGINA
+    ===================================================== */
+
+    .historia-back-wrap {
+      background: var(--black);
+      padding: 22px 7% 0;
     }
 
-    .historia-text{
-      padding:70px 7%;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      background:#151311;
+    .historia-back-link {
+      display: inline-block;
+      color: var(--gold-light);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      transition: .25s;
     }
 
-    .historia-text h2{
-      font-family:'Playfair Display', serif;
-      color:var(--gold-light);
-      font-size:clamp(28px,3vw,42px);
-      margin-bottom:20px;
-      line-height:1.15;
+    .historia-back-link:hover {
+      opacity: .8;
     }
 
-    .historia-text p{
-      color:rgba(255,255,255,.82);
-      font-size:17px;
-      margin-bottom:18px;
+    /* =====================================================
+       HERO HISTORIA
+    ===================================================== */
+
+    .historia-hero {
+      text-align: center;
+      padding: 62px 7% 55px;
+      background: #1a1714;
     }
 
-    .historia-text strong{
-      color:var(--gold-light);
+    .historia-hero h1 {
+      max-width: 980px;
+      margin: 0 auto 18px;
+
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 1.15;
+      color: var(--gold-light);
     }
 
-    .btn{
-      display:inline-flex;
-      width:max-content;
-      margin-top:14px;
-      padding:13px 26px;
-      border-radius:999px;
-      background:linear-gradient(135deg,var(--gold-light),var(--gold));
-      color:var(--black);
-      font-weight:900;
+    .historia-hero p {
+      max-width: 850px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
     }
 
-    .historia-frase{
-      background:linear-gradient(135deg,#c8a96a,#e2c47d);
-      color:#1b1510;
-      text-align:center;
-      padding:48px 9%;
-      font-family:'Playfair Display', serif;
-      font-size:clamp(24px,3vw,38px);
-      font-weight:800;
-      line-height:1.25;
+    /* =====================================================
+       BLOQUES HISTORIA
+    ===================================================== */
+
+    .historia-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--black);
     }
 
-    footer{
-      text-align:center;
-      padding:28px 7%;
-      color:rgba(255,255,255,.65);
-      background:#0c0b0a;
-      font-size:14px;
+    .historia-img {
+      min-height: 430px;
+      overflow: hidden;
+      background: var(--black);
     }
 
-    @media(max-width:900px){
-      header{
-        flex-direction:column;
-        gap:16px;
+    .historia-img img {
+      height: 100%;
+      min-height: 430px;
+      object-fit: cover;
+      filter: grayscale(100%) contrast(1.05);
+    }
+
+    .historia-img.color img {
+      filter: contrast(1.05) saturate(1.05);
+    }
+
+    .historia-text {
+      padding: 70px 7%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--black-soft);
+    }
+
+    .historia-text h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold-light);
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .historia-text p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      width: max-content;
+      margin-top: 14px;
+      padding: 13px 26px;
+
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+
+      font-weight: 900;
+      text-decoration: none;
+      transition: .25s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .historia-frase {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #1b1510;
+      text-align: center;
+      padding: 48px 9%;
+
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 3vw, 38px);
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 7%;
+      color: rgba(255,255,255,.65);
+      background: #0c0b0a;
+      font-size: 14px;
+    }
+
+    /* =====================================================
+       MÓVIL
+       Header: ☰ + Café D’Medina + carrito
+       Historia: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
+    ===================================================== */
+
+    @media (max-width: 850px) {
+
+      header {
+        height: 72px;
+        min-height: 72px;
+        padding: 0 18px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      nav{
-        flex-wrap:wrap;
-        justify-content:center;
+      #main-menu {
+        display: none;
       }
 
-      .historia-grid{
-        grid-template-columns:1fr;
+      .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        position: absolute;
+        left: 18px;
+        top: 14px;
+
+        width: 44px;
+        height: 44px;
+
+        background: transparent;
+        border: 1px solid rgba(226,196,125,.35);
+        border-radius: 50%;
+
+        color: var(--gold-light);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1;
+
+        z-index: 10001;
+        cursor: pointer;
       }
 
-      .historia-text{
-        padding:50px 8%;
+      header .brand {
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      header .brand span {
+        font-size: 25px;
+        line-height: 1;
+      }
+
+      .cart-link {
+        position: absolute;
+        right: 20px;
+        top: 21px;
+
+        font-size: 21px;
+        z-index: 10001;
+      }
+
+      .cart-count {
+        top: -10px;
+        right: -12px;
+
+        min-width: 18px;
+        height: 18px;
+        padding: 1px 5px;
+
+        font-size: 10px;
+      }
+
+      .mobile-menu {
+        display: none;
+
+        position: fixed;
+        top: 82px;
+        left: 22px;
+
+        width: 230px;
+        max-width: calc(100vw - 44px);
+
+        background: rgba(17,16,15,.98);
+        border: 1px solid rgba(226,196,125,.28);
+        border-radius: 18px;
+
+        padding: 12px 16px;
+        z-index: 10000;
+
+        box-shadow: 0 14px 34px rgba(0,0,0,.35);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .mobile-menu.open {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .mobile-menu a {
+        display: block;
+
+        color: #f5f5f5;
+        text-decoration: none;
+
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+
+        padding: 10px 2px;
+        text-align: left;
+
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .mobile-menu a:last-child {
+        border-bottom: 0;
+      }
+
+      .historia-back-wrap {
+        padding: 18px 22px 0;
+      }
+
+      .historia-back-link {
+        font-size: 15px;
+      }
+
+      .historia-hero {
+        padding: 38px 7% 42px;
+      }
+
+      .historia-hero h1 {
+        font-size: 32px;
+        line-height: 1.14;
+        margin-bottom: 16px;
+      }
+
+      .historia-hero p {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .historia-grid {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Orden correcto solo en móvil */
+      .historia-grid > div:nth-child(1) { order: 1; }
+      .historia-grid > div:nth-child(2) { order: 2; }
+      .historia-grid > div:nth-child(4) { order: 3; }
+      .historia-grid > div:nth-child(3) { order: 4; }
+      .historia-grid > div:nth-child(5) { order: 5; }
+      .historia-grid > div:nth-child(6) { order: 6; }
+
+      .historia-img {
+        width: 100%;
+        min-height: auto;
+        height: auto;
+        padding: 0 6% 18px;
+        background: var(--black);
+      }
+
+      .historia-img img {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        border-radius: 22px;
+        object-fit: cover;
+        filter: none;
+      }
+
+      .historia-text {
+        width: 100%;
+        padding: 26px 7% 46px;
+        background: var(--black);
+      }
+
+      .historia-text h2 {
+        font-size: 32px;
+        line-height: 1.12;
+        margin-bottom: 16px;
+      }
+
+      .historia-text p {
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .historia-frase {
+        padding: 36px 7%;
+        font-size: 25px;
+      }
+
+      footer {
+        padding: 22px 7%;
       }
     }
-    .volver-btn{
-    color:var(--gold-light);
-    font-size:15px;
-    font-weight:700;
-    text-decoration:none;
-    transition:.25s;
-    }
 
-    .volver-btn:hover{
-    opacity:.8;
-    }
 
-/* MENÚ VISIBLE EN TODAS LAS PÁGINAS */
-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 9999 !important;
-  background: rgba(17,16,15,.96) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(200,169,106,.25) !important;
-}
-
-/* MENÚ UNIFICADO CAFÉ D'MEDINA */
-
-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 9999 !important;
-
-  height: 92px;
-  padding: 0 7% !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-
-  background: rgba(17,16,15,.97) !important;
-  border-bottom: 1px solid rgba(200,169,106,.25) !important;
-}
-
-header .brand {
-  text-decoration: none !important;
-}
-
-header .brand span {
-  font-family: 'Playfair Display', serif !important;
-  font-size: 34px !important;
-  font-weight: 700 !important;
-  color: #e2c47d !important;
-  letter-spacing: .5px !important;
-}
-
-header nav {
-  display: flex !important;
-  align-items: center !important;
-  gap: 24px !important;
-}
-
-header nav a {
-  color: #f5f5f5 !important;
-  text-decoration: none !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  letter-spacing: 1.3px !important;
-  text-transform: uppercase !important;
-}
-
-header nav a:hover {
-  color: #e2c47d !important;
-}
+/* =====================================================
+   CARRITO + CONTADOR UNIFICADO
+===================================================== */
 
 .cart-link {
-  position: relative;
+  position: relative !important;
+
+  width: 34px !important;
+  height: 34px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
   color: #e2c47d !important;
   font-size: 22px !important;
   text-decoration: none !important;
+  line-height: 1 !important;
 }
 
-#cart-count {
-  position: absolute;
-  top: -12px;
-  right: -14px;
+.cart-count {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
 
-  background: #e2c47d;
-  color: #11100f;
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
 
-  font-size: 12px;
-  font-weight: 900;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 
-  min-width: 20px;
-  height: 20px;
-  padding: 2px 6px;
+  padding: 0 !important;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #e2c47d !important;
+  color: #11100f !important;
 
-  border-radius: 50%;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  border-radius: 50% !important;
 }
 
 /* MÓVIL */
 @media (max-width: 850px) {
-  header {
-    height: auto;
-    min-height: 84px;
-    padding: 16px 6% !important;
-    flex-wrap: wrap;
-    justify-content: center !important;
-    gap: 10px;
-  }
-
-  header .brand {
-    width: 100%;
-    text-align: center;
-  }
-
-  header .brand span {
-    font-size: 30px !important;
-  }
-
-  header nav {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px 18px !important;
-  }
-
-  header nav a {
-    font-size: 12px !important;
-  }
-
   .cart-link {
-    position: absolute;
-    right: 22px;
-    top: 30px;
+    position: absolute !important;
+    right: 20px !important;
+    top: 19px !important;
+
+    width: 34px !important;
+    height: 34px !important;
+
+    font-size: 21px !important;
+  }
+
+  .cart-count {
+    top: -8px !important;
+    right: -8px !important;
+
+    width: 19px !important;
+    min-width: 19px !important;
+    height: 19px !important;
+
+    font-size: 10px !important;
   }
 }
 
-
-/* MENÚ UNIFICADO CAFÉ D'MEDINA */
-
-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 9999 !important;
-
-  height: 92px;
-  padding: 0 7% !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-
-  background: rgba(17,16,15,.97) !important;
-  border-bottom: 1px solid rgba(200,169,106,.25) !important;
-}
-
-header .brand {
-  text-decoration: none !important;
-}
-
-header .brand span {
-  font-family: 'Playfair Display', serif !important;
-  font-size: 34px !important;
-  font-weight: 700 !important;
-  color: #e2c47d !important;
-  letter-spacing: .5px !important;
-}
-
-header nav {
-  display: flex !important;
-  align-items: center !important;
-  gap: 24px !important;
-}
-
-header nav a {
-  color: #f5f5f5 !important;
-  text-decoration: none !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  letter-spacing: 1.3px !important;
-  text-transform: uppercase !important;
-}
-
-header nav a:hover {
-  color: #e2c47d !important;
-}
-
-.cart-link {
-  position: relative;
-  color: #e2c47d !important;
-  font-size: 22px !important;
-  text-decoration: none !important;
-}
-
-#cart-count {
-  position: absolute;
-  top: -12px;
-  right: -14px;
-
-  background: #e2c47d;
-  color: #11100f;
-
-  font-size: 12px;
-  font-weight: 900;
-
-  min-width: 20px;
-  height: 20px;
-  padding: 2px 6px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-}
-
-/* MÓVIL */
-@media (max-width: 850px) {
-  header {
-    height: auto;
-    min-height: 84px;
-    padding: 16px 6% !important;
-    flex-wrap: wrap;
-    justify-content: center !important;
-    gap: 10px;
-  }
-
-  header .brand {
-    width: 100%;
-    text-align: center;
-  }
-
-  header .brand span {
-    font-size: 30px !important;
-  }
-
-  header nav {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px 18px !important;
-  }
-
-  header nav a {
-    font-size: 12px !important;
-  }
-
-  .cart-link {
-    position: absolute;
-    right: 22px;
-    top: 30px;
-  }
-}
-
-
-/* =====================================================
-   HISTORIA MÓVIL - IMÁGENES BIEN SEPARADAS
-===================================================== */
-
-@media (max-width: 850px) {
-
-  .historia-content,
-  .historia-layout,
-  .history-content,
-  .history-layout {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 28px !important;
-  }
-
-  .historia-img,
-  .historia-image,
-  .history-img,
-  .history-image,
-  .story-image {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 auto 26px !important;
-    display: block !important;
-  }
-
-  .historia-img img,
-  .historia-image img,
-  .history-img img,
-  .history-image img,
-  .story-image img {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    border-radius: 22px !important;
-    object-fit: cover !important;
-  }
-
-  /* separación extra entre imágenes consecutivas */
-  .historia-img + .historia-img,
-  .historia-image + .historia-image,
-  .history-img + .history-img,
-  .story-image + .story-image {
-    margin-top: 28px !important;
-  }
-
-  /* evita que dos columnas se queden lado a lado en móvil */
-  .historia-grid,
-  .history-grid,
-  .story-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 30px !important;
-  }
-}
-
-
-/* =====================================================
-   HISTORIA SOLO MÓVIL
-   Orden: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
-===================================================== */
-
-@media (max-width: 850px) {
-
-  .historia-bloque {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 18px !important;
-    margin-bottom: 46px !important;
-  }
-
-  /* En móvil anulamos cualquier orden alternado del escritorio */
-  .historia-bloque .historia-foto {
-    order: 1 !important;
-  }
-
-  .historia-bloque .historia-texto {
-    order: 2 !important;
-  }
-
-  .historia-foto,
-  .historia-texto {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .historia-foto img {
-    width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    border-radius: 22px !important;
-    object-fit: cover !important;
-    margin: 0 !important;
-  }
-
-  .historia-texto h2,
-  .historia-texto h3 {
-    font-size: 30px !important;
-    line-height: 1.12 !important;
-    margin-top: 0 !important;
-    margin-bottom: 12px !important;
-  }
-
-  .historia-texto p {
-    font-size: 16px !important;
-    line-height: 1.65 !important;
-    margin-bottom: 0 !important;
-  }
-}
-
-
-/* =====================================================
-   HISTORIA SOLO MÓVIL - ORDEN IMAGEN + TEXTO
-===================================================== */
-
-@media (max-width: 850px) {
-
-  .historia-grid {
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Orden correcto SOLO en móvil */
-  .historia-grid > div:nth-child(1) {
-    order: 1 !important;
-  }
-
-  .historia-grid > div:nth-child(2) {
-    order: 2 !important;
-  }
-
-  .historia-grid > div:nth-child(4) {
-    order: 3 !important;
-  }
-
-  .historia-grid > div:nth-child(3) {
-    order: 4 !important;
-  }
-
-  .historia-grid > div:nth-child(5) {
-    order: 5 !important;
-  }
-
-  .historia-grid > div:nth-child(6) {
-    order: 6 !important;
-  }
-
-  .historia-img {
-    width: 100% !important;
-    min-height: auto !important;
-    height: auto !important;
-    padding: 0 6% 18px !important;
-    background: #11100f !important;
-  }
-
-  .historia-img img {
-    width: 100% !important;
-    height: auto !important;
-    min-height: auto !important;
-    border-radius: 22px !important;
-    object-fit: cover !important;
-    filter: none !important;
-  }
-
-  .historia-text {
-    width: 100% !important;
-    padding: 26px 7% 46px !important;
-    background: #11100f !important;
-  }
-
-  .historia-text h2 {
-    font-size: 32px !important;
-    line-height: 1.12 !important;
-    margin-bottom: 16px !important;
-  }
-
-  .historia-text p {
-    font-size: 16px !important;
-    line-height: 1.65 !important;
-  }
-}
 
 
   </style>
@@ -635,34 +572,49 @@ header nav a:hover {
 <body>
 
   <header>
-    <a href="index.html" class="volver-btn">
-  ← Volver
-    </a>
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+      ☰
+    </button>
+
     <a href="index.html#inicio" class="brand">
-    <span>Café D’Medina</span>
-  </a>
+      <span>Café D’Medina</span>
+    </a>
 
-     <nav id="main-menu">
-    <a href="index.html#origen">Origen</a>
-    <a href="index.html#proceso">Proceso</a>
-    <a href="index.html#historia">Historia</a>
-    <a href="index.html#cata">Cata</a>
-    <a href="index.html#empaque">Producto</a>
-    <a href="index.html#area-profesional">Profesionales</a>
-    <a href="index.html#contacto">Contacto</a>
-    <a href="tienda.html">Tienda</a>
+    <nav id="main-menu">
+      <a href="index.html#origen">Origen</a>
+      <a href="index.html#proceso">Proceso</a>
+      <a href="index.html#historia">Historia</a>
+      <a href="index.html#cata">Cata</a>
+      <a href="index.html#empaque">Producto</a>
+      <a href="index.html#area-profesional">Profesionales</a>
+      <a href="index.html#contacto">Contacto</a>
+      <a href="tienda.html">Tienda</a>
     </nav>
-  
 
-  <a href="carrito.html" class="cart-link">
-    🛒
-    <span id="cart-count">0</span>
-  </a>
-</header>
+<a href="carrito.html" class="cart-link">
+  🛒
+  <span id="cart-count" class="cart-count">0</span>
+</a>
 
-  
+    <nav id="mobile-menu" class="mobile-menu">
+      <a href="index.html#origen" onclick="closeMenu()">Origen</a>
+      <a href="index.html#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="index.html#historia" onclick="closeMenu()">Historia</a>
+      <a href="index.html#cata" onclick="closeMenu()">Cata</a>
+      <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
+      <a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a>
+      <a href="index.html#contacto" onclick="closeMenu()">Contacto</a>
+      <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+    </nav>
+  </header>
 
   <main>
+
+    <div class="historia-back-wrap">
+      <a href="index.html#historia" class="historia-back-link">
+        ← Volver
+      </a>
+    </div>
 
     <section class="historia-hero">
       <h1>Nuestra Historia: el corazón de Café D’Medina</h1>
@@ -715,13 +667,15 @@ header nav a:hover {
       <div class="historia-text">
         <h2>Tres generaciones de amor por el café</h2>
         <p>
-            Hoy, esta herencia vive en cada grano que cultivamos y seleccionamos. Tres generaciones después, seguimos apostando por el origen, la calidad y el sabor auténtico del café de nuestra tierra.
+          Hoy, esta herencia vive en cada grano que cultivamos y seleccionamos. Tres generaciones después,
+          seguimos apostando por el origen, la calidad y el sabor auténtico del café de nuestra tierra.
         </p>
         <p>
-            Café D’Medina no es solo una marca; es la historia de una familia que ha hecho del café una forma de vida. Un legado construido con esfuerzo, tradición y pasión, que hoy se transforma en un compromiso con la excelencia reflejado en cada taza.
+          Café D’Medina no es solo una marca; es la historia de una familia que ha hecho del café una forma de vida.
+          Un legado construido con esfuerzo, tradición y pasión, que hoy se transforma en un compromiso con la excelencia reflejado en cada taza.
         </p>
 
-        <a href="index.html" class="btn">Volver al inicio</a>
+        <a href="index.html#inicio" class="btn">Volver al inicio</a>
       </div>
 
     </section>
@@ -737,23 +691,36 @@ header nav a:hover {
     © 2026 Café D’Medina · Café de origen colombiano
   </footer>
 
-<script>
-function actualizarIconoCarrito() {
-  const cartCount = document.getElementById("cart-count");
-  const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+  <script>
+    function actualizarIconoCarrito() {
+      const cartCount = document.getElementById("cart-count");
+      const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
 
-  const unidades = carritoGuardado.reduce((sum, item) => {
-    return sum + Number(item.cantidad || 0);
-  }, 0);
+      const unidades = carritoGuardado.reduce((sum, item) => {
+        return sum + Number(item.cantidad || 0);
+      }, 0);
 
-  if (cartCount) {
-    cartCount.textContent = unidades;
-  }
-}
+      if (cartCount) {
+        cartCount.textContent = unidades;
+      }
+    }
 
-actualizarIconoCarrito();
-</script>
+    actualizarIconoCarrito();
 
+    function toggleMenu() {
+      const menu = document.getElementById("mobile-menu");
+      if (menu) {
+        menu.classList.toggle("open");
+      }
+    }
+
+    function closeMenu() {
+      const menu = document.getElementById("mobile-menu");
+      if (menu) {
+        menu.classList.remove("open");
+      }
+    }
+  </script>
 
 </body>
 </html>

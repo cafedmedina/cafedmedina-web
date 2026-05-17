@@ -55,13 +55,13 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
-    header a {
+    /*header a {
       color: var(--gold-light);
       font-weight: 900;
       font-size: 15px;
     }
 
-    header span.logo-text {
+    /*header span.logo-text {
       color: var(--gold-light);
       font-family: 'Playfair Display', serif;
       font-size: 24px;
@@ -97,7 +97,7 @@
       justify-content: center;
 
       border-radius: 50%;
-    }
+    }*/
 
     /* CONTENIDO */
 
@@ -317,11 +317,360 @@
         padding: 9px 16px;
       }
     }
+
+
+/* =====================================================
+   HEADER CARRITO - LIMPIO Y UNIFICADO
+===================================================== */
+
+.site-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+
+  height: 82px !important;
+  padding: 0 7% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  background: rgba(17,16,15,.97) !important;
+  border-bottom: 1px solid rgba(200,169,106,.25) !important;
+}
+
+.site-header .brand {
+  text-decoration: none !important;
+  color: #e2c47d !important;
+}
+
+.site-header .brand span {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  color: #e2c47d !important;
+  white-space: nowrap !important;
+}
+
+#main-menu {
+  display: flex !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+#main-menu a {
+  color: #f5f5f5 !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.1px !important;
+  text-transform: uppercase !important;
+}
+
+#main-menu a:hover {
+  color: #e2c47d !important;
+}
+
+.cart-link {
+  position: relative !important;
+  color: #e2c47d !important;
+  font-size: 22px !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.cart-count {
+  position: absolute !important;
+  top: -10px !important;
+  right: -14px !important;
+
+  background: #e2c47d !important;
+  color: #11100f !important;
+
+  font-size: 11px !important;
+  font-weight: 900 !important;
+
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 2px 6px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 50% !important;
+}
+
+.menu-toggle,
+.mobile-menu {
+  display: none !important;
+}
+
+/* ===================================================================================================================================================================================================
+                                                                                     MÓVIL CARRITO - SOLO ☰ + LOGO + CARRITO
+====================================================================================================================================================================================================== */
+
+@media (max-width: 850px) {
+
+  .site-header {
+    height: 78px !important;
+    min-height: 78px !important;
+    padding: 0 18px !important;
+
+    justify-content: center !important;
+  }
+
+  #main-menu {
+    display: none !important;
+  }
+
+  .site-header .brand {
+    margin: 0 auto !important;
+    text-align: center !important;
+  }
+
+  .site-header .brand span {
+    font-size: 27px !important;
+    line-height: 1 !important;
+  }
+
+  .menu-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: absolute !important;
+    left: 18px !important;
+    top: 17px !important;
+
+    width: 44px !important;
+    height: 44px !important;
+
+    background: transparent !important;
+    border: 1px solid rgba(226,196,125,.35) !important;
+    border-radius: 50% !important;
+
+    color: #e2c47d !important;
+    font-size: 26px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+
+    z-index: 10001 !important;
+    cursor: pointer !important;
+  }
+
+  .cart-link {
+    position: absolute !important;
+    right: 22px !important;
+    top: 22px !important;
+
+    font-size: 22px !important;
+    z-index: 10001 !important;
+  }
+
+  .cart-count {
+    top: -10px !important;
+    right: -12px !important;
+
+    min-width: 18px !important;
+    height: 18px !important;
+    padding: 1px 5px !important;
+
+    font-size: 10px !important;
+    line-height: 18px !important;
+  }
+
+  .mobile-menu {
+    display: none !important;
+
+    position: fixed !important;
+    top: 86px !important;
+    left: 22px !important;
+
+    width: 230px !important;
+    max-width: calc(100vw - 44px) !important;
+
+    background: rgba(17,16,15,.98) !important;
+    border: 1px solid rgba(226,196,125,.28) !important;
+    border-radius: 18px !important;
+
+    padding: 12px 16px !important;
+    z-index: 10000 !important;
+
+    box-shadow: 0 14px 34px rgba(0,0,0,.35) !important;
+  }
+
+  .mobile-menu.open {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  .mobile-menu a {
+    display: block !important;
+
+    color: #f5f5f5 !important;
+    text-decoration: none !important;
+
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1.3px !important;
+    text-transform: uppercase !important;
+
+    padding: 10px 2px !important;
+    text-align: left !important;
+
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  }
+
+  .mobile-menu a:last-child {
+    border-bottom: 0 !important;
+  }
+}
+
+
+/*.continue-shopping {
+  display: inline-block !important;
+  margin-bottom: 22px !important;
+
+  color: #e2c47d !important;
+  text-decoration: none !important;
+
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  letter-spacing: .8px !important;
+}*/
+
+.continue-shopping:hover {
+  opacity: .8 !important;
+}
+
+@media (max-width: 850px) {
+  .continue-shopping {
+    font-size: 15px !important;
+    margin-bottom: 20px !important;
+  }
+}
+
+
+/* =====================================================
+   CARRITO + CONTADOR UNIFICADO
+===================================================== */
+
+.cart-link {
+  position: relative !important;
+
+  width: 34px !important;
+  height: 34px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #e2c47d !important;
+  font-size: 22px !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+}
+
+.cart-count {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  background: #e2c47d !important;
+  color: #11100f !important;
+
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  border-radius: 50% !important;
+}
+
+/* MÓVIL */
+@media (max-width: 850px) {
+  .cart-link {
+    position: absolute !important;
+    right: 20px !important;
+    top: 19px !important;
+
+    width: 34px !important;
+    height: 34px !important;
+
+    font-size: 21px !important;
+  }
+
+  .cart-count {
+    top: -8px !important;
+    right: -8px !important;
+
+    width: 19px !important;
+    min-width: 19px !important;
+    height: 19px !important;
+
+    font-size: 10px !important;
+  }
+}
+
+/* =====================================================
+   VOLVER / CONTINUAR COMPRANDO - DEBAJO DEL HEADER
+===================================================== */
+
+.page-back-wrap {
+  background: #11100f !important;
+  padding: 12px 7% 0 !important;
+  margin: 0 !important;
+}
+
+.page-back-link {
+  display: inline-block !important;
+  color: #e2c47d !important;
+  text-decoration: none !important;
+
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: .5px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.page-back-link:hover {
+  opacity: .75 !important;
+}
+
+@media (max-width: 850px) {
+  .page-back-wrap {
+    padding: 12px 22px 0 !important;
+  }
+
+  .page-back-link {
+    font-size: 15px !important;
+  }
+}
+
+
   </style>
 </head>
 
 <body>
 
+  <!-- 
   <header>
     <a href="tienda.html">← Seguir comprando</a>
 
@@ -331,12 +680,57 @@
       🛒
       <span id="cart-count" class="cart-count">0</span>
     </div>
-  </header>
+  </header>-->
 
-  <div class="page-content">
-    <div class="cart-box">
 
-      <h1>Carrito</h1>
+<header class="site-header">
+  <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+    ☰
+  </button>
+
+  <a href="index.html#inicio" class="brand">
+    <span>Café D’Medina</span>
+  </a>
+
+  <nav id="main-menu">
+    <a href="index.html#origen">Origen</a>
+    <a href="index.html#proceso">Proceso</a>
+    <a href="index.html#historia">Historia</a>
+    <a href="index.html#cata">Cata</a>
+    <a href="index.html#empaque">Producto</a>
+    <a href="index.html#area-profesional">Profesionales</a>
+    <a href="index.html#contacto">Contacto</a>
+    <a href="tienda.html">Tienda</a>
+  </nav>
+
+<a href="carrito.html" class="cart-link">
+  🛒
+  <span id="cart-count" class="cart-count">0</span>
+</a>
+
+  <nav id="mobile-menu" class="mobile-menu">
+    <a href="index.html#origen" onclick="closeMenu()">Origen</a>
+    <a href="index.html#proceso" onclick="closeMenu()">Proceso</a>
+    <a href="index.html#historia" onclick="closeMenu()">Historia</a>
+    <a href="index.html#cata" onclick="closeMenu()">Cata</a>
+    <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
+    <a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a>
+    <a href="index.html#contacto" onclick="closeMenu()">Contacto</a>
+    <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+  </nav>
+</header>
+
+
+<div class="page-back-wrap">
+  <a href="tienda.html" class="page-back-link">
+    ← Continuar comprando
+  </a>
+</div>
+
+<div class="page-content">
+  <div class="cart-box">
+
+    <h1>Carrito</h1>
 
       <div id="cart-items"></div>
 
@@ -450,6 +844,40 @@
 
     renderCart();
   </script>
+
+
+<script>
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+</script>
+
+<script>
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+</script>
+
 
 </body>
 </html>
