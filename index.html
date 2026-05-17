@@ -2826,6 +2826,157 @@ header {
     border-bottom: 0;
   }
 }
+
+
+/* =====================================================
+   MÓVIL - SOLO HAMBURGUESA + LOGO + CARRITO
+===================================================== */
+
+@media (max-width: 850px) {
+
+  /* Oculta el menú normal de letras */
+  header nav:not(.mobile-menu),
+  header #main-menu {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  header {
+    height: 92px !important;
+    min-height: 92px !important;
+    padding: 0 18px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+  }
+
+  /* Logo centrado */
+  header .brand {
+    width: auto !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+
+  header .brand span {
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+
+  /* Botón hamburguesa izquierda */
+  .menu-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: absolute !important;
+    left: 18px !important;
+    top: 24px !important;
+
+    width: 44px !important;
+    height: 44px !important;
+
+    background: transparent !important;
+    border: 1px solid rgba(226,196,125,.35) !important;
+    border-radius: 50% !important;
+
+    color: #e2c47d !important;
+    font-size: 26px !important;
+    font-weight: 900 !important;
+
+    z-index: 10001 !important;
+    cursor: pointer !important;
+  }
+
+  /* Carrito derecha */
+  .cart-link,
+  .cart-icon {
+    position: absolute !important;
+    right: 20px !important;
+    top: 28px !important;
+
+    font-size: 20px !important;
+    color: #e2c47d !important;
+    z-index: 10001 !important;
+  }
+
+  #cart-count,
+  .cart-count {
+    font-size: 10px !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    padding: 1px 5px !important;
+    top: -10px !important;
+    right: -12px !important;
+  }
+
+  /* Menú desplegable */
+  .mobile-menu {
+    display: none !important;
+
+    position: fixed !important;
+    top: 102px !important;
+    left: 18px !important;
+    right: 18px !important;
+
+    background: rgba(17,16,15,.98) !important;
+    border: 1px solid rgba(226,196,125,.25) !important;
+    border-radius: 22px !important;
+
+    padding: 22px !important;
+    z-index: 10000 !important;
+
+    box-shadow: 0 18px 45px rgba(0,0,0,.35) !important;
+  }
+
+  .mobile-menu.open {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .mobile-menu a {
+    display: block !important;
+
+    color: #f5f5f5 !important;
+    text-decoration: none !important;
+
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1.6px !important;
+    text-transform: uppercase !important;
+
+    padding: 10px 4px !important;
+    border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  }
+
+  .mobile-menu a:last-child {
+    border-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 850px) {
+  #main-menu {
+    display: none !important;
+  }
+
+  .menu-toggle {
+    display: flex !important;
+  }
+}
+
+
+
+
 /* -------------------------------------------------------------------------------------------CIERRA - MENÚ HAMBURGUESA SOLO MÓVIL---------------------------------------------------------------------- */
 
 
@@ -2840,7 +2991,7 @@ header {
     </a>
 
 
-    <nav>
+    <nav id="main-menu">
       <a href="#origen">Origen</a>
       <a href="#proceso">Proceso</a>
       <a href="#historia">Historia</a>
