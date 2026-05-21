@@ -974,35 +974,38 @@
   </a>
 
   <script>
-    let cafes = {};
-
-const tostiones = {
-  media: "<strong>Tostión media · Recomendada:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
-  alta: "<strong>Tostión alta:</strong> perfil más intenso, con mayor cuerpo, menor acidez y notas más tostadas. Pensada para quienes prefieren una taza fuerte.",
-  baja: "<strong>Tostión baja:</strong> perfil más frutal y aromático, con acidez más viva y mayor expresión del origen."
-};
-
-let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-
-async function cargarDatosCafe() {
-  try {
-    const respuesta = await fetch("cafes.json?v=" + Date.now());
-
-    if (!respuesta.ok) {
-      throw new Error("No se pudo cargar cafes.json");
-    }
-
-    cafes = await respuesta.json();
-
-    actualizarPrecioYLote();
-    actualizarTostionInfo();
-    actualizarIconoCarrito();
-
-  } catch (error) {
-    console.error("Error cargando datos del café:", error);
-    alert("No se pudieron cargar los datos del café. Revisa el archivo cafes.json.");
-  }
-};
+    const cafes = {
+      lavado: {
+        nombre: "Lavado",
+        descripcion: "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado. El resultado es un café equilibrado, sedoso y sofisticado, con notas de frutos deshidratados, arándanos y una delicada acidez tartárica.",
+        lote: "265",
+        fecha: "16/05/2025",
+        puntaje: "86",
+        perfil: "Frutos deshidratados, arándanos, dátiles, uvas pasas, acidez tartárica y cuerpo sedoso.",
+        ficha: "cata-cafe-dmedina-lote-265.pdf",
+        precios: { "250": 18.50, "500": 34.00, "1000": 64.00 }
+      },
+      honey: {
+        nombre: "Honey",
+        descripcion: "El proceso Honey conserva parte del mucílago natural de la cereza durante el secado, aportando mayor dulzor, cuerpo y complejidad aromática. Mediante técnicas artesanales y un control preciso de humedad y temperatura, obtenemos una taza envolvente y aterciopelada, con notas frutales intensas, miel y azúcar moreno. Un perfil elegante que combina dulzor natural y gran profundidad sensorial.",
+        lote: "266",
+        fecha: "20/05/2025",
+        puntaje: "87",
+        perfil: "Miel, panela, frutos maduros y cuerpo sedoso.",
+        ficha: "cata-cafe-dmedina-lote-266.pdf",
+        precios: { "250": 19.50, "500": 36.00, "1000": 68.00 }
+      },
+      natural: {
+        nombre: "Natural",
+        descripcion: "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente sobre camas africanas, permitiendo que el grano absorba los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosa y afrutada, con gran cuerpo, textura sedosa y notas maduras que recuerdan frutos rojos, cacao y frutas tropicales.",
+        lote: "267",
+        fecha: "25/05/2025",
+        puntaje: "86.5",
+        perfil: "Perfil más intenso, afrutado y complejo.",
+        ficha: "cata-cafe-dmedina-lote-267.pdf",
+        precios: { "250": 21.00, "500": 39.00, "1000": 74.00 }
+      }
+    };
 
     const tostiones = {
       media: "<strong>Tostión media · Recomendada:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
@@ -1012,33 +1015,30 @@ async function cargarDatosCafe() {
 
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
-function actualizarPrecioYLote() {
-  const proceso = document.getElementById("proceso").value;
-  const peso = document.getElementById("peso").value;
+    function actualizarPrecioYLote() {
+      const proceso = document.getElementById("proceso").value;
+      const peso = document.getElementById("peso").value;
+      const cafe = cafes[proceso];
 
-  if (!cafes || !cafes[proceso]) {
-    return;
-  }
+      if (!cafe) return;
 
-  const cafe = cafes[proceso];
+      document.getElementById("process-info").textContent = cafe.descripcion;
+      document.getElementById("lote").textContent = cafe.lote;
+      document.getElementById("fecha-cata").textContent = cafe.fecha;
+      document.getElementById("puntaje").textContent = cafe.puntaje;
+      document.getElementById("perfil").textContent = cafe.perfil;
+      document.getElementById("ficha-cata").href = cafe.ficha;
 
-  document.getElementById("process-info").textContent = cafe.descripcion;
-  document.getElementById("lote").textContent = cafe.lote;
-  document.getElementById("fecha-cata").textContent = cafe.fecha;
-  document.getElementById("puntaje").textContent = cafe.puntaje;
-  document.getElementById("perfil").textContent = cafe.perfil;
-  document.getElementById("ficha-cata").href = cafe.ficha;
+      if (!peso) {
+        document.getElementById("precio").textContent = "Selecciona peso";
+        return;
+      }
 
-  if (!peso) {
-    document.getElementById("precio").textContent = "Selecciona peso";
-    return;
-  }
+      const precio = cafe.precios[peso];
 
-  const precio = cafe.precios[peso];
-
-  document.getElementById("precio").textContent =
-    precio.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
-}
+      document.getElementById("precio").textContent =
+        precio.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+    }
 
     function actualizarTostionInfo() {
       const tostion = document.getElementById("tostion").value;
@@ -1058,17 +1058,37 @@ function actualizarPrecioYLote() {
         return;
       }
 
+      if (!cantidad || cantidad < 1) {
+        alert("Selecciona una cantidad válida.");
+        return;
+      }
+
       const precio = cafe.precios[peso];
 
-      carrito.push({
-        nombre: "Café D’Medina",
-        proceso: cafe.nombre,
-        peso,
-        molienda,
-        tostion,
-        cantidad,
-        precio
-      });
+      carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+
+      const productoExistente = carrito.find(item =>
+        item.nombre === "Café D’Medina" &&
+        item.proceso === cafe.nombre &&
+        String(item.peso) === String(peso) &&
+        item.molienda === molienda &&
+        item.tostion === tostion
+      );
+
+      if (productoExistente) {
+        productoExistente.cantidad =
+          Number(productoExistente.cantidad || 0) + cantidad;
+      } else {
+        carrito.push({
+          nombre: "Café D’Medina",
+          proceso: cafe.nombre,
+          peso,
+          molienda,
+          tostion,
+          cantidad,
+          precio
+        });
+      }
 
       localStorage.setItem("carrito", JSON.stringify(carrito));
       actualizarIconoCarrito();
@@ -1101,7 +1121,9 @@ function actualizarPrecioYLote() {
       }
     }
 
-cargarDatosCafe();
+    actualizarPrecioYLote();
+    actualizarTostionInfo();
+    actualizarIconoCarrito();
   </script>
 
 </body>
