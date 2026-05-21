@@ -40,9 +40,24 @@
     .buttons{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 25px;border-radius:999px;text-decoration:none;font-weight:900;transition:.25s}.btn-primary{background:linear-gradient(135deg,var(--gold-light),var(--gold));color:var(--black);box-shadow:0 12px 30px rgba(200,169,106,.25)}.btn-primary:hover{transform:translateY(-2px)}.btn-secondary{border:1px solid rgba(226,196,125,.7);color:var(--gold-light);background:rgba(255,255,255,.05)}
 
     /* GENERAL */
-    section{padding:32px 7%}.white{background:var(--white)}.cream{background:var(--cream)}.section-head{max-width:820px;margin:0 auto 24px;text-align:center}.section-head h2{font-size:clamp(30px,3.5vw,48px);color:var(--coffee);margin-bottom:8px}.section-head p{color:var(--muted);font-size:16px;line-height:1.5}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}.image-card{border-radius:28px;overflow:hidden;box-shadow:var(--shadow);min-height:300px}.image-card img{width:100%;height:100%;min-height:300px;object-fit:cover}.text-block h2{font-size:clamp(30px,3.5vw,48px);color:var(--coffee);margin-bottom:10px}.text-block p{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:10px}
-    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:var(--white);border-radius:22px;padding:20px;box-shadow:var(--shadow);border:1px solid rgba(200,169,106,.18)}.card h3{color:var(--coffee);font-size:23px;margin-bottom:8px}.card p{color:var(--muted);line-height:1.45}.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.badge{background:rgba(200,169,106,.14);border:1px solid rgba(200,169,106,.35);color:var(--coffee);border-radius:999px;padding:6px 12px;font-weight:900;font-size:12px}.section-btn{margin-top:16px}
+    section{padding:32px 7%}
+    .white{background:var(--white)}
+    .cream{background:var(--cream)}
+    .section-head{max-width:820px;margin:0 auto 24px;text-align:center}
+    .section-head h2{font-size:clamp(30px,3.5vw,48px);color:var(--coffee);margin-bottom:8px}
+    .section-head p{color:var(--muted);font-size:16px;line-height:1.5}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+    .image-card{border-radius:28px;overflow:hidden;box-shadow:var(--shadow);min-height:300px}
+    .image-card img{width:100%;height:100%;min-height:300px;object-fit:cover}
+    .text-block h2{font-size:clamp(30px,3.5vw,48px);color:var(--coffee);margin-bottom:10px}
+    .text-block p{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:10px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .card{background:var(--white);border-radius:22px;padding:20px;box-shadow:var(--shadow);border:1px solid rgba(200,169,106,.18)}
+    .card h3{color:var(--coffee);font-size:23px;margin-bottom:8px}
+    .card p{color:var(--muted);line-height:1.45}
+    .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .badge{background:rgba(200,169,106,.14);border:1px solid rgba(200,169,106,.35);color:var(--coffee);border-radius:999px;padding:6px 12px;font-weight:900;font-size:12px}
+    .section-btn{margin-top:16px}
 
     /* HISTORIA */
     .historia-clara{background:var(--black);color:var(--white);padding:42px 7%;display:grid;grid-template-columns:.9fr 1.1fr;gap:34px;align-items:center}.historia-texto{max-width:680px}.historia-clara h2{color:var(--gold-light);font-size:clamp(34px,4vw,54px);margin-bottom:14px}.historia-clara p{color:rgba(255,255,255,.82);font-size:16px;line-height:1.55;margin-bottom:12px}.historia-imagen{height:380px;border-radius:30px;overflow:hidden;position:relative;background:var(--black);box-shadow:0 18px 42px rgba(0,0,0,.25)}.historia-imagen img{width:100%;height:100%;object-fit:cover;object-position:50% 92%;filter:brightness(1.12) contrast(1.02) saturate(1.05)}
@@ -59,7 +74,19 @@
     .whatsapp-float{position:fixed;width:54px;height:54px;left:18px;bottom:22px;z-index:9998}.whatsapp-float img{width:100%;height:100%;border-radius:50%;box-shadow:0 8px 22px rgba(0,0,0,.25)}.back-to-top{position:fixed;right:18px;bottom:22px;z-index:9998;width:54px;height:54px;border-radius:50%;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#e2c47d,#c8a96a);color:var(--black);border:1px solid rgba(255,255,255,.35);box-shadow:0 8px 22px rgba(0,0,0,.25);font-size:26px;font-weight:900;cursor:pointer}
 
     /* MOVIL */
-    @media (max-width:950px){.split,.historia-clara,.empaque-doble-cta,.contact-box{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.image-card,.image-card img{min-height:240px}.historia-imagen{height:260px}#empaque .empaque-mockups{grid-template-columns:repeat(2,minmax(130px,1fr));gap:24px}.mockup-card{max-width:170px;height:260px}.mockup-card:nth-child(1) .mockup-front img,.mockup-card:nth-child(2) .mockup-front img,.mockup-card:nth-child(3) .mockup-front img,.mockup-card:nth-child(4) .mockup-front img{max-width:120px;max-height:190px}}
+    @media (max-width:950px){
+      .split,.historia-clara,.empaque-doble-cta,.contact-box{grid-template-columns:1fr}
+      .cards{grid-template-columns:1fr}
+      .image-card,
+      .image-card img{min-height:240px}
+      .historia-imagen{height:260px}#empaque .empaque-mockups{grid-template-columns:repeat(2,minmax(130px,1fr));gap:24px}
+      .mockup-card{max-width:170px;height:260px}
+      .mockup-card:nth-child(1) 
+      .mockup-front img,.mockup-card:nth-child(2) 
+      .mockup-front img,.mockup-card:nth-child(3) 
+      .mockup-front img,.mockup-card:nth-child(4) 
+      .mockup-front img{max-width:120px;max-height:190px}}
+
     @media (max-width:850px){header{height:78px;min-height:78px;padding:0 18px;justify-content:center}#main-menu{display:none}.brand{position:static;width:auto;margin:0 auto;text-align:center}.brand span{font-size:28px;line-height:1}.menu-toggle{display:flex;align-items:center;justify-content:center;position:absolute;left:18px;top:17px;width:44px;height:44px;background:transparent;border:1px solid rgba(226,196,125,.35);border-radius:50%;color:var(--gold-light);font-size:26px;font-weight:900;line-height:1;z-index:10001;cursor:pointer}.cart-link{position:absolute;right:22px;top:22px;font-size:22px}.mobile-menu{display:none;position:fixed;top:86px;left:22px;width:230px;max-width:calc(100vw - 44px);background:rgba(17,16,15,.98);border:1px solid rgba(226,196,125,.28);border-radius:18px;padding:12px 16px;z-index:10000;box-shadow:0 14px 34px rgba(0,0,0,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.mobile-menu.open{display:flex;flex-direction:column;gap:0}.mobile-menu a{display:block;color:var(--white);text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;padding:10px 2px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}.mobile-menu a:last-child{border-bottom:0}.hero{min-height:auto;padding:55px 6% 45px}.hero-logo-side{display:none}.hero h1{font-size:clamp(34px,10vw,48px);line-height:1.08;margin-bottom:16px}.hero-copy p{font-size:14.5px;line-height:1.42;max-width:92%;margin-bottom:18px}section{padding:28px 6%}.historia-clara{padding:38px 6%}.historia-clara h2{font-size:clamp(34px,10vw,48px)}#contacto{padding:38px 16px 48px}.contact-box{width:100%;padding:18px;border-radius:24px}.contact-item{padding:16px 18px;border-radius:18px;overflow-wrap:break-word;word-break:break-word}.back-to-top{display:flex}}
   
   
@@ -226,18 +253,155 @@
 }
 
 
+/* =========================================================================================================================================================================================================
+                                                                                        ABRE - IMAGEN NUESTRA HISTORIA - MOVIMIENTO SUAVE
+============================================================================================================================================================================================================= */
+
+.historia-img-wrap {
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.historia-img-animada {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 1.2s ease, filter 1.2s ease;
+}
+
+/* Movimiento automático solo en ordenador */
+@media (min-width: 851px) {
+  .historia-img-animada {
+    animation: movimientoHistoria 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes movimientoHistoria {
+    from {
+      transform: scale(1) translateY(0);
+    }
+
+    to {
+      transform: scale(1.06) translateY(-6px);
+    }
+  }
+}
+
+/* En móvil sin movimiento */
+@media (max-width: 850px) {
+  .historia-img-animada {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+/* =========================================================================================================================================================================================================
+                                                                                        CIERRA - IMAGEN NUESTRA HISTORIA - MOVIMIENTO SUAVE
+============================================================================================================================================================================================================= */
 
 
 
 
 
+.image-card{
+  overflow:hidden;
+  border-radius:28px;
+  position:relative;
+}
+
+.proceso-video video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 
 
+@media (max-width: 768px){
+
+  .proceso-video{
+    height:auto;
+  }
+
+  .proceso-video video{
+    width:100%;
+    height:auto;
+    object-fit:contain;
+  }
+
+}
 
 
+@media (max-width: 768px){
+
+  .split .image-card.proceso-video{
+    height:auto !important;
+    aspect-ratio:auto !important;
+    max-height:none !important;
+  }
+
+  .split .image-card.proceso-video video{
+    width:100% !important;
+    height:auto !important;
+    aspect-ratio:16/9 !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+    display:block !important;
+  }
+
+}
 
 
-  
+@media (max-width: 768px){
+
+  #proceso .image-card{
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:hidden !important;
+  }
+
+  #proceso .image-card video{
+    width:100% !important;
+    height:auto !important;
+    object-fit:contain !important;
+    object-position:center center !important;
+    display:block !important;
+  }
+
+}
+
+
+.video-toggle{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  z-index:5;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  border:1px solid rgba(226,196,125,.7);
+  background:rgba(0,0,0,.45);
+  color:#e2c47d;
+  cursor:pointer;
+}
+
+.hero-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+
+.hero-toggle{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  z-index:5;
+}
+
   </style>
 </head>
 <body>
@@ -245,7 +409,13 @@
     <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
     <a href="#inicio" class="brand"><span>Café D’Medina</span></a>
     <nav id="main-menu">
-      <a href="#origen">Origen</a><a href="#proceso">Proceso</a><a href="#historia">Historia</a><a href="#cata">Cata</a><a href="#empaque">Producto</a><a href="#area-profesional">Profesionales</a><a href="#contacto">Contacto</a><a href="tienda.html">Tienda</a>
+      <a href="#origen">Nuestro café</a>
+      <a href="#proceso">Proceso</a>
+      <a href="#historia">Historia</a>
+      <a href="#cata">Cata</a><a href="#empaque">Producto</a>
+      <a href="#area-profesional">Profesionales</a>
+      <a href="#contacto">Contacto</a>
+      <a href="tienda.html">Tienda</a>
     </nav>
 
 
@@ -258,13 +428,26 @@
 
     
     <nav id="mobile-menu" class="mobile-menu">
-      <a href="#origen" onclick="closeMenu()">Origen</a><a href="#proceso" onclick="closeMenu()">Proceso</a><a href="#historia" onclick="closeMenu()">Historia</a><a href="#cata" onclick="closeMenu()">Cata</a><a href="#empaque" onclick="closeMenu()">Producto</a><a href="#area-profesional" onclick="closeMenu()">Profesionales</a><a href="#contacto" onclick="closeMenu()">Contacto</a><a href="tienda.html" onclick="closeMenu()">Tienda</a>
+      <a href="#origen" onclick="closeMenu()">Nuestro café</a>
+      <a href="#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="#historia" onclick="closeMenu()">Historia</a>
+      <a href="#cata" onclick="closeMenu()">Cata</a>
+      <a href="#empaque" onclick="closeMenu()">Producto</a>
+      <a href="#area-profesional" onclick="closeMenu()">Profesionales</a>
+      <a href="#contacto" onclick="closeMenu()">Contacto</a>
+      <a href="tienda.html" onclick="closeMenu()">Tienda</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero" id="inicio">
-      <video autoplay muted loop playsinline class="hero-video"><source src="videos/video-cafe-comprimido.mp4" type="video/mp4"></video>
+  <section class="hero" id="inicio">
+
+    <video id="heroVideo" autoplay muted loop playsinline preload="metadata" class="hero-video">
+      <source src="videos/video-cafe.mp4" type="video/mp4">
+     </video>
+
+    <button class="video-toggle hero-toggle" onclick="toggleVideo('heroVideo', this)">⏸</button>
+    
       <img src="logo.png" alt="Logo Café D’Medina" class="hero-logo-side" />
       <div class="hero-copy">
         <div class="eyebrow">Café de origen colombiano · Mistrató, Risaralda</div>
@@ -275,18 +458,104 @@
     </section>
 
     <section class="white" id="origen">
-      <div class="section-head"><h2>Origen y calidad desde la finca</h2><p>Nuestro café nace en Mistrató, Risaralda, en fincas familiares donde tradición, conocimiento y cuidado del cultivo se encuentran.</p></div>
-      <div class="cards"><article class="card"><h3>Altitud</h3><p>Cultivado a 1550 msnm, en una zona montañosa que favorece aroma, dulzor y complejidad en taza.</p></article><article class="card"><h3>Variedades</h3><p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades resistentes a la roya y adaptadas al origen.</p></article><article class="card"><h3>Cenicafé</h3><p>Semillas certificadas por CENICAFÉ, referente internacional en investigación cafetera.</p></article></div>
+      <div class="section-head">
+        <h2>Origen y variedades del café que cultivamos</h2>
+        <p> Nuestro café nace en Mistrató, Risaralda, en fincas familiares ubicadas en el corazón del Eje Cafetero colombiano. 
+          Allí cultivamos variedades arábicas seleccionadas por su adaptación al territorio, su resistencia y su expresión en taza.
+        </p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>Altitud</h3><p>Cultivado a 1550 msnm, en una zona montañosa que favorece aroma, dulzor y complejidad en taza.</p>
+        </article>
+        <article class="card">
+          <h3>Variedades</h3>
+          <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades resistentes a la roya y adaptadas al origen.</p>
+        </article>
+        <article class="card">
+          <h3>Cenicafé</h3>
+          <p>Semillas certificadas por CENICAFÉ, referente internacional en investigación cafetera.</p>
+        </article>
+      </div>
     </section>
+
+ <!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO------------------------------------------------------------------------------------------------>
 
     <section class="cream split" id="proceso">
-      <div class="image-card"><img src="img/Imagen recoleccion.jpg" alt="Café artesanal colombiano"></div>
-      <div class="text-block"><div class="eyebrow">Proceso artesanal</div><h2>Seleccionado a mano, grano a grano</h2><p>Nuestro café es cosechado manualmente por comunidades locales e indígenas en Mistrató. Aplicamos una selección rigurosa y técnicas de fermentación controlada para resaltar los atributos más finos del grano.</p><p>Comprometidos con el medio ambiente, utilizamos métodos de mínimo consumo de agua, preservando la esencia natural del café y trabajando cada lote de manera única.</p><div class="badge-row"><span class="badge">Selección manual</span><span class="badge">Fermentación controlada</span><span class="badge">Mínimo consumo de agua</span></div><a href="proceso.html" class="btn btn-primary section-btn">Más información</a></div>
+      <!--<div class="image-card">
+        <img src="img/Imagen recoleccion.jpg" alt="Café artesanal colombiano">
+      </div>-->
+
+      <div class="image-card proceso-video">
+        <video id="procesoVideo" autoplay muted loop playsinline preload="metadata">
+          <source src="videos/pajaro-cafe.mp4" type="video/mp4">
+        </video>
+
+      <button class="video-toggle" onclick="toggleVideo('procesoVideo', this)">⏸</button>
+      </div>
+
+      <div class="text-block">
+        <div class="eyebrow">Proceso artesanal</div>
+        <h2>Seleccionado a mano, grano a grano</h2>
+        <p>Nuestro café es cosechado manualmente por comunidades locales e indígenas en Mistrató. 
+          Aplicamos una selección rigurosa y técnicas de fermentación controlada para resaltar los atributos más finos del grano.</p>
+        <p>Comprometidos con el medio ambiente, utilizamos métodos de mínimo consumo de agua, preservando la esencia natural del café y trabajando cada lote de manera única.</p>
+        <div class="badge-row">
+          <span class="badge">Selección manual</span>
+          <span class="badge">Fermentación controlada</span>
+          <span class="badge">Mínimo consumo de agua</span>
+        </div>
+        <a href="proceso.html" class="btn btn-primary section-btn">Más información</a>
+      </div>
     </section>
 
-    <section class="white"><div class="section-head"><h2>Procesos especiales</h2><p>Disponibles a solicitud, elaborados con dedicación durante varias semanas para alcanzar su máxima expresión de calidad.</p></div><div class="cards"><article class="card"><h3>Lavado</h3><p>Perfil limpio, elegante y equilibrado. Ideal para resaltar claridad, acidez y delicadeza.</p></article><article class="card"><h3>Honey</h3><p>Mayor dulzor, textura envolvente y complejidad aromática, con una taza más sedosa.</p></article><article class="card"><h3>Natural</h3><p>Expresivo, frutal e intenso. Una experiencia sensorial con carácter y dulzor natural.</p></article></div></section>
 
-    <section class="historia-clara" id="historia"><div class="historia-texto"><div class="eyebrow">Legado familiar</div><h2>Nuestra historia</h2><p>Desde la década de 1930, nuestra familia ha estado profundamente ligada al café. Generación tras generación, hemos cultivado no solo café de origen, sino también una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.</p><p>Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.</p><a href="historia.html" class="btn btn-primary section-btn">Leer historia completa</a></div><div class="historia-imagen"><img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda"></div></section>
+<!-- -------------------------------------------------------------------------------CIERRA - CAJA PROCESO------------------------------------------------------------------------------------------------>
+
+
+<!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO ESPECIALES------------------------------------------------------------------------------------------------>
+    <section class="white">
+      <div class="section-head">
+        <h2>Procesos especiales</h2>
+        <p>Disponibles a solicitud, elaborados con dedicación durante varias semanas para alcanzar su máxima expresión de calidad.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>Lavado</h3>
+          <p>Perfil limpio, elegante y equilibrado. Ideal para resaltar claridad, acidez y delicadeza.</p>
+        </article>
+        <article class="card">
+          <h3>Honey</h3>
+          <p>Mayor dulzor, textura envolvente y complejidad aromática, con una taza más sedosa.</p>
+        </article>
+        <article class="card">
+          <h3>Natural</h3>
+          <p>Expresivo, frutal e intenso. Una experiencia sensorial con carácter y dulzor natural.</p>
+        </article>
+      </div>
+    </section>
+<!-- -------------------------------------------------------------------------------CIERRA - CAJA PROCESO ESPECIALES------------------------------------------------------------------------------------------------>
+   
+   <!-- -------------------------------------------------------------------------------ABRE - CAJA HISTORIA------------------------------------------------------------------------------------------------>
+   
+    <section class="historia-clara" id="historia">
+      <div class="historia-texto">
+        <div class="eyebrow">Legado familiar</div>
+        <h2>Nuestra historia</h2>
+        <p>Desde la década de 1930, nuestra familia ha estado profundamente ligada al café. Generación tras generación, hemos cultivado no solo café de origen, 
+          sino también una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.</p>
+        <p>Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.</p>
+        <a href="historia.html" class="btn btn-primary section-btn">Leer historia completa</a>
+      </div>
+    
+    <!-- <div class="historia-imagen">
+      <img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda">
+    </div>-->
+
+    <div class="historia-imagen historia-img-wrap">
+  <img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda" class="historia-img-animada">
+</div>
+   </section>
 
     <section class="cream" id="cata"><div class="section-head"><h2>Perfil sensorial</h2><p>Café de alta calidad con puntaje SCAA 86,75 y un perfil complejo, dulce y elegante.</p></div><div class="cards"><article class="card"><h3>Fragancia</h3><p>Intensa, con notas a uvas pasas y avellanas.</p></article><article class="card"><h3>Sabor</h3><p>Profundo, con recuerdos a licor de almendras y dulzor natural a moras azules.</p></article><article class="card"><h3>Cuerpo y acidez</h3><p>Cuerpo suave, acidez tartárica viva y balance complejo.</p></article></div></section>
 
@@ -310,5 +579,38 @@
     function actualizarIconoCarrito(){const cartCount=document.getElementById('cart-count'); const carrito=JSON.parse(localStorage.getItem('carrito'))||[]; const total=carrito.reduce((sum,item)=>sum+Number(item.cantidad||0),0); if(cartCount){cartCount.textContent=total}}
     actualizarIconoCarrito();
   </script>
+
+<script>
+  document.querySelectorAll('.video-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const video = document.getElementById(button.dataset.video);
+
+      if (video.paused) {
+        video.play();
+        button.textContent = '⏸';
+      } else {
+        video.pause();
+        button.textContent = '▶';
+      }
+    });
+  });
+</script>
+
+<script>
+  function toggleVideo(videoId, button) {
+    const video = document.getElementById(videoId);
+
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      button.textContent = '⏸';
+    } else {
+      video.pause();
+      button.textContent = '▶';
+    }
+  }
+</script>
+
 </body>
 </html>
