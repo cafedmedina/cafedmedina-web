@@ -39,7 +39,7 @@
     .hero-copy p{font-size:17px;line-height:1.45;max-width:680px;margin:0 auto 22px;color:rgba(255,255,255,.90)}
     .buttons{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:13px 25px;border-radius:999px;text-decoration:none;font-weight:900;transition:.25s}.btn-primary{background:linear-gradient(135deg,var(--gold-light),var(--gold));color:var(--black);box-shadow:0 12px 30px rgba(200,169,106,.25)}.btn-primary:hover{transform:translateY(-2px)}.btn-secondary{border:1px solid rgba(226,196,125,.7);color:var(--gold-light);background:rgba(255,255,255,.05)}
 
-    /* GENERAL */
+    /* ----------------------------------------------------------------------------------------------GENERAL ------------------------------------------------------------------------------------------*/
     section{padding:32px 7%}
     .white{background:var(--white)}
     .cream{background:var(--cream)}
@@ -402,6 +402,126 @@
   z-index:5;
 }
 
+.cata-btn-wrap {
+  margin-top: 34px;
+  text-align: center;
+}
+
+@media (max-width: 850px) {
+  .cata-btn-wrap {
+    margin-top: 26px;
+  }
+}
+
+.cata-btn-wrap {
+  margin-top: 34px;
+  text-align: center;
+}
+
+@media (max-width: 850px) {
+  .cata-btn-wrap {
+    margin-top: 26px;
+  }
+}
+
+
+/** -----------------------------------------------------------------------------*/
+
+/* =====================================================
+   ANIMACIÓN AL HACER SCROLL - INDEX
+===================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* Para móvil, más suave */
+@media (max-width: 850px) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(22px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    transform: translateY(0);
+  }
+}
+
+
+
+
+
+/**--------------------------------------------------------------------*/
+
+
+/* =====================================================
+   EFECTO APARECER / DESAPARECER AL SCROLL
+===================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+@media (max-width: 850px) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(22px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    transform: translateY(0);
+  }
+}
+
+
   </style>
 </head>
 <body>
@@ -457,36 +577,44 @@
       </div>
     </section>
 
-    <section class="white" id="origen">
-      <div class="section-head">
-        <h2>Origen y variedades del café que cultivamos</h2>
-        <p> Nuestro café nace en Mistrató, Risaralda, en fincas familiares ubicadas en el corazón del Eje Cafetero colombiano. 
-          Allí cultivamos variedades arábicas seleccionadas por su adaptación al territorio, su resistencia y su expresión en taza.
-        </p>
-      </div>
-      <div class="cards">
-        <article class="card">
-          <h3>Altitud</h3><p>Cultivado a 1550 msnm, en una zona montañosa que favorece aroma, dulzor y complejidad en taza.</p>
-        </article>
-        <article class="card">
-          <h3>Variedades</h3>
-          <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades resistentes a la roya y adaptadas al origen.</p>
-        </article>
-        <article class="card">
-          <h3>Cenicafé</h3>
-          <p>Semillas certificadas por CENICAFÉ, referente internacional en investigación cafetera.</p>
-        </article>
-      </div>
-    </section>
+
+   <!-- -------------------------------------------------------------------------------ABRE - CAJA ORIGEN------------------------------------------------------------------------------------------------>
+<section class="white" id="origen">
+  <div class="section-head reveal">
+    <h2>Origen y variedades del café que cultivamos</h2>
+    <p>
+      Nuestro café nace en Mistrató, Risaralda, en fincas familiares ubicadas en el corazón del Eje Cafetero colombiano. 
+      Allí cultivamos variedades arábicas seleccionadas por su adaptación al territorio, su resistencia y su expresión en taza.
+    </p>
+  </div>
+  
+  <div class="cards">
+    <article class="card reveal">
+      <h3>Altitud</h3>
+      <p>Cultivado a 1550 msnm, en una zona montañosa que favorece aroma, dulzor y complejidad en taza.</p>
+    </article>
+
+    <article class="card reveal">
+      <h3>Variedades</h3>
+      <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades resistentes a la roya y adaptadas al origen.</p>
+    </article>
+
+    <article class="card reveal">
+      <h3>Cenicafé</h3>
+      <p>Semillas certificadas por CENICAFÉ, referente internacional en investigación cafetera.</p>
+    </article>
+  </div>
+</section>
+     <!-- -------------------------------------------------------------------------------CIERRA - CAJA ORIGEN------------------------------------------------------------------------------------------------>
+
+
+
 
  <!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO------------------------------------------------------------------------------------------------>
 
     <section class="cream split" id="proceso">
-      <!--<div class="image-card">
-        <img src="img/Imagen recoleccion.jpg" alt="Café artesanal colombiano">
-      </div>-->
 
-      <div class="image-card proceso-video">
+      <div class="image-card proceso-video reveal-left">
         <video id="procesoVideo" autoplay muted loop playsinline preload="metadata">
           <source src="videos/pajaro-cafe.mp4" type="video/mp4">
         </video>
@@ -494,7 +622,7 @@
       <button class="video-toggle" onclick="toggleVideo('procesoVideo', this)">⏸</button>
       </div>
 
-      <div class="text-block">
+      <div class="text-block reveal-right">
         <div class="eyebrow">Proceso artesanal</div>
         <h2>Seleccionado a mano, grano a grano</h2>
         <p>Nuestro café es cosechado manualmente por comunidades locales e indígenas en Mistrató. 
@@ -515,20 +643,20 @@
 
 <!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO ESPECIALES------------------------------------------------------------------------------------------------>
     <section class="white">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Procesos especiales</h2>
         <p>Disponibles a solicitud, elaborados con dedicación durante varias semanas para alcanzar su máxima expresión de calidad.</p>
       </div>
       <div class="cards">
-        <article class="card">
+        <article class="card reveal">
           <h3>Lavado</h3>
           <p>Perfil limpio, elegante y equilibrado. Ideal para resaltar claridad, acidez y delicadeza.</p>
         </article>
-        <article class="card">
+        <article class="card reveal">
           <h3>Honey</h3>
           <p>Mayor dulzor, textura envolvente y complejidad aromática, con una taza más sedosa.</p>
         </article>
-        <article class="card">
+        <article class="card reveal">
           <h3>Natural</h3>
           <p>Expresivo, frutal e intenso. Una experiencia sensorial con carácter y dulzor natural.</p>
         </article>
@@ -539,25 +667,62 @@
    <!-- -------------------------------------------------------------------------------ABRE - CAJA HISTORIA------------------------------------------------------------------------------------------------>
    
     <section class="historia-clara" id="historia">
-      <div class="historia-texto">
-        <div class="eyebrow">Legado familiar</div>
+      <div class="historia-texto reveal-left">
+        <div class="eyebrow">
+          Legado familiar
+        </div>
         <h2>Nuestra historia</h2>
         <p>Desde la década de 1930, nuestra familia ha estado profundamente ligada al café. Generación tras generación, hemos cultivado no solo café de origen, 
           sino también una tradición basada en el esfuerzo, la calidad y el respeto por nuestra tierra.</p>
         <p>Hoy, Café D’Medina representa el legado de una familia cafetera que continúa llevando el auténtico sabor colombiano de Mistrató, Risaralda, desde nuestras fincas hasta cada taza.</p>
         <a href="historia.html" class="btn btn-primary section-btn">Leer historia completa</a>
       </div>
-    
-    <!-- <div class="historia-imagen">
-      <img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda">
-    </div>-->
 
-    <div class="historia-imagen historia-img-wrap">
-  <img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda" class="historia-img-animada">
-</div>
-   </section>
+      <div class="historia-imagen historia-img-wrap reveal-right">
+        <img src="img/mistrato-historia.jpg" alt="Iglesia de Mistrató, Risaralda" class="historia-img-animada">
+      </div>
+    </section>
 
-    <section class="cream" id="cata"><div class="section-head"><h2>Perfil sensorial</h2><p>Café de alta calidad con puntaje SCAA 86,75 y un perfil complejo, dulce y elegante.</p></div><div class="cards"><article class="card"><h3>Fragancia</h3><p>Intensa, con notas a uvas pasas y avellanas.</p></article><article class="card"><h3>Sabor</h3><p>Profundo, con recuerdos a licor de almendras y dulzor natural a moras azules.</p></article><article class="card"><h3>Cuerpo y acidez</h3><p>Cuerpo suave, acidez tartárica viva y balance complejo.</p></article></div></section>
+   <!-- -------------------------------------------------------------------------------CIERRA - CAJA HISTORIA------------------------------------------------------------------------------------------------>
+   
+
+
+
+   <!-- -----------------------------------------------------------------------------------ABRE - CAJA CATA---------------------------------------------------------------------------------------------------->
+
+    <section class="cream" id="cata">
+      <div class="section-head reveal">
+        <h2>Perfil sensorial</h2>
+        <p>Cada cosecha revela una identidad sensorial única, con puntuaciones de cata a partir de 86 puntos, fruto del origen, el proceso y el cuidado aplicado en cada etapa.</p> 
+      </div>
+
+      <div class="cards">
+        <article class="card reveal">
+          <h3>Fragancia</h3>
+          <p>Aromas propios de cada cosecha, influenciados por el origen, el proceso y la evolución de cada uno.</p>
+        </article>
+
+        <article class="card reveal">
+          <h3>Sabor</h3>
+          <p>Notas sensoriales únicas en cada perfil, con dulzor, complejidad y expresión natural del café.</p>
+        </article>
+
+        <article class="card reveal">
+          <h3>Cuerpo y acidez</h3>
+          <p>Balance en taza con cuerpo, acidez y textura definidos por la cosecha, el proceso y el tueste.</p>
+        </article>
+      </div>
+
+        <div class="cata-btn-wrap reveal">
+          <a href="pasaporte.html" class="btn btn-primary section-btn">
+             Ver pasaporte del café
+          </a>
+        </div>
+
+    </section>
+
+    <!-- -------------------------------------------------------------------------------CIERRA - CAJA CATA------------------------------------------------------------------------------------------------>
+   
 
     <section class="white" id="empaque"><div class="section-head"><div class="eyebrow">Producto</div><h2>Empaque y presentaciones</h2><p>Un formato premium diseñado para conservar la frescura, destacar el origen y presentar Café D’Medina con una imagen elegante y profesional.</p></div><div class="empaque-mockups">
       <div class="mockup-card"><div class="mockup-flip"><div class="mockup-front"><img src="img/empaque-100.png" alt="Empaque Café D’Medina 100 g"><span class="mockup-size">100 g</span></div><div class="mockup-back"><strong>100 g</strong><p>Formato de cortesía o muestra comercial.</p></div></div></div>
@@ -611,6 +776,56 @@
     }
   }
 </script>
+
+<script>
+const revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+    } else {
+      entry.target.classList.remove("visible");
+    }
+  });
+}, {
+  threshold: 0.16
+});
+
+revealElements.forEach(el => revealObserver.observe(el));
+
+
+
+
+
+</script>
+
+<script>
+function activarAnimacionesScroll() {
+  const revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+  revealElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+
+    const entraEnPantalla =
+      rect.top < window.innerHeight * 0.82 &&
+      rect.bottom > window.innerHeight * 0.18;
+
+    if (entraEnPantalla) {
+      el.classList.add("visible");
+    } else {
+      el.classList.remove("visible");
+    }
+  });
+}
+
+window.addEventListener("scroll", activarAnimacionesScroll);
+window.addEventListener("resize", activarAnimacionesScroll);
+window.addEventListener("load", activarAnimacionesScroll);
+</script>
+
+
+
 
 </body>
 </html>

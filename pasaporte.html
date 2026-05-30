@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasaporte del Café | Café D’Medina</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+ 
+ <style>
+    :root{--gold:#c8a96a;--gold-light:#e2c47d;--dark:#11100f;--dark-soft:#171411;--coffee:#2b1a12;--cream:#f3eadc;--card:rgba(255,250,240,.92);--white:#fff;--muted:rgba(255,255,255,.78);--brown-text:#3a2418}
+    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:'Lato',Arial,sans-serif;background:var(--dark);color:var(--white);line-height:1.65;overflow-x:hidden}img{width:100%;display:block}a{color:inherit;text-decoration:none}
+    header{position:sticky;top:0;z-index:9999;height:92px;padding:0 7%;display:flex;align-items:center;justify-content:space-between;gap:22px;background:rgba(17,16,15,.97);border-bottom:1px solid rgba(200,169,106,.25);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .brand{flex-shrink:0;text-decoration:none}.brand span{font-family:'Playfair Display',serif;font-size:34px;font-weight:800;color:var(--gold-light);white-space:nowrap;line-height:1}
+    #main-menu{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}#main-menu a{color:rgba(255,255,255,.92);font-size:13px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;transition:.25s}#main-menu a:hover{color:var(--gold-light)}
+    .cart-link{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:22px;line-height:1;flex-shrink:0}.cart-count{position:absolute;top:-8px;right:-8px;width:20px;min-width:20px;height:20px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--gold-light);color:var(--dark);font-size:11px;font-weight:900;line-height:1;border-radius:50%}.menu-toggle,.mobile-menu{display:none}
+    .page-back-wrap{background:var(--dark);padding:14px 7% 0;margin:0}.page-back-link{display:inline-block;color:var(--gold-light);font-size:18px;font-weight:900;letter-spacing:.5px}.page-back-link:hover{opacity:.75}
+    .passport-hero{position:relative;min-height:78vh;padding:70px 7% 80px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(17,16,15,.92),rgba(17,16,15,.62),rgba(17,16,15,.88)),url("img/cafetales-padre.jpg") center/cover no-repeat;overflow:hidden}.passport-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 18%,rgba(226,196,125,.28),transparent 28%),radial-gradient(circle at 16% 80%,rgba(200,169,106,.15),transparent 32%);pointer-events:none}
+    .passport-card{position:relative;z-index:1;width:min(1120px,100%);padding:34px;border-radius:32px;background:rgba(20,17,14,.72);border:1px solid rgba(226,196,125,.48);box-shadow:0 28px 80px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    .passport-top{display:flex;align-items:flex-start;justify-content:space-between;gap:28px;padding-bottom:24px;border-bottom:1px solid rgba(226,196,125,.34)}.passport-label{color:var(--gold-light);font-size:13px;font-weight:900;letter-spacing:2.2px;text-transform:uppercase;margin-bottom:12px}.passport-card h1{font-family:'Playfair Display',serif;font-size:clamp(42px,5.2vw,78px);line-height:1;color:var(--white);letter-spacing:.3px;text-shadow:0 3px 18px rgba(0,0,0,.35)}.passport-code{margin-top:12px;color:rgba(255,255,255,.8);font-weight:900;letter-spacing:.8px}
+    .passport-seal{min-width:210px;padding:22px;border-radius:24px;background:rgba(0,0,0,.30);border:1px solid rgba(226,196,125,.45);text-align:center}.passport-seal strong{display:block;color:var(--gold-light);font-family:'Playfair Display',serif;font-size:26px;line-height:1.1;margin-bottom:8px}.passport-seal span{display:block;color:rgba(255,255,255,.78);font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+    .passport-body{display:grid;grid-template-columns:1.05fr .95fr;gap:32px;padding-top:30px}.producer-card,.sensorial-card{border-radius:26px;border:1px solid rgba(226,196,125,.34);background:rgba(0,0,0,.24);overflow:hidden}.producer-photo{height:290px;background:rgba(255,255,255,.06);overflow:hidden}.producer-photo img{height:100%;object-fit:cover}.producer-info{padding:24px}.producer-info h2{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:36px;line-height:1.1;margin-bottom:8px}.producer-info p{color:rgba(255,255,255,.82);margin-bottom:10px}.mini-lines{margin-top:16px;display:grid;gap:8px}.mini-lines div{display:flex;justify-content:space-between;gap:18px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.84)}.mini-lines strong{color:var(--gold-light)}
+    .sensorial-card{padding:26px;display:flex;flex-direction:column;justify-content:center}.sensorial-card h2{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:34px;line-height:1.1;margin-bottom:18px}.score-circle{width:170px;height:170px;margin:10px auto 22px;display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:50%;border:1px solid rgba(226,196,125,.55);background:radial-gradient(circle,rgba(226,196,125,.23),rgba(0,0,0,.22)),conic-gradient(from 0deg,rgba(226,196,125,.74),rgba(226,196,125,.18),rgba(226,196,125,.64),rgba(226,196,125,.28));box-shadow:0 18px 38px rgba(0,0,0,.28)}.score-circle strong{font-family:'Playfair Display',serif;color:#fff;font-size:46px;line-height:1}.score-circle span{color:var(--dark);background:var(--gold-light);font-size:11px;font-weight:900;padding:4px 8px;border-radius:999px;margin-top:8px}.sensorial-list{display:grid;gap:10px}.sensorial-list div{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.86)}.sensorial-list strong{color:var(--gold-light)}
+    section{padding:72px 7%}.section-head{max-width:820px;margin:0 auto 42px;text-align:center}.eyebrow{color:#9f7b3c;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}.section-head h2,.split-text h2,.exclusive h2{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:clamp(34px,4vw,56px);line-height:1.12;margin-bottom:14px}.section-head p{color:rgba(255,255,255,.78);font-size:17px}.light{background:var(--cream);color:var(--brown-text)}.light .section-head h2,.light .split-text h2{color:var(--coffee)}.light .section-head p,.light .split-text p{color:#67594d}
+    .info-grid{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.info-card{padding:24px;border-radius:24px;background:var(--card);border:1px solid rgba(200,169,106,.35);border-left:4px solid var(--gold);box-shadow:0 18px 38px rgba(58,36,24,.10)}.info-card h3{font-family:'Playfair Display',serif;font-size:25px;line-height:1.1;color:var(--coffee);margin-bottom:10px}.info-card p{color:#5e5147;font-size:15px}
+    .split{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:center}.split-image{overflow:hidden;border-radius:30px;box-shadow:0 22px 55px rgba(0,0,0,.22);border:1px solid rgba(200,169,106,.28)}.split-image img{height:430px;object-fit:cover}.split-text p{color:rgba(255,255,255,.78);margin-bottom:16px;font-size:16.5px}.light .split-text p{color:#5e5147}
+    .trace{background:linear-gradient(180deg,rgba(17,16,15,.96),rgba(17,16,15,.98)),url("img/cafetales-padre.jpg") center/cover no-repeat}.trace-line{max-width:1120px;margin:0 auto;padding:30px;border-radius:30px;background:rgba(255,255,255,.05);border:1px solid rgba(226,196,125,.32)}.trace-items{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}.trace-item{text-align:center;padding:18px 10px;border-radius:18px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08)}.trace-item .icon{font-size:28px;margin-bottom:8px}.trace-item h3{color:var(--gold-light);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.trace-item p{color:rgba(255,255,255,.72);font-size:13px;line-height:1.35}
+    .exclusive{background:var(--cream);color:var(--brown-text)}.exclusive-wrap{max-width:1120px;margin:0 auto;padding:34px;border-radius:32px;background:linear-gradient(135deg,#fffaf0,#eadfce);border:1px solid rgba(200,169,106,.38);box-shadow:0 24px 60px rgba(58,36,24,.14)}.exclusive h2{color:var(--coffee)}.exclusive p{color:#67594d;max-width:760px;margin-bottom:28px}.lot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}.lot-card{padding:22px;border-radius:24px;background:#fffaf2;border:1px solid rgba(200,169,106,.36);box-shadow:0 12px 28px rgba(58,36,24,.08)}.lot-card h3{font-family:'Playfair Display',serif;color:var(--coffee);font-size:25px;margin-bottom:8px}.lot-card p{margin:0 0 14px;font-size:14px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:14px 28px;border-radius:999px;border:0;background:linear-gradient(135deg,var(--gold-light),var(--gold));color:var(--dark);font-size:15px;font-weight:900;letter-spacing:.3px;cursor:pointer;text-decoration:none;box-shadow:0 14px 32px rgba(200,169,106,.28),inset 0 1px 0 rgba(255,255,255,.42);transition:.25s ease}.btn:hover{transform:translateY(-2px);filter:brightness(1.04)}.btn-secondary{background:transparent;color:var(--coffee);border:1px solid rgba(200,169,106,.65);box-shadow:none}.password-box{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}.password-box input{min-height:50px;flex:1;min-width:240px;border-radius:999px;border:1px solid rgba(200,169,106,.65);padding:12px 18px;font-size:15px;outline:none;background:#fffaf2;color:var(--coffee)}.password-help{margin-top:12px!important;font-size:13px;color:#806845!important}.access-message{margin-top:12px;font-weight:900;color:#8b2c1e}
+    .whatsapp-float{position:fixed;width:55px;height:55px;bottom:25px;left:25px;z-index:9998}.whatsapp-float img{width:100%;height:100%;border-radius:50%;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .85s ease,transform .85s ease}.reveal.visible{opacity:1;transform:translateY(0)}.reveal-left{opacity:0;transform:translateX(-36px);transition:opacity .9s ease,transform .9s ease}.reveal-right{opacity:0;transform:translateX(36px);transition:opacity .9s ease,transform .9s ease}.reveal-left.visible,.reveal-right.visible{opacity:1;transform:translateX(0)}footer{background:#0c0b0a;color:rgba(255,255,255,.62);text-align:center;padding:28px 7%;font-size:14px}
+    @media(max-width:850px){header{height:72px;min-height:72px;padding:0 18px;display:flex;align-items:center;justify-content:center}#main-menu{display:none}.menu-toggle{display:flex;align-items:center;justify-content:center;position:absolute;left:18px;top:14px;width:44px;height:44px;background:transparent;border:1px solid rgba(226,196,125,.35);border-radius:50%;color:var(--gold-light);font-size:26px;font-weight:900;line-height:1;z-index:10001;cursor:pointer}header .brand{margin:0 auto;text-align:center}header .brand span{font-size:25px;line-height:1}.cart-link{position:absolute;right:20px;top:19px;width:34px;height:34px;font-size:21px;z-index:10001}.cart-count{top:-8px;right:-8px;width:19px;min-width:19px;height:19px;font-size:10px}.mobile-menu{display:none;position:fixed;top:82px;left:22px;width:220px;max-width:calc(100vw - 44px);background:rgba(17,16,15,.98);border:1px solid rgba(226,196,125,.28);border-radius:18px;padding:10px 14px;z-index:10000;box-shadow:0 14px 34px rgba(0,0,0,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.mobile-menu.open{display:flex;flex-direction:column;gap:0}.mobile-menu a{display:block;color:#f5f5f5;font-size:12px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;padding:8px 2px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}.mobile-menu a:last-child{border-bottom:0}.page-back-wrap{padding:12px 22px 0}.page-back-link{font-size:16px}.passport-hero{min-height:auto;padding:38px 18px 42px}.passport-card{padding:22px;border-radius:26px}.passport-top{flex-direction:column;gap:20px}.passport-card h1{font-size:42px}.passport-seal{width:100%}.passport-body{grid-template-columns:1fr}.producer-photo{height:250px}.producer-info h2{font-size:31px}.sensorial-card h2{font-size:30px}section{padding:48px 18px}.info-grid{grid-template-columns:1fr}.split{grid-template-columns:1fr;gap:24px}.split-image img{height:auto}.trace-line{padding:18px}.trace-items{grid-template-columns:1fr}.exclusive-wrap{padding:22px}.lot-grid{grid-template-columns:1fr}.password-box{flex-direction:column;align-items:stretch}.password-box input,.password-box .btn{width:100%}.whatsapp-float{width:52px;height:52px;bottom:18px;left:18px}}
+ 
+ /* =====================================================
+   MAPA PRODUCTOR - PASAPORTE
+===================================================== */
+
+.producer-map-box {
+  margin-top: 24px;
+}
+
+.producer-map-box h3 {
+  font-family: 'Playfair Display', serif;
+  color: var(--gold-light);
+  font-size: 26px;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.producer-map {
+  width: 100%;
+  height: 260px;
+
+  border-radius: 18px;
+  overflow: hidden;
+
+  border: 1px solid rgba(226,196,125,.25);
+  box-shadow: 0 14px 30px rgba(0,0,0,.22);
+}
+
+.producer-map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+@media (max-width: 850px) {
+  .producer-map {
+    height: 220px;
+  }
+
+  .producer-map-box h3 {
+    font-size: 24px;
+  }
+}
+ 
+ 
+ /* =====================================================
+   DATOS PRODUCTOR - MÁS COMPACTO
+===================================================== */
+
+.mini-lines {
+  margin-top: 8px !important;
+}
+
+.mini-lines div {
+  padding: 7px 0 !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.mini-lines strong,
+.mini-lines span {
+  font-size: 14px !important;
+  line-height: 1.25 !important;
+}
+
+.mini-lines span {
+  text-align: right !important;
+}
+
+@media (max-width: 850px) {
+  .mini-lines div {
+    padding: 6px 0 !important;
+  }
+
+  .mini-lines strong,
+  .mini-lines span {
+    font-size: 14px !important;
+  }
+}
+
+
+/* =====================================================
+   MAPA PRODUCTOR - MÁS PEQUEÑO
+===================================================== */
+
+.producer-map {
+  height: 110px !important;
+  border-radius: 12px !important;
+}
+
+.producer-map-box {
+  margin-top: 10px !important;
+}
+
+.producer-map-box h3 {
+  font-size: 19px !important;
+  margin-bottom: 8px !important;
+}
+
+@media (max-width: 850px) {
+  .producer-map {
+    height: 120px !important;
+  }
+}
+
+/* =====================================================
+   PRODUCTOR - TÍTULO CENTRADO
+===================================================== */
+
+.producer-info h2 {
+  text-align: center !important;
+}
+
+.producer-info > p:first-of-type {
+  text-align: center !important;
+  margin-bottom: 18px !important;
+}
+
+.producer-info h2 {
+  text-align: center !important;
+  font-size: 38px !important;
+  margin-bottom: 6px !important;
+}
+
+.producer-info > p:first-of-type {
+  text-align: center !important;
+  font-size: 16px !important;
+  margin-bottom: 20px !important;
+}
+
+
+
+
+/* PERFIL SENSORIAL - SOLO TÍTULO CENTRADO */
+
+.sensorial-card h2 {
+  text-align: center !important;
+}
+
+
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+ 
+ 
+@media (max-width: 850px) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(22px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    transform: translateY(0);
+  }
+}
+
+</style>
+
+
+
+</head>
+
+
+<body>
+
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
+    <a href="index.html#inicio" class="brand"><span>Café D’Medina</span></a>
+    <nav id="main-menu"><a href="index.html#origen">Nuestro café</a><a href="index.html#proceso">Proceso</a><a href="index.html#historia">Historia</a><a href="index.html#cata">Cata</a><a href="index.html#empaque">Producto</a><a href="index.html#area-profesional">Profesionales</a><a href="index.html#contacto">Contacto</a><a href="tienda.html">Tienda</a></nav>
+    <a href="carrito.html" class="cart-link">🛒<span id="cart-count" class="cart-count">0</span></a>
+    <nav id="mobile-menu" class="mobile-menu"><a href="index.html#origen" onclick="closeMenu()">Nuestro café</a><a href="index.html#proceso" onclick="closeMenu()">Proceso</a><a href="index.html#historia" onclick="closeMenu()">Historia</a><a href="index.html#cata" onclick="closeMenu()">Cata</a><a href="index.html#empaque" onclick="closeMenu()">Producto</a><a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a><a href="index.html#contacto" onclick="closeMenu()">Contacto</a><a href="tienda.html" onclick="closeMenu()">Tienda</a></nav>
+  </header>
+
+  <div class="page-back-wrap"><a href="index.html#inicio" class="page-back-link">← Volver al inicio</a></div>
+  <main>
+    <section class="passport-hero">
+        <div class="passport-card reveal">
+            <div class="passport-top">
+                <div>
+                    <div class="passport-label">Pasaporte del café</div>
+                    <h1>Café D’Medina</h1>
+                    <div class="passport-code">Origen Colombia · Mistrató, Risaralda</div>
+                </div>
+                <div class="passport-seal">
+                    <strong>86+</strong>
+                    <span>Perfiles de especialidad</span>
+                </div>
+            </div>
+            <div class="passport-body">
+
+                <!---
+                <article class="producer-card reveal-left">
+                    <div class="producer-photo">
+                        <img src="img/ramon-medina.jpg" alt="Ramón Medina, productor de Café D’Medina">
+                    </div>
+                    <div class="producer-info">
+                        <h2>Ramón Medina</h2>
+                        <p><strong>Productor de tercera generación.</strong></p>
+                        <p>Nuestro café nace en fincas familiares donde tradición, experiencia y cuidado del cultivo se encuentran para expresar el carácter de Mistrató en cada cosecha.</p>
+                        <div class="mini-lines">
+                            <div>
+                                <strong>Productor</strong>
+                                <span>Ramón Medina</span>
+                            </div>
+                            <div>
+                                <strong>Origen</strong>
+                                <span>Mistrató, Risaralda</span>
+                            </div>
+                            <div>
+                                <strong>País</strong>
+                                <span>Colombia</span>
+                            </div>
+                        </div>
+                    </div>
+                </article>-->
+
+
+
+                <article class="producer-card reveal-left">
+  <div class="producer-photo">
+    <img src="img/ramon-medina.jpg" alt="Ramón Medina, productor de Café D’Medina">
+  </div>
+
+  <div class="producer-info">
+    <h2>Ramón Medina</h2>
+
+    <p><strong>Productor de tercera generación.</strong></p>
+
+    <p>
+      Nuestro café nace en fincas familiares donde tradición, experiencia y cuidado del cultivo
+      se encuentran para expresar el carácter de Mistrató en cada cosecha.
+    </p>
+
+    <div class="mini-lines">
+
+      <div>
+        <strong>Origen</strong>
+        <span>Mistrató, Risaralda</span>
+      </div>
+
+      <div>
+        <strong>Fincas</strong>
+        <span>La Estrella y El Tango</span>
+      </div>
+
+      <div>
+        <strong>Altitud</strong>
+        <span>1.550 msnm</span>
+      </div>
+    </div>
+
+    <div class="producer-map-box">
+      <h3>Ubicación</h3>
+
+      <div class="producer-map">
+        <iframe
+          src="https://www.google.com/maps?q=Mistrató,Risaralda,Colombia&output=embed"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</article>
+
+                <article class="sensorial-card reveal-right">
+                    <h2>Perfil sensorial</h2>
+                    <div class="score-circle">
+                        <strong>86+</strong>
+                        <span>SCA</span>
+                    </div>
+                    <div class="sensorial-list">
+                        <div><strong>Identidad:</strong> cada cosecha expresa un perfil propio.</div>
+                        <div><strong>Perfil:</strong> dulzor, complejidad, equilibrio y expresión del origen.</div>
+                        <div><strong>Resultado:</strong> cafés con puntuaciones de cata a partir de 86 puntos.</div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="light"><div class="section-head reveal"><div class="eyebrow">Datos generales</div><h2>Origen, fincas y variedades</h2><p>Este pasaporte reúne la información general de Café D’Medina y sirve como punto de acceso a la trazabilidad completa de cada cosecha, lote y proceso.</p></div><div class="info-grid"><article class="info-card reveal"><h3>Fincas</h3><p>La Estrella y El Tango, fincas familiares ubicadas en Mistrató, Risaralda.</p></article><article class="info-card reveal"><h3>Altitud</h3><p>Cultivado aproximadamente a 1550 msnm, en zona montañosa con alta riqueza natural.</p></article><article class="info-card reveal"><h3>Variedades</h3><p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades adaptadas al origen.</p></article><article class="info-card reveal"><h3>Familia</h3><p>Una historia cafetera que une tradición familiar, origen colombiano y visión premium.</p></article></div></section>
+    <section><div class="split"><div class="split-image reveal-left"><img src="img/cafetales-padre.jpg" alt="Fincas cafeteras Café D’Medina"></div><div class="split-text reveal-right"><div class="eyebrow">Fincas familiares</div><h2>El café empieza en la tierra</h2><p>Café D’Medina nace en fincas propias, donde el cultivo se trabaja con selección manual, respeto por la tierra y cuidado en cada etapa.</p><p>Cada cosecha puede presentar matices diferentes según el clima, el proceso, la variedad y el punto de maduración de las cerezas.</p><a href="index.html#historia" class="btn">Conocer nuestra historia</a></div></div></section>
+    <section class="trace"><div class="section-head reveal"><div class="eyebrow">Trazabilidad completa</div><h2>Del cultivo al empaque</h2><p>Cada lote puede consultarse de forma individual para conocer su cosecha, proceso, perfil sensorial y contenido exclusivo.</p></div><div class="trace-line reveal"><div class="trace-items"><article class="trace-item"><div class="icon">🌱</div><h3>1. Semilla</h3><p>Variedades seleccionadas y adaptadas al origen.</p></article><article class="trace-item"><div class="icon">⛰️</div><h3>2. Cultivo</h3><p>Fincas familiares en Mistrató, Risaralda.</p></article><article class="trace-item"><div class="icon">🧺</div><h3>3. Cosecha</h3><p>Recolección manual de cerezas maduras.</p></article><article class="trace-item"><div class="icon">💧</div><h3>4. Beneficio</h3><p>Proceso definido según el perfil buscado.</p></article><article class="trace-item"><div class="icon">☀️</div><h3>5. Secado</h3><p>Control del secado y cuidado del grano.</p></article><article class="trace-item"><div class="icon">☕</div><h3>6. Tueste</h3><p>Perfil de tueste adaptado al mercado y al lote.</p></article></div></div></section>
+    <section class="exclusive" id="exclusivo"><div class="exclusive-wrap reveal"><div class="eyebrow">Contenido exclusivo</div><h2>Acceso por lote, cosecha y proceso</h2><p>Introduce el código incluido en el empaque para acceder al pasaporte específico de tu café: cosecha, proceso, ficha de cata, fotos, vídeos y trazabilidad detallada.</p><div class="lot-grid"><article class="lot-card"><h3>DM-2026-001</h3><p><strong>Proceso:</strong> Lavado</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-001')">Elegir este lote</button></article><article class="lot-card"><h3>DM-2026-002</h3><p><strong>Proceso:</strong> Honey</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-002')">Elegir este lote</button></article><article class="lot-card"><h3>DM-2026-003</h3><p><strong>Proceso:</strong> Natural</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-003')">Elegir este lote</button></article></div><div class="password-box"><input id="codigo-lote" type="text" placeholder="Código exclusivo del empaque"><button class="btn" onclick="validarCodigo()">Acceder al contenido exclusivo</button></div><p class="password-help">Ejemplo interno de prueba: DM-2026-001 / DM-2026-002 / DM-2026-003. Después cambiamos estos códigos por los reales del empaque.</p><div id="access-message" class="access-message"></div></div></section>
+  </main>
+  <footer>© 2026 Café D’Medina · Pasaporte del Café · Mistrató, Risaralda, Colombia</footer>
+  <a href="https://wa.me/34660736866" class="whatsapp-float" target="_blank" aria-label="WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>
+
+  <script>
+  function toggleMenu() {
+    const menu = document.getElementById("mobile-menu");
+    if (menu) {
+      menu.classList.toggle("open");
+    }
+  }
+
+  function closeMenu() {
+    const menu = document.getElementById("mobile-menu");
+    if (menu) {
+      menu.classList.remove("open");
+    }
+  }
+
+  function actualizarIconoCarrito() {
+    const cartCount = document.getElementById("cart-count");
+    const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+
+    const unidades = carritoGuardado.reduce((sum, item) => {
+      return sum + Number(item.cantidad || 0);
+    }, 0);
+
+    if (cartCount) {
+      cartCount.textContent = unidades;
+    }
+  }
+
+  actualizarIconoCarrito();
+
+  const paginasLote = {
+    "DM-2026-001": "lotes/dm-2026-001.html",
+    "DM-2026-002": "lotes/dm-2026-002.html",
+    "DM-2026-003": "lotes/dm-2026-003.html"
+  };
+
+  function seleccionarLote(codigo) {
+    const input = document.getElementById("codigo-lote");
+    if (input) {
+      input.value = codigo;
+      input.focus();
+    }
+  }
+
+  function validarCodigo() {
+    const input = document.getElementById("codigo-lote");
+    const message = document.getElementById("access-message");
+    const codigo = (input.value || "").trim().toUpperCase();
+
+    if (paginasLote[codigo]) {
+      window.location.href = paginasLote[codigo];
+    } else if (message) {
+      message.textContent = "Código no válido. Revisa el código impreso en tu empaque.";
+    }
+  }
+
+  function activarAnimacionesScroll() {
+    const revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+    revealElements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+
+      const entraEnPantalla =
+        rect.top < window.innerHeight * 0.82 &&
+        rect.bottom > window.innerHeight * 0.18;
+
+      if (entraEnPantalla) {
+        el.classList.add("visible");
+      } else {
+        el.classList.remove("visible");
+      }
+    });
+  }
+
+  window.addEventListener("scroll", activarAnimacionesScroll);
+  window.addEventListener("resize", activarAnimacionesScroll);
+  window.addEventListener("load", activarAnimacionesScroll);
+</script>
+
+</body>
+</html>
