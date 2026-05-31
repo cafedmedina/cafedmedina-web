@@ -142,9 +142,9 @@
       display: none;
     }
 
-    /* =====================================================
-       BOTÓN VOLVER DENTRO DE LA PÁGINA
-    ===================================================== */
+    /* =======================================================================================================================================================================================================
+                                                                                     BOTÓN VOLVER DENTRO DE LA PÁGINA
+    ========================================================================================================================================================================================================== */
 
     .historia-back-wrap {
       background: var(--black);
@@ -164,9 +164,9 @@
       opacity: .8;
     }
 
-    /* =====================================================
-       HERO HISTORIA
-    ===================================================== */
+    /* ========================================================================================================================================================================================================
+                                                                                                      HERO HISTORIA
+    =========================================================================================================================================================================================================== */
 
     .historia-hero {
       text-align: center;
@@ -192,9 +192,9 @@
       line-height: 1.65;
     }
 
-    /* =====================================================
-       BLOQUES HISTORIA
-    ===================================================== */
+    /* ==========================================================================================================================================================================================================
+                                                                                                         BLOQUES HISTORIA
+    ============================================================================================================================================================================================================= */
 
     .historia-grid {
       display: grid;
@@ -281,11 +281,11 @@
       font-size: 14px;
     }
 
-    /* =====================================================
-       MÓVIL
-       Header: ☰ + Café D’Medina + carrito
-       Historia: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
-    ===================================================== */
+    /* =================================================================================================================================================================================================
+                                                                                                    MÓVIL
+                                                                                      Header: ☰ + Café D’Medina + carrito
+                                                                    Historia: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
+    ==================================================================================================================================================================================================== */
 
     @media (max-width: 850px) {
 
@@ -494,9 +494,9 @@
     }
 
 
-/* =====================================================
-   CARRITO + CONTADOR UNIFICADO
-===================================================== */
+/* =========================================================================================================================================================================================================
+                                                                                         CARRITO + CONTADOR UNIFICADO
+============================================================================================================================================================================================================ */
 
 .cart-link {
   position: relative !important;
@@ -539,7 +539,9 @@
   border-radius: 50% !important;
 }
 
-/* MÓVIL */
+/*======================================================================================================================================================================================================
+                                                                                                    MÓVIL
+========================================================================================================================================================================================================= */
 @media (max-width: 850px) {
   .cart-link {
     position: absolute !important;
@@ -565,11 +567,189 @@
 }
 
 
+/* ======================================================================================================================================================================================================
+   EFECTO APARECER / DESAPARECER AL SCROLL
+========================================================================================================================================================================================================= */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+@media (max-width: 850px) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(22px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    transform: translateY(0);
+  }
+
+  .historia-back-link {
+    white-space: nowrap !important;
+    font-size: 16px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+}
+
+
+/* ==============================================================================================================================================================================================================
+                                                                                             BOTONES FLOTANTES SOLO MÓVIL
+================================================================================================================================================================================================================= */
+
+.scroll-top {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .scroll-top {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(135deg, #e2c47d, #c8a96a);
+    color: #11100f;
+
+    border-radius: 50%;
+    text-decoration: none;
+
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+
+    box-shadow: 0 8px 20px rgba(0,0,0,.22);
+    z-index: 9998;
+  }
+
+  .whatsapp-float {
+    width: 52px;
+    height: 52px;
+    bottom: 18px;
+    left: 18px;
+    right: auto;
+  }
+}
+
+
+/* =========================================================================================================================================================================================================
+                                                                                  WHATSAPP FLOTANTE - ORDENADOR Y MÓVIL
+============================================================================================================================================================================================================= */
+
+.whatsapp-float {
+  position: fixed;
+  width: 55px;
+  height: 55px;
+  bottom: 25px;
+  left: 25px;
+  z-index: 9998;
+}
+
+.whatsapp-float img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+@media (max-width: 850px) {
+  .whatsapp-float {
+    width: 52px;
+    height: 52px;
+    bottom: 18px;
+    left: 18px;
+    right: auto;
+  }
+}
+
+
+
+/* ========================================================================================================================================================================================================
+                                                                                 BOTÓN VOLVER ARRIBA - ORDENADOR Y MÓVIL
+============================================================================================================================================================================================================ */
+
+.scroll-top {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+
+  border-radius: 50%;
+  text-decoration: none;
+
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,.22);
+  z-index: 9998;
+
+  transition: .25s ease;
+}
+
+.scroll-top:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.04);
+}
+
+@media (max-width: 850px) {
+  .scroll-top {
+    right: 18px;
+    bottom: 18px;
+
+    width: 52px;
+    height: 52px;
+
+    font-size: 26px;
+  }
+}
 
   </style>
 </head>
 
-<body>
+<body id="top">
 
   <header>
     <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
@@ -610,80 +790,80 @@
 
   <main>
 
-    <div class="historia-back-wrap">
-      <a href="index.html#historia" class="historia-back-link">
-        ← Volver
-      </a>
-    </div>
+<div class="historia-back-wrap">
+  <a href="index.html#inicio" class="historia-back-link">
+    ← Volver al inicio
+  </a>
+</div>
 
-    <section class="historia-hero">
-      <h1>Nuestra Historia: el corazón de Café D’Medina</h1>
-      <p>
-        Descubre el legado familiar que ha cultivado la pasión por el café de origen durante generaciones.
-        Un viaje que comenzó en las montañas de Colombia y que hoy llega hasta tu taza.
-      </p>
-    </section>
+<section class="historia-hero reveal">
+  <h1>Nuestra Historia: el corazón de Café D’Medina</h1>
+  <p>
+    Descubre el legado familiar que ha cultivado la pasión por el café de origen durante generaciones.
+    Un viaje que comenzó en las montañas de Colombia y que hoy llega hasta tu taza.
+  </p>
+</section>
 
-    <section class="historia-grid">
+<section class="historia-grid">
 
-      <div class="historia-img">
-        <img src="img/historia-mulas.jpg" alt="Arriero con mulas transportando café">
-      </div>
+  <div class="historia-img reveal-left">
+    <img src="img/historia-mulas.jpg" alt="Arriero con mulas transportando café">
+  </div>
 
-      <div class="historia-text">
-        <h2>Un legado cafetero que nace en los años 30</h2>
-        <p>
-          Desde la década de 1930, nuestra familia ha estado profundamente ligada al café.
-          Todo comenzó con don Narciso Medina Grisales, quien transportaba a lomo de mula
-          los sacos de café desde Mistrató hasta Andes, Antioquia.
-        </p>
-        <p>
-          Cruzaba montañas con esfuerzo, determinación y orgullo por lo que cultivaba.
-          Ese fue el inicio de una historia familiar marcada por la tierra, el trabajo y el café.
-        </p>
-      </div>
+  <div class="historia-text reveal-right">
+    <h2>Un legado cafetero que nace en los años 30</h2>
+    <p>
+      Desde la década de 1930, nuestra familia ha estado profundamente ligada al café.
+      Todo comenzó con don Narciso Medina Grisales, quien transportaba a lomo de mula
+      los sacos de café desde Mistrató hasta Andes, Antioquia.
+    </p>
+    <p>
+      Cruzaba montañas con esfuerzo, determinación y orgullo por lo que cultivaba.
+      Ese fue el inicio de una historia familiar marcada por la tierra, el trabajo y el café.
+    </p>
+  </div>
 
-      <div class="historia-text">
-        <h2>La consolidación de una pasión</h2>
-        <p>
-          En 1958, su hijo Luis Medina heredó no solo la finca “La Linda”, sino también el compromiso
-          de hacer las cosas bien.
-        </p>
-        <p>
-          Con trabajo incansable, consolidó la producción cafetera como el corazón de nuestra familia.
-          Su visión y dedicación sentaron las bases de lo que hoy representa Café D’Medina:
-          tradición, origen y respeto por la tierra.
-        </p>
-      </div>
+  <div class="historia-text reveal-left">
+    <h2>La consolidación de una pasión</h2>
+    <p>
+      En 1958, su hijo Luis Medina heredó no solo la finca “La Linda”, sino también el compromiso
+      de hacer las cosas bien.
+    </p>
+    <p>
+      Con trabajo incansable, consolidó la producción cafetera como el corazón de nuestra familia.
+      Su visión y dedicación sentaron las bases de lo que hoy representa Café D’Medina:
+      tradición, origen y respeto por la tierra.
+    </p>
+  </div>
 
-      <div class="historia-img color">
-        <img src="img/cafetales-padre.jpg" alt="Fincas cafeteras familiares en Mistrató">
-      </div>
+  <div class="historia-img color reveal-right">
+    <img src="img/cafetales-padre.jpg" alt="Fincas cafeteras familiares en Mistrató">
+  </div>
 
-      <div class="historia-img color">
-        <img src="img/cafetales-3-generaciones.jpg" alt="Mistrató Risaralda Colombia">
-      </div>
+  <div class="historia-img color reveal-left">
+    <img src="img/cafetales-3-generaciones.jpg" alt="Mistrató Risaralda Colombia">
+  </div>
 
-      <div class="historia-text">
-        <h2>Tres generaciones de amor por el café</h2>
-        <p>
-          Hoy, esta herencia vive en cada grano que cultivamos y seleccionamos. Tres generaciones después,
-          seguimos apostando por el origen, la calidad y el sabor auténtico del café de nuestra tierra.
-        </p>
-        <p>
-          Café D’Medina no es solo una marca; es la historia de una familia que ha hecho del café una forma de vida.
-          Un legado construido con esfuerzo, tradición y pasión, que hoy se transforma en un compromiso con la excelencia reflejado en cada taza.
-        </p>
+  <div class="historia-text reveal-right">
+    <h2>Tres generaciones de amor por el café</h2>
+    <p>
+      Hoy, esta herencia vive en cada grano que cultivamos y seleccionamos. Tres generaciones después,
+      seguimos apostando por el origen, la calidad y el sabor auténtico del café de nuestra tierra.
+    </p>
+    <p>
+      Café D’Medina no es solo una marca; es la historia de una familia que ha hecho del café una forma de vida.
+      Un legado construido con esfuerzo, tradición y pasión, que hoy se transforma en un compromiso con la excelencia reflejado en cada taza.
+    </p>
 
-        <a href="index.html#inicio" class="btn">Volver al inicio</a>
-      </div>
+    <a href="index.html#inicio" class="btn">Volver al inicio</a>
+  </div>
 
-    </section>
+</section>
 
-    <section class="historia-frase">
-      “Café D’Medina es más que una bebida; es la historia de una familia,
-      la dedicación de generaciones y el auténtico sabor de Colombia en cada sorbo.”
-    </section>
+<section class="historia-frase reveal">
+  “Café D’Medina es más que una bebida; es la historia de una familia,
+  la dedicación de generaciones y el auténtico sabor de Colombia en cada sorbo.”
+</section>
 
   </main>
 
@@ -692,35 +872,75 @@
   </footer>
 
   <script>
-    function actualizarIconoCarrito() {
-      const cartCount = document.getElementById("cart-count");
-      const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+function actualizarIconoCarrito() {
+  const cartCount = document.getElementById("cart-count");
+  const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
 
-      const unidades = carritoGuardado.reduce((sum, item) => {
-        return sum + Number(item.cantidad || 0);
-      }, 0);
+  const unidades = carritoGuardado.reduce((sum, item) => {
+    return sum + Number(item.cantidad || 0);
+  }, 0);
 
-      if (cartCount) {
-        cartCount.textContent = unidades;
-      }
+  if (cartCount) {
+    cartCount.textContent = unidades;
+  }
+}
+
+actualizarIconoCarrito();
+
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+
+function activarAnimacionesScroll() {
+  const revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+  revealElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+
+    const entraEnPantalla =
+      rect.top < window.innerHeight * 0.82 &&
+      rect.bottom > window.innerHeight * 0.18;
+
+    if (entraEnPantalla) {
+      el.classList.add("visible");
+    } else {
+      el.classList.remove("visible");
     }
+  });
+}
 
-    actualizarIconoCarrito();
+window.addEventListener("scroll", activarAnimacionesScroll);
+window.addEventListener("resize", activarAnimacionesScroll);
+window.addEventListener("load", activarAnimacionesScroll);
+</script>
 
-    function toggleMenu() {
-      const menu = document.getElementById("mobile-menu");
-      if (menu) {
-        menu.classList.toggle("open");
-      }
-    }
 
-    function closeMenu() {
-      const menu = document.getElementById("mobile-menu");
-      if (menu) {
-        menu.classList.remove("open");
-      }
-    }
-  </script>
+<a href="#top" class="scroll-top" aria-label="Volver arriba">
+  ↑
+</a>
+
+
+
+<a href="https://wa.me/34660736866"
+   class="whatsapp-float"
+   target="_blank"
+   aria-label="WhatsApp">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+</a>
+
+<a href="#top" class="scroll-top" aria-label="Volver arriba">
+  ↑
+</a>
 
 </body>
 </html>

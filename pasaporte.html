@@ -214,6 +214,156 @@
   }
 }
 
+/* ============================================================================================================================================================================================================
+                                                                                            BOTÓN VOLVER ARRIBA - PASAPORTE
+===================================================== =========================================================================================================================================================*/
+
+.scroll-top {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+
+  border-radius: 50%;
+  text-decoration: none;
+
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,.22);
+  z-index: 9998;
+
+  transition: .25s ease;
+}
+
+.scroll-top:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.04);
+}
+
+@media (max-width: 850px) {
+  .scroll-top {
+    right: 18px;
+    bottom: 18px;
+
+    width: 52px;
+    height: 52px;
+
+    font-size: 26px;
+  }
+}
+
+
+/* =====================================================================================================================================================================================
+                                                                                  TARJETAS GIRATORIAS - PASAPORTE
+======================================================================================================================================================================================== */
+
+.flip-grid {
+  perspective: 1200px;
+}
+
+.flip-card {
+  min-height: 190px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  cursor: pointer;
+  perspective: 1200px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+
+  transition: transform .75s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-inner,
+.flip-card:focus-within .flip-inner,
+.flip-card.flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-front,
+.flip-back {
+  position: absolute;
+  inset: 0;
+
+  padding: 26px;
+  border-radius: 24px;
+
+  background: var(--card);
+  border: 1px solid rgba(200,169,106,.35);
+  border-left: 4px solid var(--gold);
+  box-shadow: 0 18px 38px rgba(58,36,24,.10);
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-front {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.flip-front h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--coffee);
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-back p {
+  color: #5e5147;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+/* Móvil: se gira al tocar */
+@media (max-width: 850px) {
+  .flip-card {
+    min-height: 180px;
+  }
+
+  .flip-inner {
+    min-height: 180px;
+  }
+
+  .flip-front h3 {
+    font-size: 30px;
+  }
+
+  .flip-back p {
+    font-size: 14.5px;
+  }
+}
+
+
+
 </style>
 
 
@@ -221,7 +371,7 @@
 </head>
 
 
-<body>
+<body id="top">
 
   <header>
     <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
@@ -239,7 +389,7 @@
                 <div>
                     <div class="passport-label">Pasaporte del café</div>
                     <h1>Café D’Medina</h1>
-                    <div class="passport-code">Origen Colombia · Mistrató, Risaralda</div>
+                    <div class="passport-code">Origen - Mistrató, Risaralda (Colombia)</div>
                 </div>
                 <div class="passport-seal">
                     <strong>86+</strong>
@@ -286,10 +436,11 @@
 
     <p><strong>Productor de tercera generación.</strong></p>
 
+
     <p>
-      Nuestro café nace en fincas familiares donde tradición, experiencia y cuidado del cultivo
-      se encuentran para expresar el carácter de Mistrató en cada cosecha.
+    Detrás de cada cosecha está el trabajo de muchas familias locales, el esfuerzo de mi familia en nuestras fincas y una historia cafetera que seguimos cuidando con orgullo.
     </p>
+    
 
     <div class="mini-lines">
 
@@ -339,13 +490,226 @@
             </div>
         </div>
     </section>
-    <section class="light"><div class="section-head reveal"><div class="eyebrow">Datos generales</div><h2>Origen, fincas y variedades</h2><p>Este pasaporte reúne la información general de Café D’Medina y sirve como punto de acceso a la trazabilidad completa de cada cosecha, lote y proceso.</p></div><div class="info-grid"><article class="info-card reveal"><h3>Fincas</h3><p>La Estrella y El Tango, fincas familiares ubicadas en Mistrató, Risaralda.</p></article><article class="info-card reveal"><h3>Altitud</h3><p>Cultivado aproximadamente a 1550 msnm, en zona montañosa con alta riqueza natural.</p></article><article class="info-card reveal"><h3>Variedades</h3><p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades adaptadas al origen.</p></article><article class="info-card reveal"><h3>Familia</h3><p>Una historia cafetera que une tradición familiar, origen colombiano y visión premium.</p></article></div></section>
-    <section><div class="split"><div class="split-image reveal-left"><img src="img/cafetales-padre.jpg" alt="Fincas cafeteras Café D’Medina"></div><div class="split-text reveal-right"><div class="eyebrow">Fincas familiares</div><h2>El café empieza en la tierra</h2><p>Café D’Medina nace en fincas propias, donde el cultivo se trabaja con selección manual, respeto por la tierra y cuidado en cada etapa.</p><p>Cada cosecha puede presentar matices diferentes según el clima, el proceso, la variedad y el punto de maduración de las cerezas.</p><a href="index.html#historia" class="btn">Conocer nuestra historia</a></div></div></section>
-    <section class="trace"><div class="section-head reveal"><div class="eyebrow">Trazabilidad completa</div><h2>Del cultivo al empaque</h2><p>Cada lote puede consultarse de forma individual para conocer su cosecha, proceso, perfil sensorial y contenido exclusivo.</p></div><div class="trace-line reveal"><div class="trace-items"><article class="trace-item"><div class="icon">🌱</div><h3>1. Semilla</h3><p>Variedades seleccionadas y adaptadas al origen.</p></article><article class="trace-item"><div class="icon">⛰️</div><h3>2. Cultivo</h3><p>Fincas familiares en Mistrató, Risaralda.</p></article><article class="trace-item"><div class="icon">🧺</div><h3>3. Cosecha</h3><p>Recolección manual de cerezas maduras.</p></article><article class="trace-item"><div class="icon">💧</div><h3>4. Beneficio</h3><p>Proceso definido según el perfil buscado.</p></article><article class="trace-item"><div class="icon">☀️</div><h3>5. Secado</h3><p>Control del secado y cuidado del grano.</p></article><article class="trace-item"><div class="icon">☕</div><h3>6. Tueste</h3><p>Perfil de tueste adaptado al mercado y al lote.</p></article></div></div></section>
-    <section class="exclusive" id="exclusivo"><div class="exclusive-wrap reveal"><div class="eyebrow">Contenido exclusivo</div><h2>Acceso por lote, cosecha y proceso</h2><p>Introduce el código incluido en el empaque para acceder al pasaporte específico de tu café: cosecha, proceso, ficha de cata, fotos, vídeos y trazabilidad detallada.</p><div class="lot-grid"><article class="lot-card"><h3>DM-2026-001</h3><p><strong>Proceso:</strong> Lavado</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-001')">Elegir este lote</button></article><article class="lot-card"><h3>DM-2026-002</h3><p><strong>Proceso:</strong> Honey</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-002')">Elegir este lote</button></article><article class="lot-card"><h3>DM-2026-003</h3><p><strong>Proceso:</strong> Natural</p><p><strong>Cosecha:</strong> Octubre 2026</p><button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-003')">Elegir este lote</button></article></div><div class="password-box"><input id="codigo-lote" type="text" placeholder="Código exclusivo del empaque"><button class="btn" onclick="validarCodigo()">Acceder al contenido exclusivo</button></div><p class="password-help">Ejemplo interno de prueba: DM-2026-001 / DM-2026-002 / DM-2026-003. Después cambiamos estos códigos por los reales del empaque.</p><div id="access-message" class="access-message"></div></div></section>
+    <section class="light">
+        <div class="section-head reveal">
+            <div class="eyebrow">
+                Datos generales
+            </div>
+            <h2>Origen, fincas y variedades</h2>
+            <p>Este pasaporte reúne la información general de Café D’Medina y sirve como punto de acceso
+                 a la trazabilidad completa de cada cosecha, lote y proceso.
+            </p>
+        </div>
+        <!--<div class="info-grid">>
+            <article class="info-card reveal">
+                <h3>Fincas</h3>
+                <p>La Estrella y El Tango, fincas familiares ubicadas en Mistrató, Risaralda.</p>
+            </article>
+            <article class="info-card reveal">
+                <h3>Altitud</h3>
+                <p>Cultivado aproximadamente a 1550 msnm, en zona montañosa con alta riqueza natural.</p>
+            </article>
+            <article class="info-card reveal">
+                <h3>Variedades</h3>
+                <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades adaptadas al origen.</p>
+            </article>
+            <article class="info-card reveal">
+                <h3>Familia</h3>
+                <p>Una historia cafetera que une tradición familiar, origen colombiano y visión premium.</p>
+            </article>
+        </div>-->
+
+        <div class="info-grid flip-grid">
+
+  <article class="flip-card reveal">
+    <div class="flip-inner">
+      <div class="flip-front">
+        <h3>Fincas</h3>
+      </div>
+      <div class="flip-back">
+        <p>La Estrella y El Tango, fincas familiares ubicadas en Mistrató, Risaralda.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="flip-card reveal">
+    <div class="flip-inner">
+      <div class="flip-front">
+        <h3>Altitud</h3>
+      </div>
+      <div class="flip-back">
+        <p>
+          Cultivado a 1.550 msnm, una altitud ideal para café arábica de especialidad.
+          La maduración lenta del grano favorece el dulzor natural, una acidez elegante
+          y mayor complejidad aromática en taza.
+        </p>
+      </div>
+    </div>
+  </article>
+
+  <article class="flip-card reveal">
+    <div class="flip-inner">
+      <div class="flip-front">
+        <h3>Variedades</h3>
+      </div>
+      <div class="flip-back">
+        <p>
+          <p>
+            Cultivamos variedades arábicas como Colombia, F6, Castillo Zona Centro y Cenicafé 1, seleccionadas por su adaptación al origen y su resistencia a la roya,
+             a partir de semillas certificadas por CENICAFÉ.
+         </p>
+        </p>
+      </div>
+    </div>
+  </article>
+
+  <article class="flip-card reveal">
+    <div class="flip-inner">
+      <div class="flip-front">
+        <h3>Familia</h3>
+      </div>
+      <div class="flip-back">
+        <p>
+          Tres generaciones de caficultores han trabajado esta tierra con esfuerzo, tradición y orgullo. 
+          Hoy seguimos cuidando ese legado familiar en cada cosecha.
+        </p>
+      </div>
+    </div>
+  </article>
+
+</div>
+
+
+
+
+
+
+    </section>
+
+    <section>
+        <div class="split">
+            <div class="split-image reveal-left">
+                <img src="img/cafetales-padre.jpg" alt="Fincas cafeteras Café D’Medina">
+            </div>
+            <div class="split-text reveal-right">
+                <div class="eyebrow">
+                    Fincas familiares
+                </div>
+                <h2>El café empieza en la tierra</h2>
+                <p>Café D’Medina nace en fincas propias, donde el cultivo se trabaja con selección manual, respeto por la tierra
+                     y cuidado en cada etapa.
+                </p>
+                <p>Cada cosecha puede presentar matices diferentes según el clima, el proceso, la variedad y el punto de maduración de las cerezas.</p>
+                <a href="index.html#historia" class="btn">
+                    Conocer nuestra historia
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="trace">
+        <div class="section-head reveal">
+            <div class="eyebrow">
+                Trazabilidad completa
+            </div>
+            <h2>Del cultivo al empaque</h2>
+            <p>Cada lote puede consultarse de forma individual para conocer su cosecha, proceso, perfil sensorial y contenido exclusivo.</p>
+        </div>
+        <div class="trace-line reveal">
+            <div class="trace-items">
+                <article class="trace-item">
+                    <div class="icon">🌱</div>
+                    <h3>1. Semilla</h3>
+                    <p>Variedades seleccionadas y adaptadas al origen.</p>
+                </article>
+                <article class="trace-item">
+                    <div class="icon">⛰️</div>
+                    <h3>2. Cultivo</h3><p>Fincas familiares en Mistrató, Risaralda.</p>
+                </article>
+                <article class="trace-item">
+                    <div class="icon">🧺</div>
+                    <h3>3. Cosecha</h3>
+                    <p>Recolección manual de cerezas maduras.</p>
+                </article>
+                <article class="trace-item">
+                    <div class="icon">💧</div>
+                    <h3>4. Beneficio</h3>
+                    <p>Proceso definido según el perfil buscado.</p>
+                </article>
+                <article class="trace-item">
+                    <div class="icon">☀️</div>
+                    <h3>5. Secado</h3>
+                    <p>Control del secado y cuidado del grano.</p>
+                </article>
+                <article class="trace-item">
+                    <div class="icon">☕</div>
+                    <h3>6. Tueste</h3>
+                    <p>Perfil de tueste adaptado al mercado y al lote.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="exclusive" id="exclusivo">
+        <div class="exclusive-wrap reveal">
+            <div class="eyebrow">
+                Contenido exclusivo
+            </div>
+            <h2>Acceso por lote, cosecha y proceso</h2>
+            <p>Introduce el código incluido en el empaque para acceder al pasaporte específico de tu café: cosecha, proceso, ficha de cata, fotos, vídeos
+                 y trazabilidad detallada.</p>
+            <div class="lot-grid">
+                <article class="lot-card">
+                    <h3>DM-2026-001</h3>
+                        <p>
+                            <strong>Proceso:</strong>
+                            Lavado
+                        </p>
+                        <p>
+                            <strong>Cosecha:</strong>+
+                             Octubre 2026
+                        </p>
+                        <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-001')">Elegir este lote</button>
+                    </article>
+                    <article class="lot-card">
+                        <h3>DM-2026-002</h3>
+                        <p>
+                            <strong>Proceso:</strong> Honey</p><p><strong>
+                                Cosecha:
+                            </strong> 
+                            Octubre 2026
+                        </p>
+                        <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-002')">Elegir este lote</button>
+                    </article>
+                    <article class="lot-card">
+                        <h3>DM-2026-003</h3>
+                            <p>
+                            <strong>Proceso:</strong>
+                             Natural</p>
+                            <p>
+                                <strong>Cosecha:</strong> 
+                                Octubre 2026</p>
+                                <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-003')">Elegir este lote</button>
+                            </article>
+                        </div>
+                        <div class="password-box">
+                            <input id="codigo-lote" type="text" placeholder="Código exclusivo del empaque">
+                            <button class="btn" onclick="validarCodigo()">Acceder al contenido exclusivo</button>
+                        </div>
+                        <p class="password-help">Ejemplo interno de prueba: DM-2026-001 / DM-2026-002 / DM-2026-003. Después cambiamos estos códigos por los reales del empaque.</p>
+                        <div id="access-message" class="access-message">
+                        </div>
+                    </div>
+                </section>
   </main>
   <footer>© 2026 Café D’Medina · Pasaporte del Café · Mistrató, Risaralda, Colombia</footer>
-  <a href="https://wa.me/34660736866" class="whatsapp-float" target="_blank" aria-label="WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"></a>
+
+<a href="https://wa.me/34660736866" 
+    class="whatsapp-float" 
+    target="_blank" 
+    aria-label="WhatsApp">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+</a>
 
   <script>
   function toggleMenu() {
@@ -424,7 +788,21 @@
   window.addEventListener("scroll", activarAnimacionesScroll);
   window.addEventListener("resize", activarAnimacionesScroll);
   window.addEventListener("load", activarAnimacionesScroll);
+
+
+document.querySelectorAll(".flip-card").forEach(card => {
+  card.addEventListener("click", () => {
+    card.classList.toggle("flipped");
+  });
+});
+
+
 </script>
+
+<a href="#top" class="scroll-top" aria-label="Volver arriba">
+  ↑
+</a>
+
 
 </body>
 </html>
