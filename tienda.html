@@ -929,7 +929,7 @@
               Descargar ficha de cata profesional
             </a>-->
 
-            <a href="pasaporte.html" class="btn btn-primary cata-passport-btn">
+            <a href="pasaporte.html" id="ficha-pasaporte" class="btn btn-primary cata-passport-btn">
               Ver pasaporte del café
             </a>
           </div>
@@ -1045,6 +1045,13 @@
 
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
+    // Código de lote (el mismo que va en el QR del empaque) por cada proceso
+    const codigosLote = {
+      lavado: "DM-2026-001",
+      honey: "DM-2026-002",
+      natural: "DM-2026-003"
+    };
+
     function actualizarPrecioYLote() {
       const proceso = document.getElementById("proceso").value;
       const peso = document.getElementById("peso").value;
@@ -1058,6 +1065,11 @@
       document.getElementById("puntaje").textContent = cafe.puntaje;
       document.getElementById("perfil").textContent = cafe.perfil;
      // document.getElementById("ficha-cata").href = cafe.ficha;
+
+      const enlacePasaporte = document.getElementById("ficha-pasaporte");
+      if (enlacePasaporte && codigosLote[proceso]) {
+        enlacePasaporte.href = "pasaporte.html?codigo=" + codigosLote[proceso];
+      }
 
       if (!peso) {
         document.getElementById("precio").textContent = "Selecciona peso";
