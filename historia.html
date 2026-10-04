@@ -745,6 +745,263 @@
     font-size: 26px;
   }
 }
+/* FOOTER LEGAL */
+
+.footer-legal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding: 24px 20px;
+  background: #11100f;
+  color: #f5f1e8;
+  font-size: 14px;
+  text-align: center;
+}
+
+.footer-legal span {
+  color: #f5f1e8;
+}
+
+.footer-legal a {
+  color: #e2c47d;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-legal a:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 850px) {
+  .footer-legal {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    padding: 22px 18px;
+  }
+}
+/* =====================================================================================================================================================================================
+   BANNER DE COOKIES
+======================================================================================================================================================================================== */
+
+.cookie-banner {
+  position: fixed;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100000;
+  max-width: 980px;
+  margin: 0 auto;
+  background: rgba(17,16,15,.98);
+  color: #f5f1e8;
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  display: none;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner.show {
+  display: flex;
+}
+
+.cookie-text {
+  max-width: 620px;
+}
+
+.cookie-text strong {
+  display: block;
+  color: #e2c47d;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.cookie-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.82);
+}
+
+.cookie-text a {
+  color: #e2c47d;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  font-family: 'Lato', Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cookie-accept {
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+}
+
+.cookie-reject {
+  background: #f5f1e8;
+  color: #11100f;
+}
+
+.cookie-config {
+  background: transparent;
+  color: #e2c47d;
+  border: 1px solid rgba(226,196,125,.55) !important;
+}
+
+@media (max-width: 850px) {
+  .cookie-banner {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cookie-actions button,
+  .cookie-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+/* =====================================================================================================================================================================================
+   BANNER DE COOKIES
+======================================================================================================================================================================================== */
+
+.cookie-banner {
+  position: fixed;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100000;
+  max-width: 980px;
+  margin: 0 auto;
+  background: rgba(17,16,15,.98);
+  color: #f5f1e8;
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  display: none;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner.show {
+  display: flex;
+}
+
+.cookie-text {
+  max-width: 620px;
+}
+
+.cookie-text strong {
+  display: block;
+  color: #e2c47d;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.cookie-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.82);
+}
+
+.cookie-text a {
+  color: #e2c47d;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  font-family: 'Lato', Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cookie-accept {
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+}
+
+.cookie-reject {
+  background: #f5f1e8;
+  color: #11100f;
+}
+
+.cookie-config {
+  background: transparent;
+  color: #e2c47d;
+  border: 1px solid rgba(226,196,125,.55) !important;
+}
+
+@media (max-width: 850px) {
+  .cookie-banner {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cookie-actions button,
+  .cookie-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
 
   </style>
 </head>
@@ -946,5 +1203,130 @@ window.addEventListener("load", activarAnimacionesScroll);
     <a href="configuracion-cookies.html">Configuración de cookies</a>
   </div>
 </footer>
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-text">
+    <strong>Configuración de cookies</strong>
+    <p>
+      Utilizamos cookies técnicas necesarias para el funcionamiento de la web y, con tu consentimiento,
+      cookies de preferencias, análisis y marketing. Puedes aceptar, rechazar o configurar tus preferencias.
+      Consulta nuestra <a href="politica-cookies.html">Política de cookies</a>.
+    </p>
+  </div>
+
+  <div class="cookie-actions">
+    <button type="button" class="cookie-accept" onclick="aceptarCookies()">Aceptar todas</button>
+    <button type="button" class="cookie-reject" onclick="rechazarCookies()">Rechazar</button>
+    <a href="configuracion-cookies.html" class="cookie-config">Configurar</a>
+  </div>
+</div>
+<script>
+  function mostrarBannerCookies() {
+    const banner = document.getElementById("cookie-banner");
+    const config = localStorage.getItem("cookieConfigCafeDMedina");
+
+    if (!config && banner) {
+      banner.classList.add("show");
+    }
+  }
+
+  function aceptarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: true,
+      analiticas: true,
+      marketing: true,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  function rechazarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: false,
+      analiticas: false,
+      marketing: false,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  window.addEventListener("load", mostrarBannerCookies);
+</script>
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-text">
+    <strong>Configuración de cookies</strong>
+    <p>
+      Utilizamos cookies técnicas necesarias para el funcionamiento de la web y, con tu consentimiento,
+      cookies de preferencias, análisis y marketing. Puedes aceptar, rechazar o configurar tus preferencias.
+      Consulta nuestra <a href="politica-cookies.html">Política de cookies</a>.
+    </p>
+  </div>
+
+  <div class="cookie-actions">
+    <button type="button" class="cookie-accept" onclick="aceptarCookies()">Aceptar todas</button>
+    <button type="button" class="cookie-reject" onclick="rechazarCookies()">Rechazar</button>
+    <a href="configuracion-cookies.html" class="cookie-config">Configurar</a>
+  </div>
+</div>
+<script>
+  function mostrarBannerCookies() {
+    const banner = document.getElementById("cookie-banner");
+    const config = localStorage.getItem("cookieConfigCafeDMedina");
+
+    if (!config && banner) {
+      banner.classList.add("show");
+    }
+  }
+
+  function aceptarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: true,
+      analiticas: true,
+      marketing: true,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  function rechazarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: false,
+      analiticas: false,
+      marketing: false,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  window.addEventListener("load", mostrarBannerCookies);
+</script>
+
 </body>
 </html>

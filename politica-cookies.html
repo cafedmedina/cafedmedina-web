@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de cookies | Café D’Medina</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --coffee: #3a2418;
+      --cream: #f6f0e6;
+      --white: #ffffff;
+      --text: #2a2520;
+      --muted: #6d6258;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: var(--black);
+      color: var(--white);
+      padding: 22px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(200,169,106,.25);
+    }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold-light);
+      text-decoration: none;
+    }
+
+    .back-link {
+      color: var(--gold-light);
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .legal-hero {
+      background: linear-gradient(135deg, #11100f 0%, #3a2418 100%);
+      color: var(--white);
+      padding: 64px 7% 58px;
+      text-align: center;
+    }
+
+    .legal-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 5vw, 60px);
+      color: var(--gold-light);
+      margin-bottom: 14px;
+    }
+
+    .legal-hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: rgba(255,255,255,.82);
+      font-size: 17px;
+    }
+
+    .legal-page {
+      max-width: 980px;
+      margin: -34px auto 60px;
+      padding: 0 22px;
+    }
+
+    .legal-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 42px;
+      box-shadow: 0 18px 45px rgba(30,20,10,.14);
+      border: 1px solid rgba(200,169,106,.22);
+    }
+
+    .legal-card h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--coffee);
+      font-size: 30px;
+      margin: 34px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(200,169,106,.28);
+    }
+
+    .legal-card h2:first-child { margin-top: 0; }
+
+    .legal-card p,
+    .legal-card li {
+      margin-bottom: 14px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .legal-card ul {
+      padding-left: 22px;
+      margin-bottom: 18px;
+    }
+
+    .legal-card strong {
+      color: var(--coffee);
+      font-weight: 900;
+    }
+
+    .legal-data {
+      background: #f8f1e6;
+      border-left: 4px solid var(--gold);
+      border-radius: 18px;
+      padding: 22px 24px;
+      margin: 20px 0 30px;
+    }
+
+    .legal-data p { margin-bottom: 10px; }
+    .legal-data p:last-child { margin-bottom: 0; }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin: 22px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid rgba(200,169,106,.28);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8f1e6;
+      color: var(--coffee);
+      font-weight: 900;
+    }
+
+    .return-box {
+      margin-top: 34px;
+      text-align: center;
+    }
+
+    .btn-return {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+      text-decoration: none;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(200,169,106,.25);
+    }
+
+    .footer-legal {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      padding: 24px 20px;
+      background: #11100f;
+      color: #f5f1e8;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .footer-legal span { color: #f5f1e8; }
+
+    .footer-legal a {
+      color: #e2c47d;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-legal a:hover { color: #ffffff; }
+
+    @media (max-width: 850px) {
+      header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        padding: 20px 18px;
+      }
+
+      .brand { font-size: 28px; }
+
+      .legal-hero { padding: 48px 22px 50px; }
+
+      .legal-card {
+        padding: 28px 22px;
+        border-radius: 24px;
+      }
+
+      .legal-card h2 { font-size: 25px; }
+
+      .legal-card p,
+      .legal-card li {
+        font-size: 15px;
+      }
+
+      .footer-legal {
+        flex-direction: column;
+        gap: 10px;
+        font-size: 13px;
+        padding: 22px 18px;
+      }
+    }
+/* =====================================================================================================================================================================================
+   BANNER DE COOKIES
+======================================================================================================================================================================================== */
+
+.cookie-banner {
+  position: fixed;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100000;
+  max-width: 980px;
+  margin: 0 auto;
+  background: rgba(17,16,15,.98);
+  color: #f5f1e8;
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  display: none;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner.show {
+  display: flex;
+}
+
+.cookie-text {
+  max-width: 620px;
+}
+
+.cookie-text strong {
+  display: block;
+  color: #e2c47d;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.cookie-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.82);
+}
+
+.cookie-text a {
+  color: #e2c47d;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  font-family: 'Lato', Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cookie-accept {
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+}
+
+.cookie-reject {
+  background: #f5f1e8;
+  color: #11100f;
+}
+
+.cookie-config {
+  background: transparent;
+  color: #e2c47d;
+  border: 1px solid rgba(226,196,125,.55) !important;
+}
+
+@media (max-width: 850px) {
+  .cookie-banner {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cookie-actions button,
+  .cookie-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html#inicio" class="brand">Café D’Medina</a>
+    <a href="index.html#inicio" class="back-link">← Volver al inicio</a>
+  </header>
+
+  <section class="legal-hero">
+    <h1>Política de cookies</h1>
+    <p>
+      Información sobre el uso de cookies y tecnologías similares en el sitio web de Café D’Medina.
+    </p>
+  </section>
+
+  <main class="legal-page">
+    <section class="legal-card">
+
+      <h2>1. ¿Qué son las cookies?</h2>
+
+      <p>
+        Las cookies son pequeños archivos que se descargan en el dispositivo del usuario al acceder a determinadas
+        páginas web. Permiten almacenar y recuperar información sobre la navegación, preferencias o configuración
+        del usuario.
+      </p>
+
+      <h2>2. Responsable</h2>
+
+      <div class="legal-data">
+        <p><strong>Titular:</strong> D’Medina Global Trade, S.L.</p>
+        <p><strong>CIF:</strong> B05653621</p>
+        <p><strong>Nombre comercial:</strong> Café D’Medina</p>
+        <p><strong>Email de contacto:</strong> info@cafedmedina.com</p>
+      </div>
+
+      <h2>3. Tipos de cookies</h2>
+
+      <p>
+        Este sitio web puede utilizar los siguientes tipos de cookies:
+      </p>
+
+      <ul>
+        <li><strong>Cookies técnicas:</strong> necesarias para el funcionamiento básico de la web.</li>
+        <li><strong>Cookies de preferencias:</strong> permiten recordar opciones elegidas por el usuario.</li>
+        <li><strong>Cookies de análisis:</strong> permiten medir el uso de la web y mejorar su funcionamiento.</li>
+        <li><strong>Cookies de marketing:</strong> permiten mostrar contenidos o publicidad personalizada, si se utilizan.</li>
+      </ul>
+
+      <h2>4. Cookies utilizadas en esta web</h2>
+
+      <p>
+        Actualmente, esta web puede utilizar cookies técnicas necesarias para su funcionamiento y, en su caso,
+        cookies vinculadas a servicios de terceros si se activan herramientas como analítica web, mapas,
+        vídeos incrustados, WhatsApp, pasarelas de pago o servicios externos.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de cookie</th>
+              <th>Finalidad</th>
+              <th>Necesita consentimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Técnicas</td>
+              <td>Permitir la navegación, seguridad, carrito, preferencias básicas o funcionamiento de la web.</td>
+              <td>No, cuando son estrictamente necesarias.</td>
+            </tr>
+            <tr>
+              <td>Preferencias</td>
+              <td>Recordar configuraciones elegidas por el usuario.</td>
+              <td>Puede requerir consentimiento si no son estrictamente necesarias.</td>
+            </tr>
+            <tr>
+              <td>Análisis</td>
+              <td>Medir visitas, páginas consultadas y funcionamiento de la web.</td>
+              <td>Sí, salvo supuestos muy concretos exentos.</td>
+            </tr>
+            <tr>
+              <td>Marketing</td>
+              <td>Mostrar publicidad o contenidos personalizados.</td>
+              <td>Sí.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>5. Gestión de cookies</h2>
+
+      <p>
+        El usuario puede aceptar, rechazar o configurar las cookies desde el panel de configuración disponible en esta web.
+      </p>
+
+      <p>
+        También puede permitir, bloquear o eliminar las cookies desde la configuración de su navegador.
+      </p>
+
+      <h2>6. Cookies de terceros</h2>
+
+      <p>
+        Algunos servicios externos integrados en la web pueden instalar cookies de terceros. Por ejemplo, servicios de
+        analítica, mapas, vídeos, redes sociales, herramientas de contacto o pasarelas de pago.
+      </p>
+
+      <h2>7. Actualización de la política de cookies</h2>
+
+      <p>
+        Esta política de cookies podrá actualizarse en función de cambios técnicos, legales o de los servicios utilizados
+        en la web.
+      </p>
+
+      <div class="return-box">
+        <a href="configuracion-cookies.html" class="btn-return">Configurar cookies</a>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-legal">
+      <span>©2026 Café D’Medina · D’Medina Global Trade, S.L. · CIF: B05653621</span>
+      <a href="aviso-legal.html">Aviso legal</a>
+      <a href="politica-privacidad.html">Política de privacidad</a>
+      <a href="politica-cookies.html">Política de cookies</a>
+      <a href="configuracion-cookies.html">Configuración de cookies</a>
+    </div>
+  </footer>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-text">
+    <strong>Configuración de cookies</strong>
+    <p>
+      Utilizamos cookies técnicas necesarias para el funcionamiento de la web y, con tu consentimiento,
+      cookies de preferencias, análisis y marketing. Puedes aceptar, rechazar o configurar tus preferencias.
+      Consulta nuestra <a href="politica-cookies.html">Política de cookies</a>.
+    </p>
+  </div>
+
+  <div class="cookie-actions">
+    <button type="button" class="cookie-accept" onclick="aceptarCookies()">Aceptar todas</button>
+    <button type="button" class="cookie-reject" onclick="rechazarCookies()">Rechazar</button>
+    <a href="configuracion-cookies.html" class="cookie-config">Configurar</a>
+  </div>
+</div>
+<script>
+  function mostrarBannerCookies() {
+    const banner = document.getElementById("cookie-banner");
+    const config = localStorage.getItem("cookieConfigCafeDMedina");
+
+    if (!config && banner) {
+      banner.classList.add("show");
+    }
+  }
+
+  function aceptarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: true,
+      analiticas: true,
+      marketing: true,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  function rechazarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: false,
+      analiticas: false,
+      marketing: false,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  window.addEventListener("load", mostrarBannerCookies);
+</script>
+</body>
+</html>

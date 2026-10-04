@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración de cookies | Café D’Medina</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --coffee: #3a2418;
+      --cream: #f6f0e6;
+      --white: #ffffff;
+      --text: #2a2520;
+      --muted: #6d6258;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: var(--black);
+      color: var(--white);
+      padding: 22px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(200,169,106,.25);
+    }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold-light);
+      text-decoration: none;
+    }
+
+    .back-link {
+      color: var(--gold-light);
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .legal-hero {
+      background: linear-gradient(135deg, #11100f 0%, #3a2418 100%);
+      color: var(--white);
+      padding: 64px 7% 58px;
+      text-align: center;
+    }
+
+    .legal-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 5vw, 60px);
+      color: var(--gold-light);
+      margin-bottom: 14px;
+    }
+
+    .legal-hero p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: rgba(255,255,255,.82);
+      font-size: 17px;
+    }
+
+    .legal-page {
+      max-width: 980px;
+      margin: -34px auto 60px;
+      padding: 0 22px;
+    }
+
+    .legal-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 42px;
+      box-shadow: 0 18px 45px rgba(30,20,10,.14);
+      border: 1px solid rgba(200,169,106,.22);
+    }
+
+    .legal-card h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--coffee);
+      font-size: 30px;
+      margin: 34px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(200,169,106,.28);
+    }
+
+    .legal-card h2:first-child { margin-top: 0; }
+
+    .legal-card p {
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .cookie-options {
+      display: grid;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .cookie-option {
+      background: #f8f1e6;
+      border: 1px solid rgba(200,169,106,.28);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+    .cookie-option h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--coffee);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .cookie-option p {
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .cookie-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      color: var(--coffee);
+    }
+
+    .cookie-control input {
+      width: 20px;
+      height: 20px;
+      accent-color: #c8a96a;
+    }
+
+    .cookie-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    .cookie-btn {
+      border: 0;
+      cursor: pointer;
+      min-height: 46px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-family: 'Lato', Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .cookie-btn.primary {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+    }
+
+    .cookie-btn.secondary {
+      background: #11100f;
+      color: #f5f1e8;
+    }
+
+    .cookie-btn.light {
+      background: #eadfce;
+      color: var(--coffee);
+      border: 1px solid rgba(200,169,106,.45);
+    }
+
+    .cookie-message {
+      display: none;
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: #f8f1e6;
+      color: var(--coffee);
+      font-weight: 900;
+      text-align: center;
+      border: 1px solid rgba(200,169,106,.28);
+    }
+
+    .footer-legal {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      padding: 24px 20px;
+      background: #11100f;
+      color: #f5f1e8;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .footer-legal span { color: #f5f1e8; }
+
+    .footer-legal a {
+      color: #e2c47d;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-legal a:hover { color: #ffffff; }
+
+    @media (max-width: 850px) {
+      header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        padding: 20px 18px;
+      }
+
+      .brand { font-size: 28px; }
+
+      .legal-hero { padding: 48px 22px 50px; }
+
+      .legal-card {
+        padding: 28px 22px;
+        border-radius: 24px;
+      }
+
+      .legal-card h2 { font-size: 25px; }
+
+      .legal-card p { font-size: 15px; }
+
+      .cookie-buttons {
+        flex-direction: column;
+      }
+
+      .cookie-btn {
+        width: 100%;
+      }
+
+      .footer-legal {
+        flex-direction: column;
+        gap: 10px;
+        font-size: 13px;
+        padding: 22px 18px;
+      }
+    }
+/* =====================================================================================================================================================================================
+   BANNER DE COOKIES
+======================================================================================================================================================================================== */
+
+.cookie-banner {
+  position: fixed;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100000;
+  max-width: 980px;
+  margin: 0 auto;
+  background: rgba(17,16,15,.98);
+  color: #f5f1e8;
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  display: none;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner.show {
+  display: flex;
+}
+
+.cookie-text {
+  max-width: 620px;
+}
+
+.cookie-text strong {
+  display: block;
+  color: #e2c47d;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.cookie-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.82);
+}
+
+.cookie-text a {
+  color: #e2c47d;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  font-family: 'Lato', Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cookie-accept {
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+}
+
+.cookie-reject {
+  background: #f5f1e8;
+  color: #11100f;
+}
+
+.cookie-config {
+  background: transparent;
+  color: #e2c47d;
+  border: 1px solid rgba(226,196,125,.55) !important;
+}
+
+@media (max-width: 850px) {
+  .cookie-banner {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cookie-actions button,
+  .cookie-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html#inicio" class="brand">Café D’Medina</a>
+    <a href="index.html#inicio" class="back-link">← Volver al inicio</a>
+  </header>
+
+  <section class="legal-hero">
+    <h1>Configuración de cookies</h1>
+    <p>
+      Desde este panel puedes aceptar, rechazar o configurar las cookies no necesarias de la web.
+    </p>
+  </section>
+
+  <main class="legal-page">
+    <section class="legal-card">
+
+      <h2>Panel de configuración</h2>
+
+      <p>
+        Puedes elegir qué categorías de cookies permites. Las cookies técnicas necesarias se utilizan para que
+        la web funcione correctamente y no pueden desactivarse desde este panel.
+      </p>
+
+      <div class="cookie-options">
+
+        <div class="cookie-option">
+          <h3>Cookies técnicas necesarias</h3>
+          <p>
+            Son necesarias para la navegación, seguridad, carrito, funcionamiento básico de la web y gestión de preferencias.
+          </p>
+          <label class="cookie-control">
+            <input type="checkbox" checked disabled>
+            Siempre activas
+          </label>
+        </div>
+
+        <div class="cookie-option">
+          <h3>Cookies de preferencias</h3>
+          <p>
+            Permiten recordar opciones elegidas por el usuario, como preferencias de navegación o configuración.
+          </p>
+          <label class="cookie-control">
+            <input type="checkbox" id="cookies-preferencias">
+            Permitir cookies de preferencias
+          </label>
+        </div>
+
+        <div class="cookie-option">
+          <h3>Cookies de análisis</h3>
+          <p>
+            Nos ayudan a conocer cómo se utiliza la web para mejorar su contenido, rendimiento y navegación.
+          </p>
+          <label class="cookie-control">
+            <input type="checkbox" id="cookies-analiticas">
+            Permitir cookies de análisis
+          </label>
+        </div>
+
+        <div class="cookie-option">
+          <h3>Cookies de marketing</h3>
+          <p>
+            Permiten mostrar contenidos o comunicaciones comerciales personalizadas, si se activan herramientas de este tipo.
+          </p>
+          <label class="cookie-control">
+            <input type="checkbox" id="cookies-marketing">
+            Permitir cookies de marketing
+          </label>
+        </div>
+
+      </div>
+
+      <div class="cookie-buttons">
+        <button class="cookie-btn primary" onclick="aceptarTodas()">Aceptar todas</button>
+        <button class="cookie-btn secondary" onclick="rechazarTodas()">Rechazar no necesarias</button>
+        <button class="cookie-btn light" onclick="guardarConfiguracion()">Guardar configuración</button>
+      </div>
+
+      <div id="cookie-message" class="cookie-message">
+        Configuración de cookies guardada.
+      </div>
+
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-legal">
+      <span>©2026 Café D’Medina · D’Medina Global Trade, S.L. · CIF: B05653621</span>
+      <a href="aviso-legal.html">Aviso legal</a>
+      <a href="politica-privacidad.html">Política de privacidad</a>
+      <a href="politica-cookies.html">Política de cookies</a>
+      <a href="configuracion-cookies.html">Configuración de cookies</a>
+    </div>
+  </footer>
+
+  <script>
+    const preferencias = document.getElementById("cookies-preferencias");
+    const analiticas = document.getElementById("cookies-analiticas");
+    const marketing = document.getElementById("cookies-marketing");
+    const mensaje = document.getElementById("cookie-message");
+
+    function cargarPreferencias() {
+      const config = JSON.parse(localStorage.getItem("cookieConfigCafeDMedina")) || {};
+
+      preferencias.checked = !!config.preferencias;
+      analiticas.checked = !!config.analiticas;
+      marketing.checked = !!config.marketing;
+    }
+
+    function mostrarMensaje() {
+      mensaje.style.display = "block";
+
+      setTimeout(() => {
+        mensaje.style.display = "none";
+      }, 2600);
+    }
+
+    function guardarConfiguracion() {
+      const config = {
+        necesarias: true,
+        preferencias: preferencias.checked,
+        analiticas: analiticas.checked,
+        marketing: marketing.checked,
+        fecha: new Date().toISOString()
+      };
+
+      localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+      mostrarMensaje();
+    }
+
+    function aceptarTodas() {
+      preferencias.checked = true;
+      analiticas.checked = true;
+      marketing.checked = true;
+      guardarConfiguracion();
+    }
+
+    function rechazarTodas() {
+      preferencias.checked = false;
+      analiticas.checked = false;
+      marketing.checked = false;
+      guardarConfiguracion();
+    }
+
+    cargarPreferencias();
+  </script>
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-text">
+    <strong>Configuración de cookies</strong>
+    <p>
+      Utilizamos cookies técnicas necesarias para el funcionamiento de la web y, con tu consentimiento,
+      cookies de preferencias, análisis y marketing. Puedes aceptar, rechazar o configurar tus preferencias.
+      Consulta nuestra <a href="politica-cookies.html">Política de cookies</a>.
+    </p>
+  </div>
+
+  <div class="cookie-actions">
+    <button type="button" class="cookie-accept" onclick="aceptarCookies()">Aceptar todas</button>
+    <button type="button" class="cookie-reject" onclick="rechazarCookies()">Rechazar</button>
+    <a href="configuracion-cookies.html" class="cookie-config">Configurar</a>
+  </div>
+</div>
+<script>
+  function mostrarBannerCookies() {
+    const banner = document.getElementById("cookie-banner");
+    const config = localStorage.getItem("cookieConfigCafeDMedina");
+
+    if (!config && banner) {
+      banner.classList.add("show");
+    }
+  }
+
+  function aceptarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: true,
+      analiticas: true,
+      marketing: true,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  function rechazarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: false,
+      analiticas: false,
+      marketing: false,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  window.addEventListener("load", mostrarBannerCookies);
+</script>
+
+
+</body>
+</html>
