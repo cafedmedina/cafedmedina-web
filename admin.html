@@ -146,6 +146,16 @@
       gap: 10px;
     }
 
+    .precio-peso {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--gold-light);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .4px;
+      text-align: center;
+    }
+
     .save-row {
       margin-top: 8px;
       display: flex;
@@ -247,13 +257,15 @@
             <label>Precios (€)</label>
             <div class="precios-row">
               ${PESOS.map(peso => `
-                <input
-                  id="precio-${proceso}-${peso}"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  placeholder="${peso} g"
-                  value="${datos.precios && datos.precios[peso] !== undefined ? datos.precios[peso] : ""}">
+                <div>
+                  <span class="precio-peso">${peso === "1000" ? "1 kg" : peso + " g"}</span>
+                  <input
+                    id="precio-${proceso}-${peso}"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value="${datos.precios && datos.precios[peso] !== undefined ? datos.precios[peso] : ""}">
+                </div>
               `).join("")}
             </div>
           </div>
