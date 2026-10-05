@@ -156,36 +156,6 @@
       display: none;
     }
 
-    /* ======================================================================================================================================================================================================
-                                                                                     VOLVER DEBAJO DEL HEADER
-    ========================================================================================================================================================================================================== */
-
-    .page-back-wrap {
-      background: var(--black);
-      padding: 12px 7% 0;
-      margin: 0;
-     }
-
-    .page-back-link {
-      display: inline-block;
-      color: var(--gold-light);
-      text-decoration: none;
-
-      font-size: 18px;
-     font-weight: 900;
-     letter-spacing: .5px;
-     }
-
-   @media (max-width: 850px) {
-    .page-back-link {
-      font-size: 18px;
-    }
-   }
-
-    .page-back-link:hover {
-      opacity: .75;
-    }
-
     /* =======================================================================================================================================================================================================
                                                                                                   PÁGINA TIENDA
     =========================================================================================================================================================================================================== */
@@ -526,55 +496,6 @@
         font-size: 10px;
       }
 
-      .mobile-menu {
-        display: none;
-
-        position: fixed;
-        top: 82px;
-        left: 22px;
-
-        width: 230px;
-        max-width: calc(100vw - 44px);
-
-        background: rgba(17,16,15,.98);
-        border: 1px solid rgba(226,196,125,.28);
-        border-radius: 18px;
-
-        padding: 12px 16px;
-        z-index: 10000;
-
-        box-shadow: 0 14px 34px rgba(0,0,0,.35);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-      }
-
-      .mobile-menu.open {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
-
-      .mobile-menu a {
-        display: block;
-
-        color: #f5f5f5;
-        text-decoration: none;
-
-        font-size: 18px;
-        font-weight: 900;
-        letter-spacing: 1.3px;
-        text-transform: uppercase;
-
-        padding: 10px 2px;
-        text-align: left;
-
-        border-bottom: 1px solid rgba(255,255,255,.08);
-      }
-
-      .mobile-menu a:last-child {
-        border-bottom: 0;
-      }
-
       .page-back-wrap {
         padding: 12px 22px 0;
       }
@@ -880,44 +801,6 @@
   }
 }
 
-/* FOOTER LEGAL */
-
-.footer-legal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 28px;
-  flex-wrap: wrap;
-  padding: 24px 20px;
-  background: #11100f;
-  color: #f5f1e8;
-  font-size: 14px;
-  text-align: center;
-}
-
-.footer-legal span {
-  color: #f5f1e8;
-}
-
-.footer-legal a {
-  color: #e2c47d;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.footer-legal a:hover {
-  color: #ffffff;
-}
-
-@media (max-width: 850px) {
-  .footer-legal {
-    flex-direction: column;
-    gap: 10px;
-    font-size: 13px;
-    padding: 22px 18px;
-  }
-}
-
 /* =====================================================================================================================================================================================
    BANNER DE COOKIES
 ======================================================================================================================================================================================== */
@@ -1093,7 +976,7 @@
           <p><strong>Recomendado:</strong> Espresso / Filtro</p>
           <p><strong>Origen:</strong> Mistrató, Risaralda, Colombia</p>
           <p><strong>Variedad:</strong> 100% Arábica</p>
-          <p><strong>Productor:</strong> Familia Medina</p>
+          <p><strong>Productor:</strong> Ramón Medina</p>
         </div>
       </div>
 
@@ -1272,6 +1155,24 @@
       document.getElementById("tostion-info").innerHTML = tostiones[tostion];
     }
 
+    async function cargarPrecios() {
+      try {
+        const response = await fetch("/api/precios");
+        if (!response.ok) throw new Error("Respuesta no válida");
+
+        const precios = await response.json();
+
+        Object.keys(precios).forEach(proceso => {
+          if (cafes[proceso]) {
+            cafes[proceso].lote = precios[proceso].lote;
+            cafes[proceso].precios = precios[proceso].precios;
+          }
+        });
+      } catch (error) {
+        console.error("No se pudieron cargar los precios actualizados, se usan los valores por defecto:", error);
+      }
+    }
+
     function addToCart() {
       const procesoKey = document.getElementById("proceso").value;
       const peso = document.getElementById("peso").value;
@@ -1348,9 +1249,12 @@
       }
     }
 
-    actualizarPrecioYLote();
-    actualizarTostionInfo();
-    actualizarIconoCarrito();
+    (async function init() {
+      await cargarPrecios();
+      actualizarPrecioYLote();
+      actualizarTostionInfo();
+      actualizarIconoCarrito();
+    })();
   </script>
 
   <footer>

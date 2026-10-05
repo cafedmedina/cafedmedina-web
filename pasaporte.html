@@ -38,22 +38,22 @@
 ===================================================== */
 
 .producer-map-box {
-  margin-top: 24px;
+  margin-top: 10px;
 }
 
 .producer-map-box h3 {
   font-family: 'Playfair Display', serif;
   color: var(--gold-light);
-  font-size: 26px;
+  font-size: 19px;
   line-height: 1.1;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .producer-map {
   width: 100%;
-  height: 260px;
+  height: 110px;
 
-  border-radius: 18px;
+  border-radius: 12px;
   overflow: hidden;
 
   border: 1px solid rgba(226,196,125,.25);
@@ -69,15 +69,11 @@
 
 @media (max-width: 850px) {
   .producer-map {
-    height: 220px;
-  }
-
-  .producer-map-box h3 {
-    font-size: 24px;
+    height: 120px;
   }
 }
- 
- 
+
+
  /* =====================================================
    DATOS PRODUCTOR - MÁS COMPACTO
 ===================================================== */
@@ -115,41 +111,8 @@
 
 
 /* =====================================================
-   MAPA PRODUCTOR - MÁS PEQUEÑO
-===================================================== */
-
-.producer-map {
-  height: 110px !important;
-  border-radius: 12px !important;
-}
-
-.producer-map-box {
-  margin-top: 10px !important;
-}
-
-.producer-map-box h3 {
-  font-size: 19px !important;
-  margin-bottom: 8px !important;
-}
-
-@media (max-width: 850px) {
-  .producer-map {
-    height: 120px !important;
-  }
-}
-
-/* =====================================================
    PRODUCTOR - TÍTULO CENTRADO
 ===================================================== */
-
-.producer-info h2 {
-  text-align: center !important;
-}
-
-.producer-info > p:first-of-type {
-  text-align: center !important;
-  margin-bottom: 18px !important;
-}
 
 .producer-info h2 {
   text-align: center !important;
@@ -172,34 +135,6 @@
   text-align: center !important;
 }
 
-
-
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity .85s ease, transform .85s ease;
-}
-
-.reveal-left {
-  opacity: 0;
-  transform: translateX(-36px);
-  transition: opacity .9s ease, transform .9s ease;
-}
-
-.reveal-right {
-  opacity: 0;
-  transform: translateX(36px);
-  transition: opacity .9s ease, transform .9s ease;
-}
-
-.reveal.visible,
-.reveal-left.visible,
-.reveal-right.visible {
-  opacity: 1;
-  transform: translate(0, 0);
-}
- 
- 
 @media (max-width: 850px) {
   .reveal,
   .reveal-left,
@@ -545,34 +480,6 @@
             </div>
             <div class="passport-body">
 
-                <!---
-                <article class="producer-card reveal-left">
-                    <div class="producer-photo">
-                        <img src="img/ramon-medina.jpg" alt="Ramón Medina, productor de Café D’Medina">
-                    </div>
-                    <div class="producer-info">
-                        <h2>Ramón Medina</h2>
-                        <p><strong>Productor de tercera generación.</strong></p>
-                        <p>Nuestro café nace en fincas familiares donde tradición, experiencia y cuidado del cultivo se encuentran para expresar el carácter de Mistrató en cada cosecha.</p>
-                        <div class="mini-lines">
-                            <div>
-                                <strong>Productor</strong>
-                                <span>Ramón Medina</span>
-                            </div>
-                            <div>
-                                <strong>Origen</strong>
-                                <span>Mistrató, Risaralda</span>
-                            </div>
-                            <div>
-                                <strong>País</strong>
-                                <span>Colombia</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>-->
-
-
-
                 <article class="producer-card reveal-left">
   <div class="producer-photo">
     <img src="img/ramon-medina.jpg" alt="Ramón Medina, productor de Café D’Medina">
@@ -613,6 +520,7 @@
       <div class="producer-map">
         <iframe
           src="https://www.google.com/maps?q=Mistrató,Risaralda,Colombia&output=embed"
+          title="Ubicación de las fincas La Estrella y El Tango, Mistrató, Risaralda"
           loading="lazy"
           allowfullscreen
           referrerpolicy="no-referrer-when-downgrade">
@@ -647,25 +555,6 @@
                  a la trazabilidad completa de cada cosecha, lote y proceso.
             </p>
         </div>
-        <!--<div class="info-grid">>
-            <article class="info-card reveal">
-                <h3>Fincas</h3>
-                <p>La Estrella y El Tango, fincas familiares ubicadas en Mistrató, Risaralda.</p>
-            </article>
-            <article class="info-card reveal">
-                <h3>Altitud</h3>
-                <p>Cultivado aproximadamente a 1550 msnm, en zona montañosa con alta riqueza natural.</p>
-            </article>
-            <article class="info-card reveal">
-                <h3>Variedades</h3>
-                <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1, variedades adaptadas al origen.</p>
-            </article>
-            <article class="info-card reveal">
-                <h3>Familia</h3>
-                <p>Una historia cafetera que une tradición familiar, origen colombiano y visión premium.</p>
-            </article>
-        </div>-->
-
         <div class="info-grid flip-grid">
 
   <article class="flip-card reveal">
@@ -701,10 +590,8 @@
       </div>
       <div class="flip-back">
         <p>
-          <p>
-            Cultivamos variedades arábicas como Colombia, F6, Castillo Zona Centro y Cenicafé 1, seleccionadas por su adaptación al origen y su resistencia a la roya,
-             a partir de semillas certificadas por CENICAFÉ.
-         </p>
+          Cultivamos variedades arábicas como Colombia, F6, Castillo Zona Centro y Cenicafé 1, seleccionadas por su adaptación al origen y su resistencia a la roya,
+           a partir de semillas certificadas por CENICAFÉ.
         </p>
       </div>
     </div>
@@ -851,9 +738,10 @@
   </main>
 
 
-<a href="https://wa.me/34660736866" 
-    class="whatsapp-float" 
-    target="_blank" 
+<a href="https://wa.me/34660736866"
+    class="whatsapp-float"
+    target="_blank"
+    rel="noopener noreferrer"
     aria-label="WhatsApp">
     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
 </a>

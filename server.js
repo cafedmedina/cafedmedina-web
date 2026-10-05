@@ -2,12 +2,79 @@ const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
 const { Resend } = require("resend");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.static(__dirname));
 app.use(express.json());
+
+//-------------------------------------------------------------------------------------------------ABRE - TABLA DE PRECIOS PRIVADA--------------------------------------------------------------------------------------------//
+
+const PRECIOS_FILE = path.join(__dirname, "data", "precios.json");
+const PROCESOS_VALIDOS = ["lavado", "honey", "natural"];
+const PESOS_VALIDOS = ["250", "500", "1000"];
+
+function leerPrecios() {
+  const raw = fs.readFileSync(PRECIOS_FILE, "utf-8");
+  return JSON.parse(raw);
+}
+
+function guardarPrecios(datos) {
+  fs.writeFileSync(PRECIOS_FILE, JSON.stringify(datos, null, 2));
+}
+
+function requiereAdmin(req, res, next) {
+  const token = req.get("x-admin-token");
+
+  if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+    return res.status(401).json({ error: "No autorizado" });
+  }
+
+  next();
+}
+
+app.get("/api/precios", (req, res) => {
+  try {
+    res.json(leerPrecios());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer los precios" });
+  }
+});
+
+app.put("/api/precios", requiereAdmin, (req, res) => {
+  try {
+    const datos = req.body;
+
+    for (const proceso of PROCESOS_VALIDOS) {
+      const entrada = datos[proceso];
+
+      if (!entrada || typeof entrada.lote !== "string" || !entrada.lote.trim()) {
+        return res.status(400).json({ error: `Falta el lote de "${proceso}"` });
+      }
+
+      for (const peso of PESOS_VALIDOS) {
+        const precio = Number(entrada.precios && entrada.precios[peso]);
+
+        if (!Number.isFinite(precio) || precio <= 0) {
+          return res.status(400).json({ error: `Precio inválido en "${proceso}" / ${peso}g` });
+        }
+      }
+    }
+
+    guardarPrecios(datos);
+    res.json({ success: true, precios: datos });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron guardar los precios" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - TABLA DE PRECIOS PRIVADA--------------------------------------------------------------------------------------------//
 
 //-------------------------------------------------------------------------------------------------ABRE - STRIPE TEST--------------------------------------------------------------------------------------------//
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);

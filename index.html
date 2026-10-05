@@ -6,6 +6,8 @@
 
   <meta charset="UTF-8" />
 
+  <script>document.documentElement.classList.add('js');</script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Café D’Medina | Café de Origen Colombiano</title>
@@ -34,13 +36,13 @@
 
     *{box-sizing:border-box;margin:0;padding:0}
 
-    html{scroll-behavior:smooth;scroll-padding-top:40px}
+    html{scroll-behavior:smooth;scroll-padding-top:78px}
 
     body{font-family:'Lato',Arial,sans-serif;color:var(--text);background:var(--cream);line-height:1.7}
 
     img{max-width:100%;display:block} a{color:inherit} h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.12}
 
-    section,#inicio,#origen,#proceso,#historia,#cata,#empaque,#area-profesional,#contacto{scroll-margin-top:40px}
+    section,#inicio,#origen,#proceso,#historia,#cata,#empaque,#area-profesional,#contacto{scroll-margin-top:78px}
 
 
     /* HEADER */
@@ -53,7 +55,7 @@
 
     #main-menu a{text-decoration:none;color:rgba(255,255,255,.86);transition:.25s}#main-menu a:hover{color:var(--gold-light)}
 
-    .cart-link{position:relative;color:var(--gold-light);font-size:22px;text-decoration:none;cursor:pointer;z-index:10001}.cart-count{position:absolute;top:-10px;right:-12px;min-width:18px;height:18px;padding:1px 5px;display:flex;align-items:center;justify-content:center;background:var(--gold-light);color:var(--black);font-size:10px;font-weight:900;line-height:18px;border-radius:50%}
+    .cart-link{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:22px;text-decoration:none;line-height:1;cursor:pointer;z-index:10001}.cart-count{position:absolute;top:-8px;right:-8px;width:20px;min-width:20px;height:20px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--gold-light);color:var(--black);font-size:11px;font-weight:900;line-height:1;border-radius:50%}
 
     .menu-toggle,.mobile-menu{display:none}
 
@@ -383,7 +385,7 @@
 
     /*------------------------------------------------------------------------------------------- FLOTANTES-------------------------------------------------------------------------------------------------- */
 
-    .whatsapp-float{position:fixed;width:54px;height:54px;left:18px;bottom:22px;z-index:9998}.whatsapp-float img{width:100%;height:100%;border-radius:50%;box-shadow:0 8px 22px rgba(0,0,0,.25)}.back-to-top{position:fixed;right:18px;bottom:22px;z-index:9998;width:54px;height:54px;border-radius:50%;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#e2c47d,#c8a96a);color:var(--black);border:1px solid rgba(255,255,255,.35);box-shadow:0 8px 22px rgba(0,0,0,.25);font-size:26px;font-weight:900;cursor:pointer}
+    .whatsapp-float{position:fixed;width:54px;height:54px;left:18px;bottom:22px;z-index:9998}.whatsapp-float img{width:100%;height:100%;border-radius:50%;box-shadow:0 8px 22px rgba(0,0,0,.25)}
 
 
     /* --------------------------------------------------------------------------------------------MOVIL----------------------------------------------------------------------------------------------------- */
@@ -411,7 +413,7 @@
 }}
 
 
-    @media (max-width:850px){header{height:78px;min-height:78px;padding:0 18px;justify-content:center}#main-menu{display:none}.brand{position:static;width:auto;margin:0 auto;text-align:center}.brand span{font-size:28px;line-height:1}.menu-toggle{display:flex;align-items:center;justify-content:center;position:absolute;left:18px;top:17px;width:44px;height:44px;background:transparent;border:1px solid rgba(226,196,125,.35);border-radius:50%;color:var(--gold-light);font-size:26px;font-weight:900;line-height:1;z-index:10001;cursor:pointer}.cart-link{position:absolute;right:22px;top:22px;font-size:22px}.mobile-menu{display:none;position:fixed;top:86px;left:22px;width:230px;max-width:calc(100vw - 44px);background:rgba(17,16,15,.98);border:1px solid rgba(226,196,125,.28);border-radius:18px;padding:12px 16px;z-index:10000;box-shadow:0 14px 34px rgba(0,0,0,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.mobile-menu.open{display:flex;flex-direction:column;gap:0}.mobile-menu a{display:block;color:var(--white);text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;padding:10px 2px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}.mobile-menu a:last-child{border-bottom:0}.hero{min-height:auto;padding:55px 6% 45px}.hero-logo-side{display:none}.hero h1{font-size:clamp(34px,10vw,48px);line-height:1.08;margin-bottom:16px}.hero-copy p{font-size:14.5px;line-height:1.42;max-width:92%;margin-bottom:18px}section{padding:28px 6%}.historia-clara{padding:38px 6%}.historia-clara h2{font-size:clamp(34px,10vw,48px)}#contacto{padding:38px 16px 48px}.contact-box{width:100%;padding:18px;border-radius:24px}.contact-item{padding:16px 18px;border-radius:18px;overflow-wrap:break-word;word-break:break-word}.back-to-top{display:flex}}
+    @media (max-width:850px){header{height:78px;min-height:78px;padding:0 18px;justify-content:center}#main-menu{display:none}.brand{position:static;width:auto;margin:0 auto;text-align:center}.brand span{font-size:28px;line-height:1}.menu-toggle{display:flex;align-items:center;justify-content:center;position:absolute;left:18px;top:17px;width:44px;height:44px;background:transparent;border:1px solid rgba(226,196,125,.35);border-radius:50%;color:var(--gold-light);font-size:26px;font-weight:900;line-height:1;z-index:10001;cursor:pointer}.mobile-menu{display:none;position:fixed;top:86px;left:22px;width:230px;max-width:calc(100vw - 44px);background:rgba(17,16,15,.98);border:1px solid rgba(226,196,125,.28);border-radius:18px;padding:12px 16px;z-index:10000;box-shadow:0 14px 34px rgba(0,0,0,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.mobile-menu.open{display:flex;flex-direction:column;gap:0}.mobile-menu a{display:block;color:var(--white);text-decoration:none;font-size:12px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;padding:10px 2px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}.mobile-menu a:last-child{border-bottom:0}.hero{min-height:auto;padding:55px 6% 45px}.hero-logo-side{display:none}.hero h1{font-size:clamp(34px,10vw,48px);line-height:1.08;margin-bottom:16px}.hero-copy p{font-size:14.5px;line-height:1.42;max-width:92%;margin-bottom:18px}section{padding:28px 6%}.historia-clara{padding:38px 6%}.historia-clara h2{font-size:clamp(34px,10vw,48px)}#contacto{padding:38px 16px 48px}.contact-box{width:100%;padding:18px;border-radius:24px}.contact-item{padding:16px 18px;border-radius:18px;overflow-wrap:break-word;word-break:break-word}}
 
 
 /* ============================================================================================================================================================================================================
@@ -502,122 +504,32 @@
 }
 
 
-/* ===========================================================================================================================================================================================================
-
-                                                                                               CARRITO + CONTADOR UNIFICADO
-
-============================================================================================================================================================================================================== */
-
-
-.cart-link {
-
-  position: relative !important;
-
-
-  width: 34px !important;
-
-  height: 34px !important;
-
-
-  display: flex !important;
-
-  align-items: center !important;
-
-  justify-content: center !important;
-
-
-  color: #e2c47d !important;
-
-  font-size: 22px !important;
-
-  text-decoration: none !important;
-
-  line-height: 1 !important;
-
-}
-
-
-.cart-count {
-
-  position: absolute !important;
-
-  top: -8px !important;
-
-  right: -8px !important;
-
-
-  width: 20px !important;
-
-  min-width: 20px !important;
-
-  height: 20px !important;
-
-
-  display: flex !important;
-
-  align-items: center !important;
-
-  justify-content: center !important;
-
-
-  padding: 0 !important;
-
-
-  background: #e2c47d !important;
-
-  color: #11100f !important;
-
-
-  font-size: 11px !important;
-
-  font-weight: 900 !important;
-
-  line-height: 1 !important;
-
-
-  border-radius: 50% !important;
-
-}
-
-
-/* MÓVIL */
+/* CARRITO + CONTADOR - AJUSTE MÓVIL */
 
 @media (max-width: 850px) {
 
   .cart-link {
 
-    position: absolute !important;
+    position: absolute;
 
-    right: 20px !important;
+    right: 20px;
 
-    top: 19px !important;
+    top: 19px;
 
-
-    width: 34px !important;
-
-    height: 34px !important;
-
-
-    font-size: 21px !important;
+    font-size: 21px;
 
   }
 
 
   .cart-count {
 
-    top: -8px !important;
+    width: 19px;
 
-    right: -8px !important;
+    min-width: 19px;
 
+    height: 19px;
 
-    width: 19px !important;
-
-    min-width: 19px !important;
-
-    height: 19px !important;
-
-
-    font-size: 10px !important;
+    font-size: 10px;
 
   }
 
@@ -902,26 +814,6 @@
 }
 
 
-.cata-btn-wrap {
-
-  margin-top: 34px;
-
-  text-align: center;
-
-}
-
-
-@media (max-width: 850px) {
-
-  .cata-btn-wrap {
-
-    margin-top: 26px;
-
-  }
-
-}
-
-
 /* ==========================================================================================================================================================================================================
 
                                                                                       ANIMACIÓN AL HACER SCROLL - INDEX
@@ -929,7 +821,7 @@
 ============================================================================================================================================================================================================= */
 
 
-.reveal {
+.js .reveal {
 
   opacity: 0;
 
@@ -940,7 +832,7 @@
 }
 
 
-.reveal-left {
+.js .reveal-left {
 
   opacity: 0;
 
@@ -951,7 +843,7 @@
 }
 
 
-.reveal-right {
+.js .reveal-right {
 
   opacity: 0;
 
@@ -979,103 +871,13 @@
 
 @media (max-width: 850px) {
 
-  .reveal,
+  .js .reveal,
 
-  .reveal-left,
+  .js .reveal-left,
 
-  .reveal-right {
-
-    transform: translateY(22px);
-
-  }
-
-
-  .reveal.visible,
-
-  .reveal-left.visible,
-
-  .reveal-right.visible {
-
-    transform: translateY(0);
-
-  }
-
-}
-
-
-/* =========================================================================================================================================================================================================
-
-                                                                                                EFECTO APARECER / DESAPARECER AL SCROLL
-
-============================================================================================================================================================================================================ */
-
-
-.reveal {
-
-  opacity: 0;
-
-  transform: translateY(28px);
-
-  transition: opacity .85s ease, transform .85s ease;
-
-}
-
-
-.reveal-left {
-
-  opacity: 0;
-
-  transform: translateX(-36px);
-
-  transition: opacity .9s ease, transform .9s ease;
-
-}
-
-
-.reveal-right {
-
-  opacity: 0;
-
-  transform: translateX(36px);
-
-  transition: opacity .9s ease, transform .9s ease;
-
-}
-
-
-.reveal.visible,
-
-.reveal-left.visible,
-
-.reveal-right.visible {
-
-  opacity: 1;
-
-  transform: translate(0, 0);
-
-}
-
-
-@media (max-width: 850px) {
-
-  .reveal,
-
-  .reveal-left,
-
-  .reveal-right {
+  .js .reveal-right {
 
     transform: translateY(22px);
-
-  }
-
-
-  .reveal.visible,
-
-  .reveal-left.visible,
-
-  .reveal-right.visible {
-
-    transform: translateY(0);
 
   }
 
@@ -1894,7 +1696,7 @@
 <!-- -------------------------------------------------------------------------------Pie de Página-------------------------------------------------------------------------------------->
 
 
-  <a href="https://wa.me/34660736866" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+  <a href="https://wa.me/34660736866" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
 
     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
 
@@ -1905,7 +1707,7 @@
 
     function closeMenu(){const menu=document.getElementById('mobile-menu'); if(menu){menu.classList.remove('open')}}
 
-    function actualizarIconoCarrito(){const cartCount=document.getElementById('cart-count'); const carrito=JSON.parse(localStorage.getItem('carrito'))||[]; const total=carrito.reduce((sum,item)=>sum+Number(item.cantidad||0),0); if(cartCount){cartCount.textContent=total}}
+    function actualizarIconoCarrito(){const cartCount=document.getElementById('cart-count'); let carrito=[]; try{carrito=JSON.parse(localStorage.getItem('carrito'))||[]}catch(e){carrito=[]} const total=carrito.reduce((sum,item)=>sum+Number(item.cantidad||0),0); if(cartCount){cartCount.textContent=total}}
 
     actualizarIconoCarrito();
 
@@ -1975,9 +1777,28 @@ function activarAnimacionesScroll() {
 }
 
 
-window.addEventListener("scroll", activarAnimacionesScroll);
+let tickingAnimacionesScroll = false;
 
-window.addEventListener("resize", activarAnimacionesScroll);
+function solicitarAnimacionesScroll() {
+
+  if (tickingAnimacionesScroll) return;
+
+  tickingAnimacionesScroll = true;
+
+  requestAnimationFrame(() => {
+
+    activarAnimacionesScroll();
+
+    tickingAnimacionesScroll = false;
+
+  });
+
+}
+
+
+window.addEventListener("scroll", solicitarAnimacionesScroll);
+
+window.addEventListener("resize", solicitarAnimacionesScroll);
 
 window.addEventListener("load", activarAnimacionesScroll);
 

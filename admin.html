@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de precios | Café D’Medina</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #11100f;
+      --black-soft: #1a1714;
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --white: #ffffff;
+      --muted: rgba(255,255,255,.72);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Lato', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      margin-bottom: 6px;
+      color: var(--gold-light);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 26px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 520px;
+      padding: 32px;
+      border-radius: 24px;
+      background: var(--black-soft);
+      border: 1px solid rgba(200,169,106,.28);
+      box-shadow: 0 22px 50px rgba(0,0,0,.3);
+    }
+
+    .login-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      width: 100%;
+      height: 46px;
+      padding: 10px 14px;
+      background: #0f0d0c;
+      color: var(--white);
+      border: 1px solid rgba(200,169,106,.45);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(200,169,106,.18);
+    }
+
+    .btn {
+      min-height: 46px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+      border: none;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--gold-light);
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .error-msg {
+      margin-top: 12px;
+      color: #ff8a8a;
+      font-size: 13px;
+    }
+
+    .success-msg {
+      margin-top: 16px;
+      color: #8ee6a1;
+      font-size: 13px;
+    }
+
+    .proceso-card {
+      padding: 18px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.2);
+    }
+
+    .proceso-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      color: var(--gold-light);
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .precios-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .save-row {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box" id="login-box">
+    <h1>Panel de precios</h1>
+    <p class="subtitle">Acceso restringido · solo propietarios</p>
+
+    <div class="login-row">
+      <input type="password" id="token-input" placeholder="Contraseña de administrador" autocomplete="off">
+      <button class="btn" onclick="entrar()">Entrar</button>
+    </div>
+
+    <p class="error-msg" id="login-error" hidden></p>
+  </div>
+
+  <div class="box" id="admin-box" hidden>
+    <h1>Panel de precios</h1>
+    <p class="subtitle">Edita lote y precio por peso de cada proceso. Los cambios se aplican al instante en la tienda.</p>
+
+    <div id="procesos-container"></div>
+
+    <div class="save-row">
+      <button class="btn" id="save-btn" onclick="guardar()">Guardar cambios</button>
+      <span id="save-feedback"></span>
+    </div>
+  </div>
+
+  <script>
+    const NOMBRES_PROCESO = {
+      lavado: "Lavado",
+      honey: "Honey",
+      natural: "Natural"
+    };
+
+    const PESOS = ["250", "500", "1000"];
+
+    let precios = {};
+
+    function getToken() {
+      return sessionStorage.getItem("adminToken") || "";
+    }
+
+    async function entrar() {
+      const token = document.getElementById("token-input").value.trim();
+      const errorMsg = document.getElementById("login-error");
+      errorMsg.hidden = true;
+
+      if (!token) {
+        errorMsg.textContent = "Introduce la contraseña.";
+        errorMsg.hidden = false;
+        return;
+      }
+
+      sessionStorage.setItem("adminToken", token);
+
+      try {
+        await cargarPrecios();
+        document.getElementById("login-box").hidden = true;
+        document.getElementById("admin-box").hidden = false;
+      } catch (error) {
+        sessionStorage.removeItem("adminToken");
+        errorMsg.textContent = "No se pudieron cargar los precios. Inténtalo de nuevo.";
+        errorMsg.hidden = false;
+      }
+    }
+
+    async function cargarPrecios() {
+      const response = await fetch("/api/precios");
+      if (!response.ok) throw new Error("No se pudieron cargar los precios");
+      precios = await response.json();
+      renderFormulario();
+    }
+
+    function renderFormulario() {
+      const container = document.getElementById("procesos-container");
+
+      container.innerHTML = Object.keys(NOMBRES_PROCESO).map(proceso => {
+        const datos = precios[proceso] || { lote: "", precios: {} };
+
+        return `
+          <div class="proceso-card">
+            <h2>${NOMBRES_PROCESO[proceso]}</h2>
+
+            <label for="lote-${proceso}">Lote</label>
+            <input id="lote-${proceso}" type="text" value="${datos.lote || ""}">
+
+            <label>Precios (€)</label>
+            <div class="precios-row">
+              ${PESOS.map(peso => `
+                <input
+                  id="precio-${proceso}-${peso}"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="${peso} g"
+                  value="${datos.precios && datos.precios[peso] !== undefined ? datos.precios[peso] : ""}">
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function leerFormulario() {
+      const datos = {};
+
+      Object.keys(NOMBRES_PROCESO).forEach(proceso => {
+        datos[proceso] = {
+          lote: document.getElementById(`lote-${proceso}`).value.trim(),
+          precios: {}
+        };
+
+        PESOS.forEach(peso => {
+          datos[proceso].precios[peso] = Number(
+            document.getElementById(`precio-${proceso}-${peso}`).value
+          );
+        });
+      });
+
+      return datos;
+    }
+
+    async function guardar() {
+      const feedback = document.getElementById("save-feedback");
+      const btn = document.getElementById("save-btn");
+      const datos = leerFormulario();
+
+      btn.disabled = true;
+      feedback.className = "";
+      feedback.textContent = "Guardando...";
+
+      try {
+        const response = await fetch("/api/precios", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": getToken()
+          },
+          body: JSON.stringify(datos)
+        });
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-box").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+
+        const resultado = await response.json();
+
+        if (!response.ok) {
+          throw new Error(resultado.error || "Error al guardar");
+        }
+
+        precios = resultado.precios;
+        feedback.className = "success-msg";
+        feedback.textContent = "Cambios guardados correctamente.";
+
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudieron guardar los cambios.";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    if (getToken()) {
+      cargarPrecios()
+        .then(() => {
+          document.getElementById("login-box").hidden = true;
+          document.getElementById("admin-box").hidden = false;
+        })
+        .catch(() => {
+          sessionStorage.removeItem("adminToken");
+        });
+    }
+  </script>
+
+</body>
+</html>
