@@ -1032,17 +1032,16 @@
 
       if (delta > 0 && item.lote && item.peso) {
         const lote = lotes[item.lote];
-        const pesoKg = Number(item.peso) / 1000;
 
         if (lote) {
-          const kgOtrasLineasDelLote = carrito.reduce((total, otro, otroIndex) => {
-            if (otroIndex === index || otro.lote !== item.lote) return total;
-            return total + Number(otro.kgDescontados || (Number(otro.peso) / 1000) * Number(otro.cantidad));
+          const unidadesEnStock = Number((lote.stock && lote.stock[item.peso]) || 0);
+
+          const unidadesOtrasLineasDelLote = carrito.reduce((total, otro, otroIndex) => {
+            if (otroIndex === index || otro.lote !== item.lote || String(otro.peso) !== String(item.peso)) return total;
+            return total + Number(otro.cantidad || 0);
           }, 0);
 
-          const kgLineaNueva = pesoKg * nuevaCantidad;
-
-          if (kgOtrasLineasDelLote + kgLineaNueva > lote.stockKg + 1e-9) {
+          if (unidadesOtrasLineasDelLote + nuevaCantidad > unidadesEnStock) {
             alert(`No hay más stock disponible del lote ${item.lote} en este formato.`);
             return;
           }
@@ -1050,7 +1049,6 @@
       }
 
       item.cantidad = nuevaCantidad;
-      item.kgDescontados = Number(((Number(item.peso) / 1000) * nuevaCantidad).toFixed(3));
 
       localStorage.setItem("carrito", JSON.stringify(carrito));
       renderCart();

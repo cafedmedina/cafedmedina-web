@@ -6,9 +6,9 @@
     "fechaCata": "15/10/2026",
     "puntaje": 86,
     "perfil": "Frutos deshidratados, arándanos, dátiles, uvas pasas, acidez tartárica y cuerpo sedoso.",
-    "stockKg": 25,
-    "stockVendidoKg": 0,
     "estado": "activo",
+    "stock": { "250": 10, "500": 20, "1000": 12 },
+    "vendidos": { "250": 0, "500": 0, "1000": 0 },
     "precios": { "250": 18.50, "500": 34.00, "1000": 64.00 }
   },
   "DM-2025-009": {
@@ -18,9 +18,9 @@
     "fechaCata": "20/12/2025",
     "puntaje": 85.5,
     "perfil": "Chocolate, panela, frutos secos y acidez media.",
-    "stockKg": 8,
-    "stockVendidoKg": 0,
     "estado": "activo",
+    "stock": { "250": 8, "500": 6, "1000": 3 },
+    "vendidos": { "250": 0, "500": 0, "1000": 0 },
     "precios": { "250": 17.50, "500": 32.00, "1000": 60.00 }
   },
   "DM-2026-002": {
@@ -30,9 +30,9 @@
     "fechaCata": "15/10/2026",
     "puntaje": 87,
     "perfil": "Dulzor intenso, fruta madura, miel y cuerpo sedoso.",
-    "stockKg": 18,
-    "stockVendidoKg": 0,
     "estado": "activo",
+    "stock": { "250": 12, "500": 16, "1000": 7 },
+    "vendidos": { "250": 0, "500": 0, "1000": 0 },
     "precios": { "250": 19.50, "500": 36.00, "1000": 68.00 }
   },
   "DM-2026-003": {
@@ -42,9 +42,9 @@
     "fechaCata": "25/10/2026",
     "puntaje": 86.5,
     "perfil": "Perfil intenso, afrutado y complejo, con notas a frutos rojos y cacao.",
-    "stockKg": 15,
-    "stockVendidoKg": 0,
     "estado": "activo",
+    "stock": { "250": 8, "500": 12, "1000": 7 },
+    "vendidos": { "250": 0, "500": 0, "1000": 0 },
     "precios": { "250": 21.00, "500": 39.00, "1000": 74.00 }
   }
 }

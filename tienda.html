@@ -1205,7 +1205,7 @@
         enlacePasaporte.href = "pasaporte.html?codigo=" + lote.codigo;
       }
 
-      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
+      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined && lote.stock && lote.stock[p] !== undefined);
       peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");
 
       actualizarPrecioYStock();
@@ -1221,14 +1221,14 @@
       document.getElementById("tostion-info").innerHTML = tuestes[tueste];
     }
 
-    // kg del lote indicado que ya están reservados en el carrito guardado en este navegador
-    function kgEnCarritoDeLote(codigoLote, excluirLinea) {
+    // unidades del lote+formato indicado que ya están reservadas en el carrito guardado en este navegador
+    function unidadesEnCarritoDeLoteFormato(codigoLote, peso, excluirLinea) {
       const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
 
       return carritoGuardado.reduce((total, item) => {
-        if (item.lote !== codigoLote) return total;
+        if (item.lote !== codigoLote || String(item.peso) !== String(peso)) return total;
         if (excluirLinea && esMismaLinea(item, excluirLinea)) return total;
-        return total + Number(item.kgDescontados || 0);
+        return total + Number(item.cantidad || 0);
       }, 0);
     }
 
@@ -1258,10 +1258,9 @@
       const precioUnitario = lote.precios[peso];
       document.getElementById("precio").textContent = formatEUR(precioUnitario * cantidad);
 
-      const pesoKg = Number(peso) / 1000;
-      const kgYaReservados = kgEnCarritoDeLote(lote.codigo);
-      const kgDisponibles = Math.max(0, lote.stockKg - kgYaReservados);
-      const unidadesDisponibles = Math.floor((kgDisponibles / pesoKg) + 1e-9);
+      const unidadesEnStock = Number((lote.stock && lote.stock[peso]) || 0);
+      const unidadesYaReservadas = unidadesEnCarritoDeLoteFormato(lote.codigo, peso);
+      const unidadesDisponibles = Math.max(0, unidadesEnStock - unidadesYaReservadas);
 
       if (unidadesDisponibles <= 0) {
         document.getElementById("stock-info").textContent = `Agotado en formato ${etiquetaPeso(peso)}`;
@@ -1315,32 +1314,27 @@
         tueste
       };
 
-      const pesoKg = Number(peso) / 1000;
       const carritoActual = JSON.parse(localStorage.getItem("carrito")) || [];
       const lineaExistente = carritoActual.find(item => esMismaLinea(item, datosLinea));
 
       const cantidadFinal = (lineaExistente ? Number(lineaExistente.cantidad) : 0) + cantidad;
-      const kgLineaFinal = Number((pesoKg * cantidadFinal).toFixed(3));
+      const unidadesEnStock = Number((lote.stock && lote.stock[peso]) || 0);
+      const unidadesOtrasLineasDelLote = unidadesEnCarritoDeLoteFormato(lote.codigo, peso, datosLinea);
 
-      const kgOtrasLineasDelLote = kgEnCarritoDeLote(lote.codigo, datosLinea);
-
-      if (kgOtrasLineasDelLote + kgLineaFinal > lote.stockKg + 1e-9) {
-        const kgDisponiblesParaEstaLinea = Math.max(0, lote.stockKg - kgOtrasLineasDelLote);
-        const unidadesMax = Math.floor((kgDisponiblesParaEstaLinea / pesoKg) + 1e-9);
-        alert(`No hay stock suficiente del lote ${lote.codigo} para esa cantidad. Máximo disponible en ${etiquetaPeso(peso)}: ${unidadesMax} unidades.`);
+      if (unidadesOtrasLineasDelLote + cantidadFinal > unidadesEnStock) {
+        const unidadesMax = Math.max(0, unidadesEnStock - unidadesOtrasLineasDelLote);
+        alert(`No hay stock suficiente del lote ${lote.codigo} en formato ${etiquetaPeso(peso)}. Máximo disponible: ${unidadesMax} unidades.`);
         return;
       }
 
       if (lineaExistente) {
         lineaExistente.cantidad = cantidadFinal;
         lineaExistente.precio = lote.precios[peso];
-        lineaExistente.kgDescontados = kgLineaFinal;
       } else {
         carritoActual.push({
           ...datosLinea,
           cantidad,
-          precio: lote.precios[peso],
-          kgDescontados: kgLineaFinal
+          precio: lote.precios[peso]
         });
       }
 

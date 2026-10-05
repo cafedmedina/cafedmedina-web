@@ -327,8 +327,8 @@
         fechaCata: "",
         puntaje: "",
         perfil: "",
-        stockKg: 0,
         estado: "activo",
+        stock: {},
         precios: {}
       };
 
@@ -396,11 +396,6 @@
               </div>
 
               <div class="field">
-                <label>Stock disponible (kg)</label>
-                <input data-field="stockKg" type="number" step="0.01" min="0" value="${lote.stockKg !== undefined ? lote.stockKg : 0}">
-              </div>
-
-              <div class="field">
                 <label>Estado</label>
                 <select data-field="estado">
                   ${ESTADOS.map(estado => `
@@ -415,7 +410,24 @@
               </div>
 
               <div class="field full">
-                <label>Precios por formato (€) — deja en blanco el formato que no vendas de este lote</label>
+                <label>Unidades en stock por formato — deja en blanco el formato que no vendas de este lote</label>
+                <div class="field-grid precios-grid">
+                  ${PESOS.map(peso => `
+                    <div>
+                      <label>${peso === "1000" ? "1 kg" : peso + " g"}</label>
+                      <input
+                        data-field="stock-${peso}"
+                        type="number"
+                        step="1"
+                        min="0"
+                        value="${lote.stock && lote.stock[peso] !== undefined ? lote.stock[peso] : ""}">
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+
+              <div class="field full">
+                <label>Precio por formato (€) — deja en blanco el formato que no vendas de este lote</label>
                 <div class="field-grid precios-grid">
                   ${PESOS.map(peso => `
                     <div>
@@ -446,12 +458,21 @@
         const codigo = codigoNuevo || codigoOriginal;
 
         const precios = {};
+        const stock = {};
+
         PESOS.forEach(peso => {
-          const valor = card.querySelector(`[data-field="precio-${peso}"]`).value;
-          if (valor !== "") {
-            precios[peso] = Number(valor);
+          const valorPrecio = card.querySelector(`[data-field="precio-${peso}"]`).value;
+          if (valorPrecio !== "") {
+            precios[peso] = Number(valorPrecio);
+          }
+
+          const valorStock = card.querySelector(`[data-field="stock-${peso}"]`).value;
+          if (valorStock !== "") {
+            stock[peso] = Math.max(0, Math.trunc(Number(valorStock)));
           }
         });
+
+        const loteExistente = lotes[codigoOriginal] || {};
 
         datos[codigo] = {
           codigo,
@@ -460,8 +481,9 @@
           fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
           puntaje: Number(card.querySelector('[data-field="puntaje"]').value) || 0,
           perfil: card.querySelector('[data-field="perfil"]').value.trim(),
-          stockKg: Number(card.querySelector('[data-field="stockKg"]').value) || 0,
           estado: card.querySelector('[data-field="estado"]').value,
+          stock,
+          vendidos: loteExistente.vendidos || {},
           precios
         };
       });
@@ -530,8 +552,10 @@
           fechaCata: lote.fechaCata,
           puntaje: lote.puntaje,
           perfil: lote.perfil,
-          stockKg: lote.stockKg,
           estado: lote.estado,
+          unidades250: lote.stock["250"] !== undefined ? lote.stock["250"] : "",
+          unidades500: lote.stock["500"] !== undefined ? lote.stock["500"] : "",
+          unidades1000: lote.stock["1000"] !== undefined ? lote.stock["1000"] : "",
           precio250: lote.precios["250"] !== undefined ? lote.precios["250"] : "",
           precio500: lote.precios["500"] !== undefined ? lote.precios["500"] : "",
           precio1000: lote.precios["1000"] !== undefined ? lote.precios["1000"] : ""
@@ -539,7 +563,7 @@
       });
 
       const hoja = XLSX.utils.json_to_sheet(filas, {
-        header: ["codigo", "proceso", "cosecha", "fechaCata", "puntaje", "perfil", "stockKg", "estado", "precio250", "precio500", "precio1000"]
+        header: ["codigo", "proceso", "cosecha", "fechaCata", "puntaje", "perfil", "estado", "unidades250", "unidades500", "unidades1000", "precio250", "precio500", "precio1000"]
       });
 
       const libro = XLSX.utils.book_new();
@@ -578,6 +602,11 @@
             if (fila.precio500 !== "" && fila.precio500 !== undefined) precios["500"] = Number(fila.precio500);
             if (fila.precio1000 !== "" && fila.precio1000 !== undefined) precios["1000"] = Number(fila.precio1000);
 
+            const stock = {};
+            if (fila.unidades250 !== "" && fila.unidades250 !== undefined) stock["250"] = Math.max(0, Math.trunc(Number(fila.unidades250)));
+            if (fila.unidades500 !== "" && fila.unidades500 !== undefined) stock["500"] = Math.max(0, Math.trunc(Number(fila.unidades500)));
+            if (fila.unidades1000 !== "" && fila.unidades1000 !== undefined) stock["1000"] = Math.max(0, Math.trunc(Number(fila.unidades1000)));
+
             nuevosLotes[codigo] = {
               codigo,
               proceso: String(fila.proceso || "").trim(),
@@ -585,8 +614,9 @@
               fechaCata: String(fila.fechaCata || "").trim(),
               puntaje: Number(fila.puntaje) || 0,
               perfil: String(fila.perfil || "").trim(),
-              stockKg: Number(fila.stockKg) || 0,
               estado: ESTADOS.includes(fila.estado) ? fila.estado : "activo",
+              stock,
+              vendidos: (lotes[codigo] && lotes[codigo].vendidos) || {},
               precios
             };
           });

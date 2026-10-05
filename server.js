@@ -60,16 +60,20 @@ app.put("/api/lotes", requiereAdmin, (req, res) => {
         return res.status(400).json({ error: `Estado inválido en el lote "${codigo}"` });
       }
 
-      if (!Number.isFinite(Number(lote.stockKg)) || Number(lote.stockKg) < 0) {
-        return res.status(400).json({ error: `Stock inválido en el lote "${codigo}"` });
-      }
-
       const formatosConPrecio = Object.keys(lote.precios || {}).filter(peso =>
         PESOS_VALIDOS.includes(peso) && Number.isFinite(Number(lote.precios[peso])) && Number(lote.precios[peso]) > 0
       );
 
       if (formatosConPrecio.length === 0) {
         return res.status(400).json({ error: `El lote "${codigo}" necesita al menos un precio válido` });
+      }
+
+      for (const peso of PESOS_VALIDOS) {
+        const unidades = Number((lote.stock || {})[peso]);
+
+        if (lote.stock && lote.stock[peso] !== undefined && (!Number.isInteger(unidades) || unidades < 0)) {
+          return res.status(400).json({ error: `Stock inválido en "${codigo}" / ${peso}g (debe ser un número entero de unidades)` });
+        }
       }
 
       lote.codigo = codigo;
@@ -119,8 +123,8 @@ app.post("/create-checkout-session", async (req, res) => {
 
     const lotes = leerLotes();
 
-    // kg necesarios por lote en este pedido (varias líneas pueden compartir el mismo lote)
-    const kgNecesariosPorLote = {};
+    // unidades necesarias por lote + formato en este pedido (varias líneas pueden compartir el mismo lote/formato)
+    const unidadesNecesarias = {}; // "CODIGO|peso" -> unidades
 
     const lineItems = carrito.map(item => {
       const lote = lotes[item.lote];
@@ -137,12 +141,12 @@ app.post("/create-checkout-session", async (req, res) => {
 
       const cantidad = Number(item.cantidad);
 
-      if (!Number.isFinite(cantidad) || cantidad < 1) {
+      if (!Number.isInteger(cantidad) || cantidad < 1) {
         throw new Error(`Cantidad inválida para el lote "${item.lote}"`);
       }
 
-      const kgLinea = (Number(item.peso) / 1000) * cantidad;
-      kgNecesariosPorLote[item.lote] = (kgNecesariosPorLote[item.lote] || 0) + kgLinea;
+      const clave = `${item.lote}|${item.peso}`;
+      unidadesNecesarias[clave] = (unidadesNecesarias[clave] || 0) + cantidad;
 
       return {
         price_data: {
@@ -157,12 +161,14 @@ app.post("/create-checkout-session", async (req, res) => {
       };
     });
 
-    for (const codigoLote of Object.keys(kgNecesariosPorLote)) {
+    for (const clave of Object.keys(unidadesNecesarias)) {
+      const [codigoLote, peso] = clave.split("|");
       const lote = lotes[codigoLote];
+      const disponibles = Number((lote.stock || {})[peso] || 0);
 
-      if (kgNecesariosPorLote[codigoLote] > lote.stockKg + 1e-9) {
+      if (unidadesNecesarias[clave] > disponibles) {
         return res.status(409).json({
-          error: `No hay stock suficiente del lote "${codigoLote}". Disponible: ${lote.stockKg} kg.`
+          error: `No hay stock suficiente del lote "${codigoLote}" en formato ${peso} g. Disponible: ${disponibles} unidades.`
         });
       }
     }
@@ -182,14 +188,24 @@ app.post("/create-checkout-session", async (req, res) => {
     });
 
     // Reservamos el stock al crear la sesión de pago (no espera confirmación de Stripe)
-    for (const codigoLote of Object.keys(kgNecesariosPorLote)) {
-      lotes[codigoLote].stockKg = Number((lotes[codigoLote].stockKg - kgNecesariosPorLote[codigoLote]).toFixed(3));
-      lotes[codigoLote].stockVendidoKg = Number(((lotes[codigoLote].stockVendidoKg || 0) + kgNecesariosPorLote[codigoLote]).toFixed(3));
+    for (const clave of Object.keys(unidadesNecesarias)) {
+      const [codigoLote, peso] = clave.split("|");
+      const lote = lotes[codigoLote];
 
-      if (lotes[codigoLote].stockKg <= 0) {
-        lotes[codigoLote].estado = "agotado";
+      lote.stock[peso] = Number(lote.stock[peso]) - unidadesNecesarias[clave];
+      lote.vendidos = lote.vendidos || {};
+      lote.vendidos[peso] = Number(lote.vendidos[peso] || 0) + unidadesNecesarias[clave];
+    }
+
+    for (const codigoLote of new Set(Object.keys(unidadesNecesarias).map(c => c.split("|")[0]))) {
+      const lote = lotes[codigoLote];
+      const totalDisponible = PESOS_VALIDOS.reduce((sum, peso) => sum + Number((lote.stock || {})[peso] || 0), 0);
+
+      if (totalDisponible <= 0) {
+        lote.estado = "agotado";
       }
     }
+
     guardarLotes(lotes);
 
     res.json({ id: session.id });
