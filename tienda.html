@@ -355,6 +355,24 @@
       margin-bottom: 12px;
     }
 
+    .stock-warning {
+      display: inline-block;
+      margin: -4px 0 14px;
+      padding: 5px 12px;
+      border-radius: 999px;
+
+      background: rgba(214,69,37,.12);
+      color: #b84321;
+      border: 1px solid rgba(214,69,37,.35);
+
+      font-size: 12.5px;
+      font-weight: 900;
+    }
+
+    #molienda-field[hidden] {
+      display: none;
+    }
+
     .cantidad-row {
       display: flex;
       gap: 14px;
@@ -961,7 +979,7 @@
   </div>
 
   <h1>Tienda</h1>
-  <p class="intro">Selecciona el proceso, peso, molienda y tostión de tu café.</p>
+  <p class="intro">Selecciona el proceso, el lote, el peso, la molienda y el tueste de tu café.</p>
 
   <div class="container">
 
@@ -982,20 +1000,63 @@
 
       <div class="product-right">
         <div class="product-info">
-          
+
+          <div class="option-row">
+
+            <div class="option-field">
+              <label>Proceso</label>
+              <select id="proceso" onchange="onProcesoChange()"></select>
+            </div>
+
+            <div class="option-field">
+              <label>Lote</label>
+              <select id="lote" onchange="onLoteChange()"></select>
+            </div>
+
+            <div class="option-field">
+              <label>Peso</label>
+              <select id="peso" onchange="actualizarPrecioYStock()"></select>
+            </div>
+
+            <div class="option-field">
+              <label>Tipo</label>
+              <select id="tipo" onchange="onTipoChange()">
+                <option value="grano">En grano</option>
+                <option value="molido">Molido</option>
+              </select>
+            </div>
+
+            <div class="option-field" id="molienda-field">
+              <label>Molienda</label>
+              <select id="molienda">
+                <option value="Molido espresso">Espresso</option>
+                <option value="Molido moka">Moka</option>
+                <option value="Molido filtro">Filtro</option>
+                <option value="Molido prensa francesa">Prensa francesa</option>
+              </select>
+            </div>
+
+            <div class="option-field">
+              <label>Tueste</label>
+              <select id="tueste" onchange="actualizarTuesteInfo()">
+                <option value="claro">Claro</option>
+                <option value="medio" selected>Medio</option>
+                <option value="medio-oscuro">Medio-oscuro</option>
+                <option value="oscuro">Oscuro</option>
+              </select>
+            </div>
+
+          </div>
+
           <div class="lote-box">
-            <p><strong>Lote / Muestra:</strong> <span id="lote">265</span></p>
-            <p><strong>Recolección:</strong> Marzo 2025</p>
+            <p><strong>Lote:</strong> <span id="info-lote-codigo">—</span></p>
+            <p><strong>Cosecha:</strong> <span id="info-cosecha">—</span></p>
           </div>
 
           <div class="cata-box">
-            <p><strong>Fecha de cata:</strong> <span id="fecha-cata"></span></p>
-            <p><strong>Puntaje SCA:</strong> <span id="puntaje"></span></p>
-            <p><strong>Perfil sensorial:</strong> <span id="perfil"></span></p>
-
-            <!--<a id="ficha-cata" href="#" class="ficha-btn" download>
-              Descargar ficha de cata profesional
-            </a>-->
+            <p><strong>Fecha de cata:</strong> <span id="fecha-cata">—</span></p>
+            <p><strong>Puntaje SCA:</strong> <span id="puntaje">—</span></p>
+            <p><strong>Perfil sensorial:</strong> <span id="perfil">—</span></p>
 
             <a href="pasaporte.html" id="ficha-pasaporte" class="btn btn-primary cata-passport-btn">
               Ver pasaporte del café
@@ -1005,54 +1066,15 @@
           <div class="process-info" id="process-info"></div>
           <div class="tostion-info" id="tostion-info"></div>
 
-          <div class="option-row">
-
-            <div class="option-field">
-              <label>Proceso</label>
-              <select id="proceso" onchange="actualizarPrecioYLote()">
-                <option value="lavado">Lavado</option>
-                <option value="honey">Honey</option>
-                <option value="natural">Natural</option>
-              </select>
-            </div>
-
-            <div class="option-field">
-              <label>Peso</label>
-              <select id="peso" onchange="actualizarPrecioYLote()">
-                <option value="">Selecciona peso</option>
-                <option value="250">250 g</option>
-                <option value="500">500 g</option>
-                <option value="1000">1 kg</option>
-              </select>
-            </div>
-
-            <div class="option-field">
-              <label>Molienda</label>
-              <select id="molienda">
-                <option>En grano</option>
-                <option>Molido</option>
-              </select>
-            </div>
-
-            <div class="option-field">
-              <label>Tipo de tostión</label>
-              <select id="tostion" onchange="actualizarTostionInfo()">
-                <option value="media">Media</option>
-                <option value="alta">Alta</option>
-                <option value="baja">Baja</option>
-              </select>
-            </div>
-
-          </div>
-
-          <div class="price" id="precio">Selecciona peso</div>
-          <p class="tax">Impuestos incluidos</p>
+          <div class="price" id="precio">Selecciona un lote</div>
+          <p class="tax" id="stock-info">Impuestos incluidos</p>
+          <p class="stock-warning" id="stock-warning" hidden></p>
 
           <label>Cantidad</label>
           <div class="cantidad-row">
-            <input id="cantidad" type="number" value="1" min="1">
+            <input id="cantidad" type="number" value="1" min="1" onchange="actualizarPrecioYStock()">
 
-            <button class="btn" onclick="addToCart()">
+            <button class="btn" id="add-to-cart-btn" onclick="addToCart()">
               Añadir al carrito
             </button>
           </div>
@@ -1072,117 +1094,209 @@
   </a>
 
   <script>
-    const cafes = {
-      lavado: {
-        nombre: "Lavado",
-        descripcion: "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado. El resultado es un café equilibrado, sedoso y sofisticado, con notas de frutos deshidratados, arándanos y una delicada acidez tartárica.",
-        lote: "265",
-        fecha: "16/05/2025",
-        puntaje: "86",
-        perfil: "Frutos deshidratados, arándanos, dátiles, uvas pasas, acidez tartárica y cuerpo sedoso.",
-        ficha: "cata-cafe-dmedina-lote-265.pdf",
-        precios: { "250": 18.50, "500": 34.00, "1000": 64.00 }
-      },
-      honey: {
-        nombre: "Honey",
-        descripcion: "El proceso Honey conserva parte del mucílago natural de la cereza durante el secado, aportando mayor dulzor, cuerpo y complejidad aromática. Mediante técnicas artesanales y un control preciso de humedad y temperatura, obtenemos una taza envolvente y aterciopelada, con notas frutales intensas, miel y azúcar moreno. Un perfil elegante que combina dulzor natural y gran profundidad sensorial.",
-        lote: "266",
-        fecha: "20/05/2025",
-        puntaje: "87",
-        perfil: "Miel, panela, frutos maduros y cuerpo sedoso.",
-        ficha: "cata-cafe-dmedina-lote-266.pdf",
-        precios: { "250": 19.50, "500": 36.00, "1000": 68.00 }
-      },
-      natural: {
-        nombre: "Natural",
-        descripcion: "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente sobre camas africanas, permitiendo que el grano absorba los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosa y afrutada, con gran cuerpo, textura sedosa y notas maduras que recuerdan frutos rojos, cacao y frutas tropicales.",
-        lote: "267",
-        fecha: "25/05/2025",
-        puntaje: "86.5",
-        perfil: "Perfil más intenso, afrutado y complejo.",
-        ficha: "cata-cafe-dmedina-lote-267.pdf",
-        precios: { "250": 21.00, "500": 39.00, "1000": 74.00 }
+    const NOMBRE_PRODUCTO = "Café D’Medina";
+    const LOW_STOCK_UNIDADES = 5; // a partir de cuántas unidades se avisa "últimas unidades"
+
+    const descripcionesProceso = {
+      "Lavado": "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado.",
+      "Honey": "El proceso Honey conserva parte del mucílago natural de la cereza durante el secado, aportando mayor dulzor, cuerpo y complejidad aromática. Obtenemos una taza envolvente y aterciopelada, con notas frutales intensas, miel y azúcar moreno.",
+      "Natural": "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente, permitiendo que el grano absorba los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosa y afrutada."
+    };
+
+    const tuestes = {
+      "claro": "<strong>Tueste claro:</strong> resalta la acidez y los aromas florales y frutales, ideal para apreciar el origen con máxima claridad.",
+      "medio": "<strong>Tueste medio · Recomendado:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
+      "medio-oscuro": "<strong>Tueste medio-oscuro:</strong> mayor cuerpo y dulzor caramelizado, con una acidez más suave.",
+      "oscuro": "<strong>Tueste oscuro:</strong> perfil intenso y especiado, con menor acidez y notas tostadas marcadas."
+    };
+
+    const PESOS_ORDEN = ["250", "500", "1000"];
+
+    let lotes = {};
+
+    function formatEUR(valor) {
+      return Number(valor).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+    }
+
+    function etiquetaPeso(peso) {
+      return peso === "1000" ? "1 kg" : peso + " g";
+    }
+
+    async function cargarLotes() {
+      try {
+        const response = await fetch("/api/lotes");
+        if (!response.ok) throw new Error("Respuesta no válida");
+        lotes = await response.json();
+      } catch (error) {
+        console.error("No se pudo cargar el inventario:", error);
+        lotes = {};
       }
-    };
+    }
 
-    const tostiones = {
-      media: "<strong>Tostión media · Recomendada:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
-      alta: "<strong>Tostión alta:</strong> perfil más intenso, con mayor cuerpo, menor acidez y notas más tostadas. Pensada para quienes prefieren una taza fuerte.",
-      baja: "<strong>Tostión baja:</strong> perfil más frutal y aromático, con acidez más viva y mayor expresión del origen."
-    };
+    function procesosDisponibles() {
+      const procesos = new Set();
+      Object.values(lotes).forEach(lote => {
+        if (lote.estado !== "archivado") {
+          procesos.add(lote.proceso);
+        }
+      });
+      return Array.from(procesos);
+    }
 
-    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+    function lotesDeProceso(proceso) {
+      return Object.values(lotes)
+        .filter(lote => lote.proceso === proceso && lote.estado !== "archivado")
+        .sort((a, b) => a.codigo < b.codigo ? 1 : -1);
+    }
 
-    // Código de lote (el mismo que va en el QR del empaque) por cada proceso
-    const codigosLote = {
-      lavado: "DM-2026-001",
-      honey: "DM-2026-002",
-      natural: "DM-2026-003"
-    };
+    function poblarProcesos() {
+      const select = document.getElementById("proceso");
+      const procesos = procesosDisponibles();
 
-    function actualizarPrecioYLote() {
+      select.innerHTML = procesos.map(proceso => `<option value="${proceso}">${proceso}</option>`).join("");
+    }
+
+    function onProcesoChange() {
       const proceso = document.getElementById("proceso").value;
-      const peso = document.getElementById("peso").value;
-      const cafe = cafes[proceso];
+      const select = document.getElementById("lote");
+      const candidatos = lotesDeProceso(proceso);
 
-      if (!cafe) return;
+      select.innerHTML = candidatos.map(lote => `
+        <option value="${lote.codigo}" ${lote.estado === "agotado" ? "disabled" : ""}>
+          ${lote.codigo}${lote.estado === "agotado" ? " (agotado)" : ""}
+        </option>
+      `).join("");
 
-      document.getElementById("process-info").textContent = cafe.descripcion;
-      document.getElementById("lote").textContent = cafe.lote;
-      document.getElementById("fecha-cata").textContent = cafe.fecha;
-      document.getElementById("puntaje").textContent = cafe.puntaje;
-      document.getElementById("perfil").textContent = cafe.perfil;
-     // document.getElementById("ficha-cata").href = cafe.ficha;
+      document.getElementById("process-info").textContent =
+        descripcionesProceso[proceso] || `Café de especialidad Café D’Medina, proceso ${proceso}.`;
 
-      const enlacePasaporte = document.getElementById("ficha-pasaporte");
-      if (enlacePasaporte && codigosLote[proceso]) {
-        enlacePasaporte.href = "pasaporte.html?codigo=" + codigosLote[proceso];
-      }
+      onLoteChange();
+    }
 
-      if (!peso) {
-        document.getElementById("precio").textContent = "Selecciona peso";
+    function loteSeleccionado() {
+      const codigo = document.getElementById("lote").value;
+      return lotes[codigo];
+    }
+
+    function onLoteChange() {
+      const lote = loteSeleccionado();
+      const peso = document.getElementById("peso");
+
+      if (!lote) {
+        document.getElementById("info-lote-codigo").textContent = "—";
+        document.getElementById("info-cosecha").textContent = "—";
+        document.getElementById("fecha-cata").textContent = "—";
+        document.getElementById("puntaje").textContent = "—";
+        document.getElementById("perfil").textContent = "—";
+        peso.innerHTML = "";
+        document.getElementById("precio").textContent = "No hay lotes disponibles";
+        document.getElementById("add-to-cart-btn").disabled = true;
         return;
       }
 
-      const precio = cafe.precios[peso];
+      document.getElementById("info-lote-codigo").textContent = lote.codigo;
+      document.getElementById("info-cosecha").textContent = lote.cosecha || "—";
+      document.getElementById("fecha-cata").textContent = lote.fechaCata || "—";
+      document.getElementById("puntaje").textContent = lote.puntaje || "—";
+      document.getElementById("perfil").textContent = lote.perfil || "—";
 
-      document.getElementById("precio").textContent =
-        precio.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
-    }
-
-    function actualizarTostionInfo() {
-      const tostion = document.getElementById("tostion").value;
-      document.getElementById("tostion-info").innerHTML = tostiones[tostion];
-    }
-
-    async function cargarPrecios() {
-      try {
-        const response = await fetch("/api/precios");
-        if (!response.ok) throw new Error("Respuesta no válida");
-
-        const precios = await response.json();
-
-        Object.keys(precios).forEach(proceso => {
-          if (cafes[proceso]) {
-            cafes[proceso].lote = precios[proceso].lote;
-            cafes[proceso].precios = precios[proceso].precios;
-          }
-        });
-      } catch (error) {
-        console.error("No se pudieron cargar los precios actualizados, se usan los valores por defecto:", error);
+      const enlacePasaporte = document.getElementById("ficha-pasaporte");
+      if (enlacePasaporte) {
+        enlacePasaporte.href = "pasaporte.html?codigo=" + lote.codigo;
       }
+
+      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
+      peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");
+
+      actualizarPrecioYStock();
+    }
+
+    function onTipoChange() {
+      const tipo = document.getElementById("tipo").value;
+      document.getElementById("molienda-field").hidden = (tipo === "grano");
+    }
+
+    function actualizarTuesteInfo() {
+      const tueste = document.getElementById("tueste").value;
+      document.getElementById("tostion-info").innerHTML = tuestes[tueste];
+    }
+
+    // kg del lote indicado que ya están reservados en el carrito guardado en este navegador
+    function kgEnCarritoDeLote(codigoLote, excluirLinea) {
+      const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+
+      return carritoGuardado.reduce((total, item) => {
+        if (item.lote !== codigoLote) return total;
+        if (excluirLinea && esMismaLinea(item, excluirLinea)) return total;
+        return total + Number(item.kgDescontados || 0);
+      }, 0);
+    }
+
+    function esMismaLinea(item, datos) {
+      return item.proceso === datos.proceso &&
+        item.lote === datos.lote &&
+        String(item.peso) === String(datos.peso) &&
+        item.molienda === datos.molienda &&
+        item.tueste === datos.tueste;
+    }
+
+    function actualizarPrecioYStock() {
+      const lote = loteSeleccionado();
+      const peso = document.getElementById("peso").value;
+      const cantidad = Math.max(1, Number(document.getElementById("cantidad").value) || 1);
+      const addBtn = document.getElementById("add-to-cart-btn");
+      const warning = document.getElementById("stock-warning");
+
+      if (!lote || !peso) {
+        document.getElementById("precio").textContent = "Selecciona un lote";
+        document.getElementById("stock-info").textContent = "Impuestos incluidos";
+        warning.hidden = true;
+        addBtn.disabled = true;
+        return;
+      }
+
+      const precioUnitario = lote.precios[peso];
+      document.getElementById("precio").textContent = formatEUR(precioUnitario * cantidad);
+
+      const pesoKg = Number(peso) / 1000;
+      const kgYaReservados = kgEnCarritoDeLote(lote.codigo);
+      const kgDisponibles = Math.max(0, lote.stockKg - kgYaReservados);
+      const unidadesDisponibles = Math.floor((kgDisponibles / pesoKg) + 1e-9);
+
+      if (unidadesDisponibles <= 0) {
+        document.getElementById("stock-info").textContent = `Agotado en formato ${etiquetaPeso(peso)}`;
+        warning.hidden = true;
+        addBtn.disabled = true;
+        return;
+      }
+
+      document.getElementById("stock-info").textContent =
+        `Stock disponible: ${unidadesDisponibles} unidad${unidadesDisponibles === 1 ? "" : "es"} de ${etiquetaPeso(peso)} · Impuestos incluidos`;
+
+      if (unidadesDisponibles <= LOW_STOCK_UNIDADES) {
+        warning.textContent = `¡Últimas unidades! Solo quedan ${unidadesDisponibles}.`;
+        warning.hidden = false;
+      } else {
+        warning.hidden = true;
+      }
+
+      addBtn.disabled = cantidad > unidadesDisponibles;
     }
 
     function addToCart() {
-      const procesoKey = document.getElementById("proceso").value;
+      const lote = loteSeleccionado();
       const peso = document.getElementById("peso").value;
-      const molienda = document.getElementById("molienda").value;
-      const tostion = document.getElementById("tostion").value;
+      const tipo = document.getElementById("tipo").value;
+      const tuesteSelect = document.getElementById("tueste");
+      const tueste = tuesteSelect.options[tuesteSelect.selectedIndex].text;
       const cantidad = Number(document.getElementById("cantidad").value);
-      const cafe = cafes[procesoKey];
 
-      if (!peso) {
-        alert("Selecciona el peso.");
+      const molienda = tipo === "grano"
+        ? "En grano"
+        : document.getElementById("molienda").value;
+
+      if (!lote || !peso) {
+        alert("Selecciona un lote y un peso.");
         return;
       }
 
@@ -1191,35 +1305,53 @@
         return;
       }
 
-      const precio = cafe.precios[peso];
+      const datosLinea = {
+        nombre: NOMBRE_PRODUCTO,
+        proceso: lote.proceso,
+        lote: lote.codigo,
+        cosecha: lote.cosecha,
+        peso,
+        molienda,
+        tueste
+      };
 
-      carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      const pesoKg = Number(peso) / 1000;
+      const carritoActual = JSON.parse(localStorage.getItem("carrito")) || [];
+      const lineaExistente = carritoActual.find(item => esMismaLinea(item, datosLinea));
 
-      const productoExistente = carrito.find(item =>
-        item.nombre === "Café D’Medina" &&
-        item.proceso === cafe.nombre &&
-        String(item.peso) === String(peso) &&
-        item.molienda === molienda &&
-        item.tostion === tostion
-      );
+      const cantidadFinal = (lineaExistente ? Number(lineaExistente.cantidad) : 0) + cantidad;
+      const kgLineaFinal = Number((pesoKg * cantidadFinal).toFixed(3));
 
-      if (productoExistente) {
-        productoExistente.cantidad =
-          Number(productoExistente.cantidad || 0) + cantidad;
+      const kgOtrasLineasDelLote = kgEnCarritoDeLote(lote.codigo, datosLinea);
+
+      if (kgOtrasLineasDelLote + kgLineaFinal > lote.stockKg + 1e-9) {
+        const kgDisponiblesParaEstaLinea = Math.max(0, lote.stockKg - kgOtrasLineasDelLote);
+        const unidadesMax = Math.floor((kgDisponiblesParaEstaLinea / pesoKg) + 1e-9);
+        alert(`No hay stock suficiente del lote ${lote.codigo} para esa cantidad. Máximo disponible en ${etiquetaPeso(peso)}: ${unidadesMax} unidades.`);
+        return;
+      }
+
+      if (lineaExistente) {
+        lineaExistente.cantidad = cantidadFinal;
+        lineaExistente.precio = lote.precios[peso];
+        lineaExistente.kgDescontados = kgLineaFinal;
       } else {
-        carrito.push({
-          nombre: "Café D’Medina",
-          proceso: cafe.nombre,
-          peso,
-          molienda,
-          tostion,
+        carritoActual.push({
+          ...datosLinea,
           cantidad,
-          precio
+          precio: lote.precios[peso],
+          kgDescontados: kgLineaFinal
         });
       }
 
-      localStorage.setItem("carrito", JSON.stringify(carrito));
+      localStorage.setItem("carrito", JSON.stringify(carritoActual));
       actualizarIconoCarrito();
+      actualizarPrecioYStock();
+
+      const addBtn = document.getElementById("add-to-cart-btn");
+      const textoOriginal = addBtn.textContent;
+      addBtn.textContent = "Añadido ✓";
+      setTimeout(() => { addBtn.textContent = textoOriginal; }, 1200);
     }
 
     function actualizarIconoCarrito() {
@@ -1250,9 +1382,11 @@
     }
 
     (async function init() {
-      await cargarPrecios();
-      actualizarPrecioYLote();
-      actualizarTostionInfo();
+      await cargarLotes();
+      poblarProcesos();
+      onProcesoChange();
+      onTipoChange();
+      actualizarTuesteInfo();
       actualizarIconoCarrito();
     })();
   </script>

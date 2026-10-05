@@ -11,19 +11,19 @@ app.use(cors());
 app.use(express.static(__dirname));
 app.use(express.json());
 
-//-------------------------------------------------------------------------------------------------ABRE - TABLA DE PRECIOS PRIVADA--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------ABRE - INVENTARIO POR LOTE (PRIVADO)--------------------------------------------------------------------------------------------//
 
-const PRECIOS_FILE = path.join(__dirname, "data", "precios.json");
-const PROCESOS_VALIDOS = ["lavado", "honey", "natural"];
+const LOTES_FILE = path.join(__dirname, "data", "lotes.json");
 const PESOS_VALIDOS = ["250", "500", "1000"];
+const ESTADOS_VALIDOS = ["activo", "agotado", "archivado"];
 
-function leerPrecios() {
-  const raw = fs.readFileSync(PRECIOS_FILE, "utf-8");
+function leerLotes() {
+  const raw = fs.readFileSync(LOTES_FILE, "utf-8");
   return JSON.parse(raw);
 }
 
-function guardarPrecios(datos) {
-  fs.writeFileSync(PRECIOS_FILE, JSON.stringify(datos, null, 2));
+function guardarLotes(datos) {
+  fs.writeFileSync(LOTES_FILE, JSON.stringify(datos, null, 2));
 }
 
 function requiereAdmin(req, res, next) {
@@ -36,45 +36,55 @@ function requiereAdmin(req, res, next) {
   next();
 }
 
-app.get("/api/precios", (req, res) => {
+app.get("/api/lotes", (req, res) => {
   try {
-    res.json(leerPrecios());
+    res.json(leerLotes());
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "No se pudieron leer los precios" });
+    res.status(500).json({ error: "No se pudo leer el inventario" });
   }
 });
 
-app.put("/api/precios", requiereAdmin, (req, res) => {
+app.put("/api/lotes", requiereAdmin, (req, res) => {
   try {
     const datos = req.body;
 
-    for (const proceso of PROCESOS_VALIDOS) {
-      const entrada = datos[proceso];
+    for (const codigo of Object.keys(datos)) {
+      const lote = datos[codigo];
 
-      if (!entrada || typeof entrada.lote !== "string" || !entrada.lote.trim()) {
-        return res.status(400).json({ error: `Falta el lote de "${proceso}"` });
+      if (!lote || typeof lote.proceso !== "string" || !lote.proceso.trim()) {
+        return res.status(400).json({ error: `Falta el proceso del lote "${codigo}"` });
       }
 
-      for (const peso of PESOS_VALIDOS) {
-        const precio = Number(entrada.precios && entrada.precios[peso]);
-
-        if (!Number.isFinite(precio) || precio <= 0) {
-          return res.status(400).json({ error: `Precio inválido en "${proceso}" / ${peso}g` });
-        }
+      if (!ESTADOS_VALIDOS.includes(lote.estado)) {
+        return res.status(400).json({ error: `Estado inválido en el lote "${codigo}"` });
       }
+
+      if (!Number.isFinite(Number(lote.stockKg)) || Number(lote.stockKg) < 0) {
+        return res.status(400).json({ error: `Stock inválido en el lote "${codigo}"` });
+      }
+
+      const formatosConPrecio = Object.keys(lote.precios || {}).filter(peso =>
+        PESOS_VALIDOS.includes(peso) && Number.isFinite(Number(lote.precios[peso])) && Number(lote.precios[peso]) > 0
+      );
+
+      if (formatosConPrecio.length === 0) {
+        return res.status(400).json({ error: `El lote "${codigo}" necesita al menos un precio válido` });
+      }
+
+      lote.codigo = codigo;
     }
 
-    guardarPrecios(datos);
-    res.json({ success: true, precios: datos });
+    guardarLotes(datos);
+    res.json({ success: true, lotes: datos });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "No se pudieron guardar los precios" });
+    res.status(500).json({ error: "No se pudo guardar el inventario" });
   }
 });
 
-//-------------------------------------------------------------------------------------------------CIERRA - TABLA DE PRECIOS PRIVADA--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------CIERRA - INVENTARIO POR LOTE (PRIVADO)--------------------------------------------------------------------------------------------//
 
 //-------------------------------------------------------------------------------------------------ABRE - STRIPE TEST--------------------------------------------------------------------------------------------//
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -103,17 +113,59 @@ app.post("/create-checkout-session", async (req, res) => {
   try {
     const { carrito } = req.body;
 
-    const lineItems = carrito.map(item => ({
-      price_data: {
-        currency: "eur",
-        product_data: {
-          name: item.nombre,
-          description: `${item.peso} g · ${item.proceso} · ${item.molienda} · ${item.tostion}`
+    if (!Array.isArray(carrito) || carrito.length === 0) {
+      return res.status(400).json({ error: "El carrito está vacío" });
+    }
+
+    const lotes = leerLotes();
+
+    // kg necesarios por lote en este pedido (varias líneas pueden compartir el mismo lote)
+    const kgNecesariosPorLote = {};
+
+    const lineItems = carrito.map(item => {
+      const lote = lotes[item.lote];
+
+      if (!lote || lote.estado !== "activo") {
+        throw new Error(`El lote "${item.lote}" ya no está disponible`);
+      }
+
+      const precioUnitario = Number(lote.precios[item.peso]);
+
+      if (!Number.isFinite(precioUnitario)) {
+        throw new Error(`El formato de ${item.peso} g no existe para el lote "${item.lote}"`);
+      }
+
+      const cantidad = Number(item.cantidad);
+
+      if (!Number.isFinite(cantidad) || cantidad < 1) {
+        throw new Error(`Cantidad inválida para el lote "${item.lote}"`);
+      }
+
+      const kgLinea = (Number(item.peso) / 1000) * cantidad;
+      kgNecesariosPorLote[item.lote] = (kgNecesariosPorLote[item.lote] || 0) + kgLinea;
+
+      return {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.nombre,
+            description: `Lote ${lote.codigo} · ${lote.proceso} · ${item.peso} g · ${item.molienda} · ${item.tueste}`
+          },
+          unit_amount: Math.round(precioUnitario * 100)
         },
-        unit_amount: Math.round(item.precio * 100)
-      },
-      quantity: item.cantidad
-    }));
+        quantity: cantidad
+      };
+    });
+
+    for (const codigoLote of Object.keys(kgNecesariosPorLote)) {
+      const lote = lotes[codigoLote];
+
+      if (kgNecesariosPorLote[codigoLote] > lote.stockKg + 1e-9) {
+        return res.status(409).json({
+          error: `No hay stock suficiente del lote "${codigoLote}". Disponible: ${lote.stockKg} kg.`
+        });
+      }
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -129,11 +181,22 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
+    // Reservamos el stock al crear la sesión de pago (no espera confirmación de Stripe)
+    for (const codigoLote of Object.keys(kgNecesariosPorLote)) {
+      lotes[codigoLote].stockKg = Number((lotes[codigoLote].stockKg - kgNecesariosPorLote[codigoLote]).toFixed(3));
+      lotes[codigoLote].stockVendidoKg = Number(((lotes[codigoLote].stockVendidoKg || 0) + kgNecesariosPorLote[codigoLote]).toFixed(3));
+
+      if (lotes[codigoLote].stockKg <= 0) {
+        lotes[codigoLote].estado = "agotado";
+      }
+    }
+    guardarLotes(lotes);
+
     res.json({ id: session.id });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error creando el pago" });
+    res.status(500).json({ error: error.message || "Error creando el pago" });
   }
 });
 

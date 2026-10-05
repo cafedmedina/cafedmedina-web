@@ -937,6 +937,18 @@
     const stripe = Stripe("pk_test_51TUB833gq8inlL2zJkDNL2xz4yOq0WAExmweTl5sRDxmC69Jl4bLRelvp0QGurwc4d0aP7xteOxGjWfqN5iBLKZ1000ITCPSNU");
 
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+    let lotes = {};
+
+    async function cargarLotes() {
+      try {
+        const response = await fetch("/api/lotes");
+        if (!response.ok) throw new Error("Respuesta no válida");
+        lotes = await response.json();
+      } catch (error) {
+        console.error("No se pudo cargar el inventario:", error);
+        lotes = {};
+      }
+    }
 
     function actualizarContador() {
       const cartCount = document.getElementById("cart-count");
@@ -965,12 +977,13 @@
 
       cartItems.innerHTML = carrito.map((item, index) => {
         const subtotal = Number(item.precio) * Number(item.cantidad);
+        const pesoLabel = item.peso === "1000" || Number(item.peso) === 1000 ? "1 kg" : `${item.peso} g`;
 
         return `
           <div class="cart-item">
             <strong>${item.nombre}</strong><br>
-            ${item.peso} g · ${item.proceso}<br>
-            ${item.molienda || ""} · ${item.tostion || ""}<br>
+            ${item.proceso} · Lote ${item.lote || "—"}${item.cosecha ? " · " + item.cosecha : ""}<br>
+            ${pesoLabel} · ${item.molienda || ""} · ${item.tueste || item.tostion || ""}<br>
 
             <div class="qty-control">
               <button class="qty-btn" onclick="changeQuantity(${index}, -1)" aria-label="Quitar unidad">−</button>
@@ -1012,9 +1025,32 @@
 
       if (nuevaCantidad < 1) {
         carrito.splice(index, 1);
-      } else {
-        item.cantidad = nuevaCantidad;
+        localStorage.setItem("carrito", JSON.stringify(carrito));
+        renderCart();
+        return;
       }
+
+      if (delta > 0 && item.lote && item.peso) {
+        const lote = lotes[item.lote];
+        const pesoKg = Number(item.peso) / 1000;
+
+        if (lote) {
+          const kgOtrasLineasDelLote = carrito.reduce((total, otro, otroIndex) => {
+            if (otroIndex === index || otro.lote !== item.lote) return total;
+            return total + Number(otro.kgDescontados || (Number(otro.peso) / 1000) * Number(otro.cantidad));
+          }, 0);
+
+          const kgLineaNueva = pesoKg * nuevaCantidad;
+
+          if (kgOtrasLineasDelLote + kgLineaNueva > lote.stockKg + 1e-9) {
+            alert(`No hay más stock disponible del lote ${item.lote} en este formato.`);
+            return;
+          }
+        }
+      }
+
+      item.cantidad = nuevaCantidad;
+      item.kgDescontados = Number(((Number(item.peso) / 1000) * nuevaCantidad).toFixed(3));
 
       localStorage.setItem("carrito", JSON.stringify(carrito));
       renderCart();
@@ -1069,7 +1105,10 @@
       }
     }
 
-    renderCart();
+    (async function init() {
+      await cargarLotes();
+      renderCart();
+    })();
   </script>
 
 

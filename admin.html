@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Panel de precios | Café D’Medina</title>
+  <title>Inventario y precios | Café D’Medina</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -16,6 +17,8 @@
       --gold-light: #e2c47d;
       --white: #ffffff;
       --muted: rgba(255,255,255,.72);
+      --red: #ff8a8a;
+      --green: #8ee6a1;
     }
 
     * {
@@ -29,10 +32,7 @@
       color: var(--white);
       font-family: 'Lato', Arial, sans-serif;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 16px;
+      padding: 32px 16px 80px;
     }
 
     h1 {
@@ -50,7 +50,8 @@
 
     .box {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
+      margin: 0 auto;
       padding: 32px;
       border-radius: 24px;
       background: var(--black-soft);
@@ -58,14 +59,19 @@
       box-shadow: 0 22px 50px rgba(0,0,0,.3);
     }
 
+    .panel {
+      width: 100%;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
     .login-row {
       display: flex;
       gap: 10px;
     }
 
-    input {
+    input, select, textarea {
       width: 100%;
-      height: 46px;
       padding: 10px 14px;
       background: #0f0d0c;
       color: var(--white);
@@ -73,9 +79,20 @@
       border-radius: 10px;
       font-size: 14px;
       outline: none;
+      font-family: inherit;
     }
 
-    input:focus {
+    input, select {
+      height: 46px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+      line-height: 1.4;
+    }
+
+    input:focus, select:focus, textarea:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 3px rgba(200,169,106,.18);
     }
@@ -102,69 +119,119 @@
       cursor: not-allowed;
     }
 
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold-light);
+      border: 1px solid rgba(200,169,106,.55);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(200,169,106,.12);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--red);
+      border: 1px solid rgba(255,138,138,.5);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255,138,138,.1);
+    }
+
     .error-msg {
       margin-top: 12px;
-      color: #ff8a8a;
+      color: var(--red);
       font-size: 13px;
     }
 
     .success-msg {
-      margin-top: 16px;
-      color: #8ee6a1;
+      color: var(--green);
       font-size: 13px;
     }
 
-    .proceso-card {
-      padding: 18px;
-      margin-bottom: 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(200,169,106,.2);
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
-    .proceso-card h2 {
+    .toolbar-spacer {
+      flex: 1;
+    }
+
+    .lote-card {
+      padding: 20px;
+      margin-bottom: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.22);
+    }
+
+    .lote-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .lote-card-head h2 {
       font-family: 'Playfair Display', serif;
       font-size: 19px;
       color: var(--gold-light);
-      margin-bottom: 12px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .field-grid.precios-grid {
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 4px;
     }
 
     label {
       display: block;
-      margin-top: 10px;
       margin-bottom: 5px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
-      letter-spacing: .8px;
+      letter-spacing: .6px;
       text-transform: uppercase;
     }
 
-    .precios-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .precio-peso {
-      display: block;
+    .field {
       margin-bottom: 4px;
-      color: var(--gold-light);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .4px;
-      text-align: center;
     }
 
-    .save-row {
-      margin-top: 8px;
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      margin-top: 24px;
+      padding: 16px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
+      background: rgba(17,16,15,.95);
+      border-top: 1px solid rgba(200,169,106,.28);
+      border-radius: 18px;
     }
 
     [hidden] {
       display: none !important;
+    }
+
+    input[type="file"] {
+      display: none;
     }
   </style>
 </head>
@@ -172,7 +239,7 @@
 <body>
 
   <div class="box" id="login-box">
-    <h1>Panel de precios</h1>
+    <h1>Inventario y precios</h1>
     <p class="subtitle">Acceso restringido · solo propietarios</p>
 
     <div class="login-row">
@@ -183,28 +250,32 @@
     <p class="error-msg" id="login-error" hidden></p>
   </div>
 
-  <div class="box" id="admin-box" hidden>
-    <h1>Panel de precios</h1>
-    <p class="subtitle">Edita lote y precio por peso de cada proceso. Los cambios se aplican al instante en la tienda.</p>
+  <div class="panel" id="admin-panel" hidden>
+    <h1>Inventario y precios</h1>
+    <p class="subtitle">Gestiona lotes, stock y precios por formato. Puede haber varios lotes activos del mismo proceso.</p>
 
-    <div id="procesos-container"></div>
+    <div class="toolbar">
+      <button class="btn" onclick="añadirLoteNuevo()">+ Añadir lote</button>
+      <button class="btn-secondary btn" onclick="exportarExcel()">Exportar a Excel</button>
+      <button class="btn-secondary btn" onclick="document.getElementById('excel-input').click()">Importar desde Excel</button>
+      <input type="file" id="excel-input" accept=".xlsx,.xls" onchange="importarExcel(event)">
+      <div class="toolbar-spacer"></div>
+    </div>
 
-    <div class="save-row">
+    <div id="lotes-container"></div>
+
+    <div class="save-bar">
       <button class="btn" id="save-btn" onclick="guardar()">Guardar cambios</button>
       <span id="save-feedback"></span>
     </div>
   </div>
 
   <script>
-    const NOMBRES_PROCESO = {
-      lavado: "Lavado",
-      honey: "Honey",
-      natural: "Natural"
-    };
-
     const PESOS = ["250", "500", "1000"];
+    const ESTADOS = ["activo", "agotado", "archivado"];
 
-    let precios = {};
+    let lotes = {};
+    let contadorNuevos = 0;
 
     function getToken() {
       return sessionStorage.getItem("adminToken") || "";
@@ -224,49 +295,141 @@
       sessionStorage.setItem("adminToken", token);
 
       try {
-        await cargarPrecios();
+        await cargarLotes();
         document.getElementById("login-box").hidden = true;
-        document.getElementById("admin-box").hidden = false;
+        document.getElementById("admin-panel").hidden = false;
       } catch (error) {
         sessionStorage.removeItem("adminToken");
-        errorMsg.textContent = "No se pudieron cargar los precios. Inténtalo de nuevo.";
+        errorMsg.textContent = "No se pudo cargar el inventario. Inténtalo de nuevo.";
         errorMsg.hidden = false;
       }
     }
 
-    async function cargarPrecios() {
-      const response = await fetch("/api/precios");
-      if (!response.ok) throw new Error("No se pudieron cargar los precios");
-      precios = await response.json();
-      renderFormulario();
+    async function cargarLotes() {
+      const response = await fetch("/api/lotes");
+      if (!response.ok) throw new Error("No se pudo cargar el inventario");
+      lotes = await response.json();
+      renderLotes();
     }
 
-    function renderFormulario() {
-      const container = document.getElementById("procesos-container");
+    function nuevoCodigoTemporal() {
+      contadorNuevos++;
+      return `NUEVO-${contadorNuevos}`;
+    }
 
-      container.innerHTML = Object.keys(NOMBRES_PROCESO).map(proceso => {
-        const datos = precios[proceso] || { lote: "", precios: {} };
+    function añadirLoteNuevo() {
+      const codigoTemporal = nuevoCodigoTemporal();
+
+      lotes[codigoTemporal] = {
+        codigo: codigoTemporal,
+        proceso: "",
+        cosecha: "",
+        fechaCata: "",
+        puntaje: "",
+        perfil: "",
+        stockKg: 0,
+        estado: "activo",
+        precios: {}
+      };
+
+      renderLotes();
+    }
+
+    function eliminarLote(codigo) {
+      if (!confirm(`¿Eliminar el lote "${codigo}"? Esto no se puede deshacer una vez guardes los cambios.`)) {
+        return;
+      }
+
+      delete lotes[codigo];
+      renderLotes();
+    }
+
+    function renderLotes() {
+      const container = document.getElementById("lotes-container");
+      const codigos = Object.keys(lotes);
+
+      if (codigos.length === 0) {
+        container.innerHTML = `<p class="subtitle">No hay lotes todavía. Pulsa "+ Añadir lote" para crear el primero.</p>`;
+        return;
+      }
+
+      container.innerHTML = codigos.map(codigo => {
+        const lote = lotes[codigo];
+        const esNuevo = codigo.startsWith("NUEVO-");
 
         return `
-          <div class="proceso-card">
-            <h2>${NOMBRES_PROCESO[proceso]}</h2>
+          <div class="lote-card" data-codigo="${codigo}">
+            <div class="lote-card-head">
+              <h2>${esNuevo ? "Lote nuevo" : lote.codigo}</h2>
+              <button class="btn-danger btn" onclick="eliminarLote('${codigo}')">Eliminar</button>
+            </div>
 
-            <label for="lote-${proceso}">Lote</label>
-            <input id="lote-${proceso}" type="text" value="${datos.lote || ""}">
+            <div class="field-grid">
+              <div class="field">
+                <label>Código de lote</label>
+                <input
+                  data-field="codigo"
+                  type="text"
+                  value="${lote.codigo || ""}"
+                  ${esNuevo ? "" : "readonly"}
+                  placeholder="DM-2026-004">
+              </div>
 
-            <label>Precios (€)</label>
-            <div class="precios-row">
-              ${PESOS.map(peso => `
-                <div>
-                  <span class="precio-peso">${peso === "1000" ? "1 kg" : peso + " g"}</span>
-                  <input
-                    id="precio-${proceso}-${peso}"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value="${datos.precios && datos.precios[peso] !== undefined ? datos.precios[peso] : ""}">
+              <div class="field">
+                <label>Proceso</label>
+                <input data-field="proceso" type="text" value="${lote.proceso || ""}" placeholder="Lavado / Honey / Natural...">
+              </div>
+
+              <div class="field">
+                <label>Cosecha</label>
+                <input data-field="cosecha" type="text" value="${lote.cosecha || ""}" placeholder="Octubre 2026">
+              </div>
+
+              <div class="field">
+                <label>Fecha de cata</label>
+                <input data-field="fechaCata" type="text" value="${lote.fechaCata || ""}" placeholder="15/10/2026">
+              </div>
+
+              <div class="field">
+                <label>Puntaje SCA</label>
+                <input data-field="puntaje" type="number" step="0.1" value="${lote.puntaje !== undefined ? lote.puntaje : ""}">
+              </div>
+
+              <div class="field">
+                <label>Stock disponible (kg)</label>
+                <input data-field="stockKg" type="number" step="0.01" min="0" value="${lote.stockKg !== undefined ? lote.stockKg : 0}">
+              </div>
+
+              <div class="field">
+                <label>Estado</label>
+                <select data-field="estado">
+                  ${ESTADOS.map(estado => `
+                    <option value="${estado}" ${lote.estado === estado ? "selected" : ""}>${estado}</option>
+                  `).join("")}
+                </select>
+              </div>
+
+              <div class="field full">
+                <label>Perfil sensorial</label>
+                <textarea data-field="perfil" placeholder="Notas de cata...">${lote.perfil || ""}</textarea>
+              </div>
+
+              <div class="field full">
+                <label>Precios por formato (€) — deja en blanco el formato que no vendas de este lote</label>
+                <div class="field-grid precios-grid">
+                  ${PESOS.map(peso => `
+                    <div>
+                      <label>${peso === "1000" ? "1 kg" : peso + " g"}</label>
+                      <input
+                        data-field="precio-${peso}"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value="${lote.precios && lote.precios[peso] !== undefined ? lote.precios[peso] : ""}">
+                    </div>
+                  `).join("")}
                 </div>
-              `).join("")}
+              </div>
             </div>
           </div>
         `;
@@ -275,18 +438,32 @@
 
     function leerFormulario() {
       const datos = {};
+      const cards = document.querySelectorAll(".lote-card");
 
-      Object.keys(NOMBRES_PROCESO).forEach(proceso => {
-        datos[proceso] = {
-          lote: document.getElementById(`lote-${proceso}`).value.trim(),
-          precios: {}
-        };
+      cards.forEach(card => {
+        const codigoOriginal = card.dataset.codigo;
+        const codigoNuevo = card.querySelector('[data-field="codigo"]').value.trim();
+        const codigo = codigoNuevo || codigoOriginal;
 
+        const precios = {};
         PESOS.forEach(peso => {
-          datos[proceso].precios[peso] = Number(
-            document.getElementById(`precio-${proceso}-${peso}`).value
-          );
+          const valor = card.querySelector(`[data-field="precio-${peso}"]`).value;
+          if (valor !== "") {
+            precios[peso] = Number(valor);
+          }
         });
+
+        datos[codigo] = {
+          codigo,
+          proceso: card.querySelector('[data-field="proceso"]').value.trim(),
+          cosecha: card.querySelector('[data-field="cosecha"]').value.trim(),
+          fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
+          puntaje: Number(card.querySelector('[data-field="puntaje"]').value) || 0,
+          perfil: card.querySelector('[data-field="perfil"]').value.trim(),
+          stockKg: Number(card.querySelector('[data-field="stockKg"]').value) || 0,
+          estado: card.querySelector('[data-field="estado"]').value,
+          precios
+        };
       });
 
       return datos;
@@ -302,7 +479,7 @@
       feedback.textContent = "Guardando...";
 
       try {
-        const response = await fetch("/api/precios", {
+        const response = await fetch("/api/lotes", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -313,7 +490,7 @@
 
         if (response.status === 401) {
           sessionStorage.removeItem("adminToken");
-          document.getElementById("admin-box").hidden = true;
+          document.getElementById("admin-panel").hidden = true;
           document.getElementById("login-box").hidden = false;
           document.getElementById("login-error").textContent = "Contraseña incorrecta.";
           document.getElementById("login-error").hidden = false;
@@ -326,7 +503,8 @@
           throw new Error(resultado.error || "Error al guardar");
         }
 
-        precios = resultado.precios;
+        lotes = resultado.lotes;
+        renderLotes();
         feedback.className = "success-msg";
         feedback.textContent = "Cambios guardados correctamente.";
 
@@ -338,11 +516,104 @@
       }
     }
 
+    // ---------------------------------------------------------------- EXCEL ----------------------------------------------------------------
+
+    function exportarExcel() {
+      const datos = leerFormulario();
+
+      const filas = Object.keys(datos).map(codigo => {
+        const lote = datos[codigo];
+        return {
+          codigo: lote.codigo,
+          proceso: lote.proceso,
+          cosecha: lote.cosecha,
+          fechaCata: lote.fechaCata,
+          puntaje: lote.puntaje,
+          perfil: lote.perfil,
+          stockKg: lote.stockKg,
+          estado: lote.estado,
+          precio250: lote.precios["250"] !== undefined ? lote.precios["250"] : "",
+          precio500: lote.precios["500"] !== undefined ? lote.precios["500"] : "",
+          precio1000: lote.precios["1000"] !== undefined ? lote.precios["1000"] : ""
+        };
+      });
+
+      const hoja = XLSX.utils.json_to_sheet(filas, {
+        header: ["codigo", "proceso", "cosecha", "fechaCata", "puntaje", "perfil", "stockKg", "estado", "precio250", "precio500", "precio1000"]
+      });
+
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, "Inventario");
+
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(libro, `inventario-cafe-dmedina-${fecha}.xlsx`);
+    }
+
+    function importarExcel(event) {
+      const archivo = event.target.files[0];
+      if (!archivo) return;
+
+      const lector = new FileReader();
+
+      lector.onload = function (e) {
+        try {
+          const datos = new Uint8Array(e.target.result);
+          const libro = XLSX.read(datos, { type: "array" });
+          const hoja = libro.Sheets[libro.SheetNames[0]];
+          const filas = XLSX.utils.sheet_to_json(hoja, { defval: "" });
+
+          if (filas.length === 0) {
+            alert("El archivo no tiene filas de datos.");
+            return;
+          }
+
+          const nuevosLotes = {};
+
+          filas.forEach(fila => {
+            const codigo = String(fila.codigo || "").trim();
+            if (!codigo) return;
+
+            const precios = {};
+            if (fila.precio250 !== "" && fila.precio250 !== undefined) precios["250"] = Number(fila.precio250);
+            if (fila.precio500 !== "" && fila.precio500 !== undefined) precios["500"] = Number(fila.precio500);
+            if (fila.precio1000 !== "" && fila.precio1000 !== undefined) precios["1000"] = Number(fila.precio1000);
+
+            nuevosLotes[codigo] = {
+              codigo,
+              proceso: String(fila.proceso || "").trim(),
+              cosecha: String(fila.cosecha || "").trim(),
+              fechaCata: String(fila.fechaCata || "").trim(),
+              puntaje: Number(fila.puntaje) || 0,
+              perfil: String(fila.perfil || "").trim(),
+              stockKg: Number(fila.stockKg) || 0,
+              estado: ESTADOS.includes(fila.estado) ? fila.estado : "activo",
+              precios
+            };
+          });
+
+          lotes = nuevosLotes;
+          renderLotes();
+
+          const feedback = document.getElementById("save-feedback");
+          feedback.className = "success-msg";
+          feedback.textContent = `${Object.keys(nuevosLotes).length} lotes importados del Excel. Revisa los datos y pulsa "Guardar cambios" para aplicarlos.`;
+
+        } catch (error) {
+          console.error(error);
+          alert("No se pudo leer el archivo Excel. Comprueba que el formato de las columnas sea correcto.");
+        } finally {
+          event.target.value = "";
+        }
+      };
+
+      lector.readAsArrayBuffer(archivo);
+    }
+
     if (getToken()) {
-      cargarPrecios()
+      cargarLotes()
         .then(() => {
           document.getElementById("login-box").hidden = true;
-          document.getElementById("admin-box").hidden = false;
+          document.getElementById("admin-panel").hidden = false;
         })
         .catch(() => {
           sessionStorage.removeItem("adminToken");
