@@ -7,7 +7,6 @@
   <title>Inventario y precios | Café D’Medina</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -42,6 +41,13 @@
       color: var(--gold-light);
     }
 
+    h2.section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--gold-light);
+      margin: 28px 0 12px;
+    }
+
     .subtitle {
       color: var(--muted);
       font-size: 14px;
@@ -61,7 +67,7 @@
 
     .panel {
       width: 100%;
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
     }
 
@@ -139,6 +145,12 @@
       background: rgba(255,138,138,.1);
     }
 
+    .btn-small {
+      min-height: 36px;
+      padding: 8px 16px;
+      font-size: 12.5px;
+    }
+
     .error-msg {
       margin-top: 12px;
       color: var(--red);
@@ -150,16 +162,36 @@
       font-size: 13px;
     }
 
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(200,169,106,.22);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 10px 18px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: .4px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--gold-light);
+      border-bottom-color: var(--gold-light);
+    }
+
     .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
       margin-bottom: 20px;
-    }
-
-    .toolbar-spacer {
-      flex: 1;
     }
 
     .lote-card {
@@ -219,6 +251,7 @@
       margin-top: 24px;
       padding: 16px;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 16px;
       background: rgba(17,16,15,.95);
@@ -226,12 +259,105 @@
       border-radius: 18px;
     }
 
-    [hidden] {
-      display: none !important;
+    .git-hint {
+      padding: 14px 16px;
+      margin-top: 14px;
+      border-radius: 14px;
+      background: rgba(200,169,106,.08);
+      border: 1px solid rgba(200,169,106,.25);
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--muted);
     }
 
-    input[type="file"] {
-      display: none;
+    .stock-row {
+      display: grid;
+      grid-template-columns: 1.6fr repeat(3, 1fr);
+      gap: 10px;
+      align-items: end;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.18);
+    }
+
+    .stock-row-head {
+      font-weight: 900;
+      color: var(--white);
+      font-size: 14px;
+    }
+
+    .stock-row-head small {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 11.5px;
+      margin-top: 2px;
+    }
+
+    .stock-field label {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stock-field .disponible {
+      color: var(--gold-light);
+    }
+
+    .pedido-card {
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.18);
+    }
+
+    .pedido-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pedido-id {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .pedido-estado {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .pedido-estado.pendiente {
+      color: #e8b55a;
+      background: rgba(232,181,90,.15);
+      border: 1px solid rgba(232,181,90,.4);
+    }
+
+    .pedido-estado.enviado {
+      color: var(--green);
+      background: rgba(142,230,161,.12);
+      border: 1px solid rgba(142,230,161,.35);
+    }
+
+    .pedido-items {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    [hidden] {
+      display: none !important;
     }
   </style>
 </head>
@@ -252,33 +378,69 @@
 
   <div class="panel" id="admin-panel" hidden>
     <h1>Inventario y precios</h1>
-    <p class="subtitle">Gestiona lotes, stock y precios por formato. Puede haber varios lotes activos del mismo proceso.</p>
+    <p class="subtitle">Catálogo, stock real y pedidos pendientes de envío.</p>
 
-    <div class="toolbar">
-      <button class="btn" onclick="añadirLoteNuevo()">+ Añadir lote</button>
-      <button class="btn-secondary btn" onclick="exportarExcel()">Exportar a Excel</button>
-      <button class="btn-secondary btn" onclick="document.getElementById('excel-input').click()">Importar desde Excel</button>
-      <input type="file" id="excel-input" accept=".xlsx,.xls" onchange="importarExcel(event)">
-      <div class="toolbar-spacer"></div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-btn-catalogo" onclick="cambiarTab('catalogo')">Catálogo y precios</button>
+      <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
+      <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
     </div>
 
-    <div id="lotes-container"></div>
+    <!-- ===================== CATÁLOGO ===================== -->
+    <div id="tab-catalogo">
+      <div class="toolbar">
+        <button class="btn" onclick="añadirLoteNuevo()">+ Añadir lote</button>
+      </div>
 
-    <div class="save-bar">
-      <button class="btn" id="save-btn" onclick="guardar()">Guardar cambios</button>
-      <span id="save-feedback"></span>
+      <div id="lotes-container"></div>
+
+      <div class="save-bar">
+        <button class="btn" id="save-catalogo-btn" onclick="guardarCatalogo()">Guardar catálogo</button>
+        <button class="btn-secondary btn" onclick="descargarJson()">Descargar lotes.json</button>
+        <span id="catalogo-feedback"></span>
+      </div>
+
+      <div class="git-hint">
+        <strong>Importante:</strong> "Guardar catálogo" aplica el cambio al instante en la web, pero es temporal — se pierde si el servicio se reinicia.
+        Para que sea permanente, pulsa "Descargar lotes.json" y sube ese archivo a <code>data/lotes.json</code> en GitHub.
+      </div>
     </div>
+
+    <!-- ===================== STOCK ===================== -->
+    <div id="tab-stock" hidden>
+      <p class="subtitle">El stock se guarda al instante, sin pasar por GitHub. "Disponible" ya descuenta lo vendido y aún no enviado.</p>
+      <div id="stock-container"></div>
+    </div>
+
+    <!-- ===================== PEDIDOS ===================== -->
+    <div id="tab-pedidos" hidden>
+      <p class="subtitle">Pedidos pagados por clientes. Al marcar "Enviado" se descuenta el stock real.</p>
+      <div class="toolbar">
+        <button class="btn-secondary btn" onclick="cargarPedidos()">Actualizar lista</button>
+      </div>
+      <div id="pedidos-container"></div>
+    </div>
+
   </div>
 
   <script>
     const PESOS = ["250", "500", "1000"];
-    const ESTADOS = ["activo", "agotado", "archivado"];
+    const ESTADOS = ["activo", "archivado"];
 
     let lotes = {};
     let contadorNuevos = 0;
 
     function getToken() {
       return sessionStorage.getItem("adminToken") || "";
+    }
+
+    function cambiarTab(nombre) {
+      ["catalogo", "stock", "pedidos"].forEach(t => {
+        document.getElementById(`tab-${t}`).hidden = (t !== nombre);
+        document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
+      });
+
+      if (nombre === "pedidos") cargarPedidos();
     }
 
     async function entrar() {
@@ -306,11 +468,22 @@
     }
 
     async function cargarLotes() {
-      const response = await fetch("/api/lotes");
+      const response = await fetch("/api/lotes-admin", {
+        headers: { "x-admin-token": getToken() }
+      });
+
+      if (response.status === 401) {
+        sessionStorage.removeItem("adminToken");
+        throw new Error("No autorizado");
+      }
+
       if (!response.ok) throw new Error("No se pudo cargar el inventario");
       lotes = await response.json();
       renderLotes();
+      renderStock();
     }
+
+    // ---------------------------------------------------------------- CATÁLOGO ----------------------------------------------------------------
 
     function nuevoCodigoTemporal() {
       contadorNuevos++;
@@ -328,7 +501,7 @@
         puntaje: "",
         perfil: "",
         estado: "activo",
-        stock: {},
+        stock: { "250": { real: 0, reservado: 0, disponible: 0 }, "500": { real: 0, reservado: 0, disponible: 0 }, "1000": { real: 0, reservado: 0, disponible: 0 } },
         precios: {}
       };
 
@@ -336,12 +509,13 @@
     }
 
     function eliminarLote(codigo) {
-      if (!confirm(`¿Eliminar el lote "${codigo}"? Esto no se puede deshacer una vez guardes los cambios.`)) {
+      if (!confirm(`¿Eliminar el lote "${codigo}" del catálogo? Esto no se puede deshacer una vez guardes y subas el JSON a GitHub.`)) {
         return;
       }
 
       delete lotes[codigo];
       renderLotes();
+      renderStock();
     }
 
     function renderLotes() {
@@ -361,7 +535,7 @@
           <div class="lote-card" data-codigo="${codigo}">
             <div class="lote-card-head">
               <h2>${esNuevo ? "Lote nuevo" : lote.codigo}</h2>
-              <button class="btn-danger btn" onclick="eliminarLote('${codigo}')">Eliminar</button>
+              <button class="btn-danger btn btn-small" onclick="eliminarLote('${codigo}')">Eliminar</button>
             </div>
 
             <div class="field-grid">
@@ -410,23 +584,6 @@
               </div>
 
               <div class="field full">
-                <label>Unidades en stock por formato — deja en blanco el formato que no vendas de este lote</label>
-                <div class="field-grid precios-grid">
-                  ${PESOS.map(peso => `
-                    <div>
-                      <label>${peso === "1000" ? "1 kg" : peso + " g"}</label>
-                      <input
-                        data-field="stock-${peso}"
-                        type="number"
-                        step="1"
-                        min="0"
-                        value="${lote.stock && lote.stock[peso] !== undefined ? lote.stock[peso] : ""}">
-                    </div>
-                  `).join("")}
-                </div>
-              </div>
-
-              <div class="field full">
                 <label>Precio por formato (€) — deja en blanco el formato que no vendas de este lote</label>
                 <div class="field-grid precios-grid">
                   ${PESOS.map(peso => `
@@ -448,7 +605,7 @@
       }).join("");
     }
 
-    function leerFormulario() {
+    function leerCatalogoFormulario() {
       const datos = {};
       const cards = document.querySelectorAll(".lote-card");
 
@@ -458,21 +615,12 @@
         const codigo = codigoNuevo || codigoOriginal;
 
         const precios = {};
-        const stock = {};
-
         PESOS.forEach(peso => {
           const valorPrecio = card.querySelector(`[data-field="precio-${peso}"]`).value;
           if (valorPrecio !== "") {
             precios[peso] = Number(valorPrecio);
           }
-
-          const valorStock = card.querySelector(`[data-field="stock-${peso}"]`).value;
-          if (valorStock !== "") {
-            stock[peso] = Math.max(0, Math.trunc(Number(valorStock)));
-          }
         });
-
-        const loteExistente = lotes[codigoOriginal] || {};
 
         datos[codigo] = {
           codigo,
@@ -482,8 +630,6 @@
           puntaje: Number(card.querySelector('[data-field="puntaje"]').value) || 0,
           perfil: card.querySelector('[data-field="perfil"]').value.trim(),
           estado: card.querySelector('[data-field="estado"]').value,
-          stock,
-          vendidos: loteExistente.vendidos || {},
           precios
         };
       });
@@ -491,17 +637,17 @@
       return datos;
     }
 
-    async function guardar() {
-      const feedback = document.getElementById("save-feedback");
-      const btn = document.getElementById("save-btn");
-      const datos = leerFormulario();
+    async function guardarCatalogo() {
+      const feedback = document.getElementById("catalogo-feedback");
+      const btn = document.getElementById("save-catalogo-btn");
+      const datos = leerCatalogoFormulario();
 
       btn.disabled = true;
       feedback.className = "";
       feedback.textContent = "Guardando...";
 
       try {
-        const response = await fetch("/api/lotes", {
+        const response = await fetch("/api/catalogo", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -525,10 +671,10 @@
           throw new Error(resultado.error || "Error al guardar");
         }
 
-        lotes = resultado.lotes;
-        renderLotes();
         feedback.className = "success-msg";
-        feedback.textContent = "Cambios guardados correctamente.";
+        feedback.textContent = "Guardado (temporal). No olvides descargar y subir lotes.json a GitHub.";
+
+        await cargarLotes();
 
       } catch (error) {
         feedback.className = "error-msg";
@@ -538,105 +684,188 @@
       }
     }
 
-    // ---------------------------------------------------------------- EXCEL ----------------------------------------------------------------
+    function descargarJson() {
+      const datos = leerCatalogoFormulario();
+      const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
 
-    function exportarExcel() {
-      const datos = leerFormulario();
-
-      const filas = Object.keys(datos).map(codigo => {
-        const lote = datos[codigo];
-        return {
-          codigo: lote.codigo,
-          proceso: lote.proceso,
-          cosecha: lote.cosecha,
-          fechaCata: lote.fechaCata,
-          puntaje: lote.puntaje,
-          perfil: lote.perfil,
-          estado: lote.estado,
-          unidades250: lote.stock["250"] !== undefined ? lote.stock["250"] : "",
-          unidades500: lote.stock["500"] !== undefined ? lote.stock["500"] : "",
-          unidades1000: lote.stock["1000"] !== undefined ? lote.stock["1000"] : "",
-          precio250: lote.precios["250"] !== undefined ? lote.precios["250"] : "",
-          precio500: lote.precios["500"] !== undefined ? lote.precios["500"] : "",
-          precio1000: lote.precios["1000"] !== undefined ? lote.precios["1000"] : ""
-        };
-      });
-
-      const hoja = XLSX.utils.json_to_sheet(filas, {
-        header: ["codigo", "proceso", "cosecha", "fechaCata", "puntaje", "perfil", "estado", "unidades250", "unidades500", "unidades1000", "precio250", "precio500", "precio1000"]
-      });
-
-      const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, "Inventario");
-
-      const fecha = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(libro, `inventario-cafe-dmedina-${fecha}.xlsx`);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = "lotes.json";
+      document.body.appendChild(enlace);
+      enlace.click();
+      document.body.removeChild(enlace);
+      URL.revokeObjectURL(url);
     }
 
-    function importarExcel(event) {
-      const archivo = event.target.files[0];
-      if (!archivo) return;
+    // ---------------------------------------------------------------- STOCK ----------------------------------------------------------------
 
-      const lector = new FileReader();
+    function renderStock() {
+      const container = document.getElementById("stock-container");
+      const codigos = Object.keys(lotes);
 
-      lector.onload = function (e) {
-        try {
-          const datos = new Uint8Array(e.target.result);
-          const libro = XLSX.read(datos, { type: "array" });
-          const hoja = libro.Sheets[libro.SheetNames[0]];
-          const filas = XLSX.utils.sheet_to_json(hoja, { defval: "" });
+      if (codigos.length === 0) {
+        container.innerHTML = `<p class="subtitle">No hay lotes en el catálogo todavía.</p>`;
+        return;
+      }
 
-          if (filas.length === 0) {
-            alert("El archivo no tiene filas de datos.");
-            return;
-          }
+      container.innerHTML = codigos.map(codigo => {
+        const lote = lotes[codigo];
 
-          const nuevosLotes = {};
+        return `
+          <div class="stock-row">
+            <div class="stock-row-head">
+              ${lote.codigo}
+              <small>${lote.proceso || ""}</small>
+            </div>
 
-          filas.forEach(fila => {
-            const codigo = String(fila.codigo || "").trim();
-            if (!codigo) return;
+            ${PESOS.map(peso => {
+              const datos = (lote.stock && lote.stock[peso]) || { real: 0, reservado: 0, disponible: 0 };
+              return `
+                <div class="stock-field">
+                  <label>
+                    <span>${peso === "1000" ? "1 kg" : peso + " g"}</span>
+                    <span class="disponible">disp. ${datos.disponible}</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value="${datos.real}"
+                    data-stock-codigo="${codigo}"
+                    data-stock-peso="${peso}"
+                    onchange="guardarStock(this)">
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }).join("");
+    }
 
-            const precios = {};
-            if (fila.precio250 !== "" && fila.precio250 !== undefined) precios["250"] = Number(fila.precio250);
-            if (fila.precio500 !== "" && fila.precio500 !== undefined) precios["500"] = Number(fila.precio500);
-            if (fila.precio1000 !== "" && fila.precio1000 !== undefined) precios["1000"] = Number(fila.precio1000);
+    async function guardarStock(input) {
+      const codigo = input.dataset.stockCodigo;
+      const peso = input.dataset.stockPeso;
+      const real = Math.max(0, Math.trunc(Number(input.value) || 0));
+      input.value = real;
 
-            const stock = {};
-            if (fila.unidades250 !== "" && fila.unidades250 !== undefined) stock["250"] = Math.max(0, Math.trunc(Number(fila.unidades250)));
-            if (fila.unidades500 !== "" && fila.unidades500 !== undefined) stock["500"] = Math.max(0, Math.trunc(Number(fila.unidades500)));
-            if (fila.unidades1000 !== "" && fila.unidades1000 !== undefined) stock["1000"] = Math.max(0, Math.trunc(Number(fila.unidades1000)));
+      input.disabled = true;
 
-            nuevosLotes[codigo] = {
-              codigo,
-              proceso: String(fila.proceso || "").trim(),
-              cosecha: String(fila.cosecha || "").trim(),
-              fechaCata: String(fila.fechaCata || "").trim(),
-              puntaje: Number(fila.puntaje) || 0,
-              perfil: String(fila.perfil || "").trim(),
-              estado: ESTADOS.includes(fila.estado) ? fila.estado : "activo",
-              stock,
-              vendidos: (lotes[codigo] && lotes[codigo].vendidos) || {},
-              precios
-            };
-          });
+      try {
+        const response = await fetch("/api/stock", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": getToken()
+          },
+          body: JSON.stringify({ codigo, peso, real })
+        });
 
-          lotes = nuevosLotes;
-          renderLotes();
-
-          const feedback = document.getElementById("save-feedback");
-          feedback.className = "success-msg";
-          feedback.textContent = `${Object.keys(nuevosLotes).length} lotes importados del Excel. Revisa los datos y pulsa "Guardar cambios" para aplicarlos.`;
-
-        } catch (error) {
-          console.error(error);
-          alert("No se pudo leer el archivo Excel. Comprueba que el formato de las columnas sea correcto.");
-        } finally {
-          event.target.value = "";
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
         }
-      };
 
-      lector.readAsArrayBuffer(archivo);
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "Error al guardar el stock");
+
+        await cargarLotes();
+
+      } catch (error) {
+        alert(error.message || "No se pudo guardar el stock.");
+      } finally {
+        input.disabled = false;
+      }
+    }
+
+    // ---------------------------------------------------------------- PEDIDOS ----------------------------------------------------------------
+
+    async function cargarPedidos() {
+      const container = document.getElementById("pedidos-container");
+      container.innerHTML = `<p class="subtitle">Cargando...</p>`;
+
+      try {
+        const response = await fetch("/api/pedidos", {
+          headers: { "x-admin-token": getToken() }
+        });
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+
+        const pedidos = await response.json();
+        if (!response.ok) throw new Error(pedidos.error || "Error al cargar pedidos");
+
+        renderPedidos(pedidos);
+
+      } catch (error) {
+        container.innerHTML = `<p class="error-msg">${error.message || "No se pudieron cargar los pedidos."}</p>`;
+      }
+    }
+
+    function renderPedidos(pedidos) {
+      const container = document.getElementById("pedidos-container");
+
+      if (pedidos.length === 0) {
+        container.innerHTML = `<p class="subtitle">Todavía no hay pedidos.</p>`;
+        return;
+      }
+
+      container.innerHTML = pedidos.map(pedido => {
+        const pendiente = pedido.estado !== "enviado";
+        const fecha = new Date(pedido.fecha).toLocaleString("es-ES");
+
+        return `
+          <div class="pedido-card">
+            <div class="pedido-head">
+              <div>
+                <div class="pedido-id">${pedido.id}</div>
+                <div>${fecha}</div>
+              </div>
+              <span class="pedido-estado ${pendiente ? "pendiente" : "enviado"}">
+                ${pendiente ? "Pendiente de envío" : "Enviado"}
+              </span>
+            </div>
+
+            <div class="pedido-items">
+              ${pedido.items.map(item => `
+                ${item.cantidad} × ${item.nombre} · ${item.proceso} · Lote ${item.lote} · ${item.peso === "1000" ? "1 kg" : item.peso + " g"} · ${item.molienda} · ${item.tueste}
+              `).join("<br>")}
+            </div>
+
+            ${pendiente ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function marcarEnviado(id) {
+      if (!confirm("¿Confirmas que este pedido ha salido? Se descontará del stock real.")) return;
+
+      try {
+        const response = await fetch(`/api/pedidos/${encodeURIComponent(id)}/enviar`, {
+          method: "POST",
+          headers: { "x-admin-token": getToken() }
+        });
+
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "No se pudo marcar el pedido");
+
+        await cargarLotes();
+        await cargarPedidos();
+
+      } catch (error) {
+        alert(error.message || "No se pudo marcar el pedido como enviado.");
+      }
     }
 
     if (getToken()) {

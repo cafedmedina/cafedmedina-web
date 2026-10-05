@@ -11,19 +11,22 @@ app.use(cors());
 app.use(express.static(__dirname));
 app.use(express.json());
 
-//-------------------------------------------------------------------------------------------------ABRE - INVENTARIO POR LOTE (PRIVADO)--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------ABRE - CATÁLOGO (PRECIOS Y FICHAS, VIVE EN GIT)--------------------------------------------------------------------------------------------//
 
-const LOTES_FILE = path.join(__dirname, "data", "lotes.json");
+const CATALOGO_FILE = path.join(__dirname, "data", "lotes.json");
 const PESOS_VALIDOS = ["250", "500", "1000"];
-const ESTADOS_VALIDOS = ["activo", "agotado", "archivado"];
+const ESTADOS_VALIDOS = ["activo", "archivado"];
 
-function leerLotes() {
-  const raw = fs.readFileSync(LOTES_FILE, "utf-8");
+function leerCatalogo() {
+  const raw = fs.readFileSync(CATALOGO_FILE, "utf-8");
   return JSON.parse(raw);
 }
 
-function guardarLotes(datos) {
-  fs.writeFileSync(LOTES_FILE, JSON.stringify(datos, null, 2));
+function guardarCatalogoLocal(datos) {
+  // Este archivo vive en el disco de Render, que NO es permanente: el cambio se ve
+  // de inmediato en la web, pero se pierde si el servicio se reinicia. Hay que subir
+  // el JSON actualizado a GitHub (carpeta data/lotes.json) para que sea definitivo.
+  fs.writeFileSync(CATALOGO_FILE, JSON.stringify(datos, null, 2));
 }
 
 function requiereAdmin(req, res, next) {
@@ -36,16 +39,7 @@ function requiereAdmin(req, res, next) {
   next();
 }
 
-app.get("/api/lotes", (req, res) => {
-  try {
-    res.json(leerLotes());
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "No se pudo leer el inventario" });
-  }
-});
-
-app.put("/api/lotes", requiereAdmin, (req, res) => {
+app.put("/api/catalogo", requiereAdmin, (req, res) => {
   try {
     const datos = req.body;
 
@@ -68,27 +62,208 @@ app.put("/api/lotes", requiereAdmin, (req, res) => {
         return res.status(400).json({ error: `El lote "${codigo}" necesita al menos un precio válido` });
       }
 
-      for (const peso of PESOS_VALIDOS) {
-        const unidades = Number((lote.stock || {})[peso]);
-
-        if (lote.stock && lote.stock[peso] !== undefined && (!Number.isInteger(unidades) || unidades < 0)) {
-          return res.status(400).json({ error: `Stock inválido en "${codigo}" / ${peso}g (debe ser un número entero de unidades)` });
-        }
-      }
-
       lote.codigo = codigo;
     }
 
-    guardarLotes(datos);
-    res.json({ success: true, lotes: datos });
+    guardarCatalogoLocal(datos);
+    res.json({ success: true, catalogo: datos });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "No se pudo guardar el inventario" });
+    res.status(500).json({ error: "No se pudo guardar el catálogo" });
   }
 });
 
-//-------------------------------------------------------------------------------------------------CIERRA - INVENTARIO POR LOTE (PRIVADO)--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------CIERRA - CATÁLOGO--------------------------------------------------------------------------------------------//
+
+//-------------------------------------------------------------------------------------------------ABRE - STOCK Y PEDIDOS (UPSTASH REDIS, INSTANTÁNEO Y PERMANENTE)--------------------------------------------------------------------------------------------//
+
+const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+function redisConfigurado() {
+  return Boolean(REDIS_URL && REDIS_TOKEN);
+}
+
+async function redisGet(key, porDefecto) {
+  if (!redisConfigurado()) return porDefecto;
+
+  const response = await fetch(`${REDIS_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` }
+  });
+
+  if (!response.ok) throw new Error(`Redis GET "${key}" falló`);
+
+  const data = await response.json();
+  return data.result ? JSON.parse(data.result) : porDefecto;
+}
+
+async function redisSet(key, valor) {
+  if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
+
+  const response = await fetch(`${REDIS_URL}/set/${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, "Content-Type": "text/plain" },
+    body: JSON.stringify(valor)
+  });
+
+  if (!response.ok) throw new Error(`Redis SET "${key}" falló`);
+}
+
+// stockReal: { "DM-2026-001": { "250": 10, "500": 20, "1000": 12 }, ... } -> unidades físicas reales
+// reservado: misma forma -> unidades vendidas y pagadas pero aún no enviadas
+async function leerStockReal() { return redisGet("stock_real", {}); }
+async function leerReservado() { return redisGet("stock_reservado", {}); }
+async function leerPedidos() { return redisGet("pedidos", []); }
+
+function vacioParaCodigo(mapa, codigo) {
+  return mapa[codigo] || { "250": 0, "500": 0, "1000": 0 };
+}
+
+async function construirLotesConStock() {
+  const catalogo = leerCatalogo();
+
+  let stockReal = {};
+  let reservado = {};
+
+  try {
+    stockReal = await leerStockReal();
+    reservado = await leerReservado();
+  } catch (error) {
+    console.error("No se pudo leer el stock en vivo, se muestra todo sin stock:", error);
+  }
+
+  const lotes = {};
+
+  for (const codigo of Object.keys(catalogo)) {
+    const real = vacioParaCodigo(stockReal, codigo);
+    const res_ = vacioParaCodigo(reservado, codigo);
+
+    const stock = {};
+    for (const peso of PESOS_VALIDOS) {
+      const r = Number(real[peso] || 0);
+      const rv = Number(res_[peso] || 0);
+      stock[peso] = { real: r, reservado: rv, disponible: Math.max(0, r - rv) };
+    }
+
+    lotes[codigo] = { ...catalogo[codigo], stock };
+  }
+
+  return lotes;
+}
+
+// Público: solo expone "disponible" (nunca las unidades reales/reservadas) para no filtrar el inventario interno.
+app.get("/api/lotes", async (req, res) => {
+  try {
+    const lotesCompletos = await construirLotesConStock();
+    const lotes = {};
+
+    for (const codigo of Object.keys(lotesCompletos)) {
+      const { stock, ...resto } = lotesCompletos[codigo];
+      const stockPublico = {};
+
+      for (const peso of PESOS_VALIDOS) {
+        stockPublico[peso] = stock[peso].disponible;
+      }
+
+      lotes[codigo] = { ...resto, stock: stockPublico };
+    }
+
+    res.json(lotes);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer el inventario" });
+  }
+});
+
+// Privado: detalle real/reservado/disponible para el panel de administración.
+app.get("/api/lotes-admin", requiereAdmin, async (req, res) => {
+  try {
+    res.json(await construirLotesConStock());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer el inventario" });
+  }
+});
+
+app.put("/api/stock", requiereAdmin, async (req, res) => {
+  try {
+    const { codigo, peso, real } = req.body;
+
+    if (!codigo || !PESOS_VALIDOS.includes(String(peso))) {
+      return res.status(400).json({ error: "Lote o formato inválido" });
+    }
+
+    const unidades = Number(real);
+    if (!Number.isInteger(unidades) || unidades < 0) {
+      return res.status(400).json({ error: "El stock real debe ser un número entero mayor o igual a 0" });
+    }
+
+    const stockReal = await leerStockReal();
+    stockReal[codigo] = vacioParaCodigo(stockReal, codigo);
+    stockReal[codigo][peso] = unidades;
+
+    await redisSet("stock_real", stockReal);
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo actualizar el stock" });
+  }
+});
+
+app.get("/api/pedidos", requiereAdmin, async (req, res) => {
+  try {
+    const pedidos = await leerPedidos();
+    res.json(pedidos.slice().reverse()); // más recientes primero
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer los pedidos" });
+  }
+});
+
+app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
+  try {
+    const pedidos = await leerPedidos();
+    const pedido = pedidos.find(p => p.id === req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    if (pedido.estado === "enviado") {
+      return res.status(400).json({ error: "Este pedido ya estaba marcado como enviado" });
+    }
+
+    const stockReal = await leerStockReal();
+    const reservado = await leerReservado();
+
+    for (const item of pedido.items) {
+      stockReal[item.lote] = vacioParaCodigo(stockReal, item.lote);
+      reservado[item.lote] = vacioParaCodigo(reservado, item.lote);
+
+      stockReal[item.lote][item.peso] = Math.max(0, Number(stockReal[item.lote][item.peso] || 0) - item.cantidad);
+      reservado[item.lote][item.peso] = Math.max(0, Number(reservado[item.lote][item.peso] || 0) - item.cantidad);
+    }
+
+    pedido.estado = "enviado";
+    pedido.fechaEnvio = new Date().toISOString();
+
+    await redisSet("stock_real", stockReal);
+    await redisSet("stock_reservado", reservado);
+    await redisSet("pedidos", pedidos);
+
+    res.json({ success: true, pedido });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo marcar el pedido como enviado" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - STOCK Y PEDIDOS--------------------------------------------------------------------------------------------//
 
 //-------------------------------------------------------------------------------------------------ABRE - STRIPE TEST--------------------------------------------------------------------------------------------//
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -121,13 +296,15 @@ app.post("/create-checkout-session", async (req, res) => {
       return res.status(400).json({ error: "El carrito está vacío" });
     }
 
-    const lotes = leerLotes();
+    const catalogo = leerCatalogo();
+    const stockReal = await leerStockReal();
+    const reservado = await leerReservado();
 
     // unidades necesarias por lote + formato en este pedido (varias líneas pueden compartir el mismo lote/formato)
     const unidadesNecesarias = {}; // "CODIGO|peso" -> unidades
 
     const lineItems = carrito.map(item => {
-      const lote = lotes[item.lote];
+      const lote = catalogo[item.lote];
 
       if (!lote || lote.estado !== "activo") {
         throw new Error(`El lote "${item.lote}" ya no está disponible`);
@@ -149,33 +326,40 @@ app.post("/create-checkout-session", async (req, res) => {
       unidadesNecesarias[clave] = (unidadesNecesarias[clave] || 0) + cantidad;
 
       return {
-        price_data: {
-          currency: "eur",
-          product_data: {
-            name: item.nombre,
-            description: `Lote ${lote.codigo} · ${lote.proceso} · ${item.peso} g · ${item.molienda} · ${item.tueste}`
+        precioUnitario,
+        cantidad,
+        item,
+        lote,
+        lineItem: {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: item.nombre,
+              description: `Lote ${lote.codigo} · ${lote.proceso} · ${item.peso} g · ${item.molienda} · ${item.tueste}`
+            },
+            unit_amount: Math.round(precioUnitario * 100)
           },
-          unit_amount: Math.round(precioUnitario * 100)
-        },
-        quantity: cantidad
+          quantity: cantidad
+        }
       };
     });
 
     for (const clave of Object.keys(unidadesNecesarias)) {
       const [codigoLote, peso] = clave.split("|");
-      const lote = lotes[codigoLote];
-      const disponibles = Number((lote.stock || {})[peso] || 0);
+      const real = Number(vacioParaCodigo(stockReal, codigoLote)[peso] || 0);
+      const yaReservado = Number(vacioParaCodigo(reservado, codigoLote)[peso] || 0);
+      const disponible = Math.max(0, real - yaReservado);
 
-      if (unidadesNecesarias[clave] > disponibles) {
+      if (unidadesNecesarias[clave] > disponible) {
         return res.status(409).json({
-          error: `No hay stock suficiente del lote "${codigoLote}" en formato ${peso} g. Disponible: ${disponibles} unidades.`
+          error: `No hay stock suficiente del lote "${codigoLote}" en formato ${peso} g. Disponible: ${disponible} unidades.`
         });
       }
     }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: lineItems,
+      line_items: lineItems.map(li => li.lineItem),
       mode: "payment",
       success_url: "https://cafedmedina-web.onrender.com/success.html",
       cancel_url: "https://cafedmedina-web.onrender.com/cancel.html",
@@ -187,26 +371,31 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
-    // Reservamos el stock al crear la sesión de pago (no espera confirmación de Stripe)
+    // Reservamos el stock (no lo descontamos todavía: eso pasa cuando se marca el pedido como enviado)
     for (const clave of Object.keys(unidadesNecesarias)) {
       const [codigoLote, peso] = clave.split("|");
-      const lote = lotes[codigoLote];
-
-      lote.stock[peso] = Number(lote.stock[peso]) - unidadesNecesarias[clave];
-      lote.vendidos = lote.vendidos || {};
-      lote.vendidos[peso] = Number(lote.vendidos[peso] || 0) + unidadesNecesarias[clave];
+      reservado[codigoLote] = vacioParaCodigo(reservado, codigoLote);
+      reservado[codigoLote][peso] = Number(reservado[codigoLote][peso] || 0) + unidadesNecesarias[clave];
     }
+    await redisSet("stock_reservado", reservado);
 
-    for (const codigoLote of new Set(Object.keys(unidadesNecesarias).map(c => c.split("|")[0]))) {
-      const lote = lotes[codigoLote];
-      const totalDisponible = PESOS_VALIDOS.reduce((sum, peso) => sum + Number((lote.stock || {})[peso] || 0), 0);
-
-      if (totalDisponible <= 0) {
-        lote.estado = "agotado";
-      }
-    }
-
-    guardarLotes(lotes);
+    const pedidos = await leerPedidos();
+    pedidos.push({
+      id: session.id,
+      fecha: new Date().toISOString(),
+      estado: "pendiente_envio",
+      items: lineItems.map(li => ({
+        nombre: li.item.nombre,
+        proceso: li.lote.proceso,
+        lote: li.lote.codigo,
+        peso: li.item.peso,
+        molienda: li.item.molienda,
+        tueste: li.item.tueste,
+        cantidad: li.cantidad,
+        precioUnitario: li.precioUnitario
+      }))
+    });
+    await redisSet("pedidos", pedidos);
 
     res.json({ id: session.id });
 

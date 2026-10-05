@@ -1209,7 +1209,7 @@
         enlacePasaporte.href = "pasaporte.html?codigo=" + lote.codigo;
       }
 
-      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined && lote.stock && lote.stock[p] !== undefined);
+      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
       peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");
 
       actualizarPrecioYStock();
