@@ -1004,19 +1004,19 @@
         <div class="form-grid">
           <div class="form-field">
             <label>Nombre</label>
-            <input id="cliente-nombre" type="text" autocomplete="given-name">
+            <input id="cliente-nombre" type="text" autocomplete="given-name" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-nombre"></div>
           </div>
 
           <div class="form-field">
             <label>Apellidos</label>
-            <input id="cliente-apellidos" type="text" autocomplete="family-name">
+            <input id="cliente-apellidos" type="text" autocomplete="family-name" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-apellidos"></div>
           </div>
 
           <div class="form-field">
             <label>DNI / NIF / NIE</label>
-            <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A">
+            <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-dni"></div>
           </div>
 
@@ -1034,25 +1034,25 @@
 
           <div class="form-field full">
             <label>Dirección de envío</label>
-            <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso...">
+            <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso..." oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-direccion"></div>
           </div>
 
           <div class="form-field">
             <label>Código postal</label>
-            <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001">
+            <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001" maxlength="5" inputmode="numeric" oninput="onCodigoPostalInput(this)">
             <div class="form-error" id="error-cp"></div>
           </div>
 
           <div class="form-field">
             <label>Localidad</label>
-            <input id="cliente-localidad" type="text" autocomplete="address-level2">
+            <input id="cliente-localidad" type="text" autocomplete="address-level2" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-localidad"></div>
           </div>
 
           <div class="form-field full">
             <label>Provincia</label>
-            <input id="cliente-provincia" type="text" autocomplete="address-level1">
+            <input id="cliente-provincia" type="text" autocomplete="address-level1" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-provincia"></div>
           </div>
         </div>
@@ -1196,6 +1196,59 @@
     }
 
     // ---------------------------------------------------------------- DATOS DE ENVÍO / FACTURACIÓN ----------------------------------------------------------------
+
+    // Prefijo de los 2 primeros dígitos del código postal -> provincia (oficial, no cambia)
+    const PROVINCIAS_POR_PREFIJO = {
+      "01": "ÁLAVA", "02": "ALBACETE", "03": "ALICANTE", "04": "ALMERÍA", "05": "ÁVILA",
+      "06": "BADAJOZ", "07": "BALEARES", "08": "BARCELONA", "09": "BURGOS", "10": "CÁCERES",
+      "11": "CÁDIZ", "12": "CASTELLÓN", "13": "CIUDAD REAL", "14": "CÓRDOBA", "15": "A CORUÑA",
+      "16": "CUENCA", "17": "GIRONA", "18": "GRANADA", "19": "GUADALAJARA", "20": "GIPUZKOA",
+      "21": "HUELVA", "22": "HUESCA", "23": "JAÉN", "24": "LEÓN", "25": "LLEIDA",
+      "26": "LA RIOJA", "27": "LUGO", "28": "MADRID", "29": "MÁLAGA", "30": "MURCIA",
+      "31": "NAVARRA", "32": "OURENSE", "33": "ASTURIAS", "34": "PALENCIA", "35": "LAS PALMAS",
+      "36": "PONTEVEDRA", "37": "SALAMANCA", "38": "SANTA CRUZ DE TENERIFE", "39": "CANTABRIA", "40": "SEGOVIA",
+      "41": "SEVILLA", "42": "SORIA", "43": "TARRAGONA", "44": "TERUEL", "45": "TOLEDO",
+      "46": "VALENCIA", "47": "VALLADOLID", "48": "BIZKAIA", "49": "ZAMORA", "50": "ZARAGOZA",
+      "51": "CEUTA", "52": "MELILLA"
+    };
+
+    let ultimoCpConsultado = "";
+
+    function onCodigoPostalInput(input) {
+      input.value = input.value.replace(/\D/g, "").slice(0, 5);
+
+      if (input.value.length === 5) {
+        autocompletarPorCodigoPostal(input.value);
+      }
+    }
+
+    async function autocompletarPorCodigoPostal(cp) {
+      if (cp === ultimoCpConsultado) return;
+      ultimoCpConsultado = cp;
+
+      const prefijo = cp.slice(0, 2);
+      const provinciaInput = document.getElementById("cliente-provincia");
+      const localidadInput = document.getElementById("cliente-localidad");
+
+      if (PROVINCIAS_POR_PREFIJO[prefijo]) {
+        provinciaInput.value = PROVINCIAS_POR_PREFIJO[prefijo];
+      }
+
+      try {
+        const response = await fetch(`https://api.zippopotam.us/es/${cp}`);
+        if (!response.ok) return;
+
+        const datos = await response.json();
+        const lugar = datos.places && datos.places[0] && datos.places[0]["place name"];
+
+        if (lugar) {
+          localidadInput.value = lugar.toUpperCase();
+        }
+      } catch (error) {
+        // Sin conexión a la API: el cliente puede escribir la localidad a mano, no bloqueamos el formulario.
+        console.error("No se pudo autocompletar la localidad:", error);
+      }
+    }
 
     function validarDniNie(valor) {
       const v = (valor || "").trim().toUpperCase().replace(/[-\s]/g, "");
