@@ -1268,7 +1268,7 @@
       const unidadesDisponibles = Math.max(0, unidadesEnStock - unidadesYaReservadas);
 
       if (unidadesDisponibles <= 0) {
-        warning.textContent = `Agotado en formato ${etiquetaPeso(peso)}.`;
+        warning.textContent = `Agotado temporalmente en formato ${etiquetaPeso(peso)}.`;
         warning.hidden = false;
         addBtn.disabled = true;
         return;
