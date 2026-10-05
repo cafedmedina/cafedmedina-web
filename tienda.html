@@ -369,6 +369,10 @@
       font-weight: 900;
     }
 
+    .stock-warning[hidden] {
+      display: none !important;
+    }
+
     #molienda-field[hidden] {
       display: none;
     }
@@ -1257,20 +1261,25 @@
 
       const precioUnitario = lote.precios[peso];
       document.getElementById("precio").textContent = formatEUR(precioUnitario * cantidad);
+      document.getElementById("stock-info").textContent = "Impuestos incluidos";
 
       const unidadesEnStock = Number((lote.stock && lote.stock[peso]) || 0);
       const unidadesYaReservadas = unidadesEnCarritoDeLoteFormato(lote.codigo, peso);
       const unidadesDisponibles = Math.max(0, unidadesEnStock - unidadesYaReservadas);
 
       if (unidadesDisponibles <= 0) {
-        document.getElementById("stock-info").textContent = `Agotado en formato ${etiquetaPeso(peso)}`;
-        warning.hidden = true;
+        warning.textContent = `Agotado en formato ${etiquetaPeso(peso)}.`;
+        warning.hidden = false;
         addBtn.disabled = true;
         return;
       }
 
-      document.getElementById("stock-info").textContent =
-        `Stock disponible: ${unidadesDisponibles} unidad${unidadesDisponibles === 1 ? "" : "es"} de ${etiquetaPeso(peso)} · Impuestos incluidos`;
+      if (cantidad > unidadesDisponibles) {
+        warning.textContent = `La cantidad seleccionada es superior al stock disponible (quedan ${unidadesDisponibles}).`;
+        warning.hidden = false;
+        addBtn.disabled = true;
+        return;
+      }
 
       if (unidadesDisponibles <= LOW_STOCK_UNIDADES) {
         warning.textContent = `¡Últimas unidades! Solo quedan ${unidadesDisponibles}.`;
@@ -1279,7 +1288,7 @@
         warning.hidden = true;
       }
 
-      addBtn.disabled = cantidad > unidadesDisponibles;
+      addBtn.disabled = false;
     }
 
     function addToCart() {
