@@ -115,9 +115,16 @@ async function redisSet(key, valor) {
 async function leerStockReal() { return redisGet("stock_real", {}); }
 async function leerReservado() { return redisGet("stock_reservado", {}); }
 async function leerPedidos() { return redisGet("pedidos", []); }
+async function leerMovimientos() { return redisGet("movimientos", []); }
 
 function vacioParaCodigo(mapa, codigo) {
   return mapa[codigo] || { "250": 0, "500": 0, "1000": 0 };
+}
+
+async function registrarMovimiento(movimiento) {
+  const movimientos = await leerMovimientos();
+  movimientos.push({ fecha: new Date().toISOString(), ...movimiento });
+  await redisSet("movimientos", movimientos);
 }
 
 async function construirLotesConStock() {
@@ -202,15 +209,37 @@ app.put("/api/stock", requiereAdmin, async (req, res) => {
 
     const stockReal = await leerStockReal();
     stockReal[codigo] = vacioParaCodigo(stockReal, codigo);
+    const anterior = Number(stockReal[codigo][peso] || 0);
     stockReal[codigo][peso] = unidades;
 
     await redisSet("stock_real", stockReal);
+
+    if (anterior !== unidades) {
+      await registrarMovimiento({
+        codigo,
+        peso,
+        tipo: "ajuste_manual",
+        anterior,
+        nuevo: unidades,
+        diferencia: unidades - anterior
+      });
+    }
 
     res.json({ success: true });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "No se pudo actualizar el stock" });
+  }
+});
+
+app.get("/api/movimientos", requiereAdmin, async (req, res) => {
+  try {
+    const movimientos = await leerMovimientos();
+    res.json(movimientos.slice().reverse()); // más recientes primero
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer los movimientos" });
   }
 });
 
@@ -239,13 +268,28 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
 
     const stockReal = await leerStockReal();
     const reservado = await leerReservado();
+    const movimientos = await leerMovimientos();
 
     for (const item of pedido.items) {
       stockReal[item.lote] = vacioParaCodigo(stockReal, item.lote);
       reservado[item.lote] = vacioParaCodigo(reservado, item.lote);
 
-      stockReal[item.lote][item.peso] = Math.max(0, Number(stockReal[item.lote][item.peso] || 0) - item.cantidad);
+      const anterior = Number(stockReal[item.lote][item.peso] || 0);
+      const nuevo = Math.max(0, anterior - item.cantidad);
+
+      stockReal[item.lote][item.peso] = nuevo;
       reservado[item.lote][item.peso] = Math.max(0, Number(reservado[item.lote][item.peso] || 0) - item.cantidad);
+
+      movimientos.push({
+        fecha: new Date().toISOString(),
+        codigo: item.lote,
+        peso: item.peso,
+        tipo: "envio",
+        anterior,
+        nuevo,
+        diferencia: nuevo - anterior,
+        pedidoId: pedido.id
+      });
     }
 
     pedido.estado = "enviado";
@@ -254,6 +298,7 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
     await redisSet("stock_real", stockReal);
     await redisSet("stock_reservado", reservado);
     await redisSet("pedidos", pedidos);
+    await redisSet("movimientos", movimientos);
 
     res.json({ success: true, pedido });
 
@@ -288,12 +333,62 @@ const transporter = nodemailer.createTransport({
 //-------------------------------------------------------------------------------------------------CIERRA - EMAIL IONOS--------------------------------------------------------------------------------------------*/
 
 
+//-------------------------------------------------------------------------------------------------ABRE - VALIDACIÓN DE DATOS DEL CLIENTE--------------------------------------------------------------------------------------------//
+
+function validarDniNie(valor) {
+  const v = String(valor || "").trim().toUpperCase().replace(/[-\s]/g, "");
+  const dniRegex = /^(\d{8})([A-Z])$/;
+  const nieRegex = /^([XYZ])(\d{7})([A-Z])$/;
+  const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+  let numero, letra;
+
+  if (dniRegex.test(v)) {
+    const m = v.match(dniRegex);
+    numero = parseInt(m[1], 10);
+    letra = m[2];
+  } else if (nieRegex.test(v)) {
+    const m = v.match(nieRegex);
+    const prefijo = { X: "0", Y: "1", Z: "2" }[m[1]];
+    numero = parseInt(prefijo + m[2], 10);
+    letra = m[3];
+  } else {
+    return false;
+  }
+
+  return letras[numero % 23] === letra;
+}
+
+function validarClienteServidor(cliente) {
+  if (!cliente || typeof cliente !== "object") return "Faltan los datos de envío y facturación";
+
+  const requeridos = ["nombre", "apellidos", "dni", "telefono", "email", "direccion", "codigoPostal", "localidad", "provincia"];
+  for (const campo of requeridos) {
+    if (!cliente[campo] || !String(cliente[campo]).trim()) {
+      return `Falta el campo "${campo}" en los datos de envío/facturación`;
+    }
+  }
+
+  if (!validarDniNie(cliente.dni)) return "El DNI/NIF/NIE no es válido";
+  if (!/^[67]\d{8}$/.test(String(cliente.telefono).replace(/[\s-]/g, ""))) return "El teléfono móvil no es válido";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(cliente.email).trim())) return "El email no es válido";
+  if (!/^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test(String(cliente.codigoPostal).trim())) return "El código postal no es válido";
+
+  return null;
+}
+
+//-------------------------------------------------------------------------------------------------CIERRA - VALIDACIÓN DE DATOS DEL CLIENTE--------------------------------------------------------------------------------------------//
+
 app.post("/create-checkout-session", async (req, res) => {
   try {
-    const { carrito } = req.body;
+    const { carrito, cliente } = req.body;
 
     if (!Array.isArray(carrito) || carrito.length === 0) {
       return res.status(400).json({ error: "El carrito está vacío" });
+    }
+
+    const errorCliente = validarClienteServidor(cliente);
+    if (errorCliente) {
+      return res.status(400).json({ error: errorCliente });
     }
 
     const catalogo = leerCatalogo();
@@ -361,13 +456,18 @@ app.post("/create-checkout-session", async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems.map(li => li.lineItem),
       mode: "payment",
+      customer_email: cliente.email,
       success_url: "https://cafedmedina-web.onrender.com/success.html",
       cancel_url: "https://cafedmedina-web.onrender.com/cancel.html",
-      shipping_address_collection: {
-        allowed_countries: ["ES"]
-      },
-      phone_number_collection: {
-        enabled: true
+      metadata: {
+        nombre: cliente.nombre,
+        apellidos: cliente.apellidos,
+        dni: cliente.dni,
+        telefono: cliente.telefono,
+        direccion: cliente.direccion,
+        codigoPostal: cliente.codigoPostal,
+        localidad: cliente.localidad,
+        provincia: cliente.provincia
       }
     });
 
@@ -384,6 +484,7 @@ app.post("/create-checkout-session", async (req, res) => {
       id: session.id,
       fecha: new Date().toISOString(),
       estado: "pendiente_envio",
+      cliente,
       items: lineItems.map(li => ({
         nombre: li.item.nombre,
         proceso: li.lote.proceso,

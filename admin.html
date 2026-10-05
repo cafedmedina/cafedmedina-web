@@ -7,6 +7,7 @@
   <title>Inventario y precios | Café D’Medina</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -356,6 +357,45 @@
       margin-bottom: 10px;
     }
 
+    .export-box {
+      max-width: 960px;
+      margin: 0 auto 28px;
+      padding: 20px 24px;
+      border-radius: 20px;
+      background: var(--black-soft);
+      border: 1px solid rgba(200,169,106,.25);
+    }
+
+    .movimiento-row {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr .6fr 1fr .8fr .8fr .8fr;
+      gap: 10px;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.14);
+      font-size: 12.5px;
+      align-items: center;
+    }
+
+    .movimiento-row.head {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: .4px;
+    }
+
+    .movimiento-dif {
+      font-weight: 900;
+    }
+
+    .movimiento-dif.positivo { color: var(--green); }
+    .movimiento-dif.negativo { color: var(--red); }
+
     [hidden] {
       display: none !important;
     }
@@ -380,10 +420,24 @@
     <h1>Inventario y precios</h1>
     <p class="subtitle">Catálogo, stock real y pedidos pendientes de envío.</p>
 
+    <div class="export-box">
+      <h2 class="section-title" style="margin-top:0">Exportar datos</h2>
+      <div class="toolbar">
+        <button class="btn-secondary btn btn-small" onclick="exportarPedidos('csv')">Pedidos (CSV)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarPedidos('xlsx')">Pedidos (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarStock('csv')">Stock (CSV)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarStock('xlsx')">Stock (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarMovimientos('csv')">Movimientos (CSV)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarMovimientos('xlsx')">Movimientos (XLSX)</button>
+        <button class="btn btn-small" onclick="descargarBackupCompleto()">Copia de seguridad completa</button>
+      </div>
+    </div>
+
     <div class="tabs">
       <button class="tab-btn active" id="tab-btn-catalogo" onclick="cambiarTab('catalogo')">Catálogo y precios</button>
       <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
+      <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
     </div>
 
     <!-- ===================== CATÁLOGO ===================== -->
@@ -421,6 +475,15 @@
       <div id="pedidos-container"></div>
     </div>
 
+    <!-- ===================== MOVIMIENTOS ===================== -->
+    <div id="tab-movimientos" hidden>
+      <p class="subtitle">Historial de cambios en el stock real: ajustes manuales y envíos de pedidos.</p>
+      <div class="toolbar">
+        <button class="btn-secondary btn" onclick="cargarMovimientos()">Actualizar lista</button>
+      </div>
+      <div id="movimientos-container"></div>
+    </div>
+
   </div>
 
   <script>
@@ -435,12 +498,13 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
 
       if (nombre === "pedidos") cargarPedidos();
+      if (nombre === "movimientos") cargarMovimientos();
     }
 
     async function entrar() {
@@ -824,7 +888,9 @@
         const pendiente = pedido.estado !== "enviado";
         const fecha = new Date(pedido.fecha).toLocaleString("es-ES");
 
-        return `
+        const c = pedido.cliente || {};
+
+      return `
           <div class="pedido-card">
             <div class="pedido-head">
               <div>
@@ -835,6 +901,14 @@
                 ${pendiente ? "Pendiente de envío" : "Enviado"}
               </span>
             </div>
+
+            ${c.nombre ? `
+              <div class="pedido-items">
+                <strong>${c.nombre} ${c.apellidos || ""}</strong> · DNI/NIE ${c.dni || "—"} · Tel. ${c.telefono || "—"}<br>
+                ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
+                ${c.email || ""}
+              </div>
+            ` : ""}
 
             <div class="pedido-items">
               ${pedido.items.map(item => `
@@ -865,6 +939,251 @@
 
       } catch (error) {
         alert(error.message || "No se pudo marcar el pedido como enviado.");
+      }
+    }
+
+    // ---------------------------------------------------------------- MOVIMIENTOS ----------------------------------------------------------------
+
+    function etiquetaPesoAdmin(peso) {
+      return peso === "1000" ? "1 kg" : peso + " g";
+    }
+
+    async function obtenerMovimientos() {
+      const response = await fetch("/api/movimientos", {
+        headers: { "x-admin-token": getToken() }
+      });
+
+      if (response.status === 401) {
+        sessionStorage.removeItem("adminToken");
+        document.getElementById("admin-panel").hidden = true;
+        document.getElementById("login-box").hidden = false;
+        document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+        document.getElementById("login-error").hidden = false;
+        throw new Error("No autorizado");
+      }
+
+      const movimientos = await response.json();
+      if (!response.ok) throw new Error(movimientos.error || "Error al cargar movimientos");
+      return movimientos;
+    }
+
+    async function cargarMovimientos() {
+      const container = document.getElementById("movimientos-container");
+      container.innerHTML = `<p class="subtitle">Cargando...</p>`;
+
+      try {
+        const movimientos = await obtenerMovimientos();
+        renderMovimientos(movimientos);
+      } catch (error) {
+        container.innerHTML = `<p class="error-msg">${error.message || "No se pudieron cargar los movimientos."}</p>`;
+      }
+    }
+
+    function renderMovimientos(movimientos) {
+      const container = document.getElementById("movimientos-container");
+
+      if (movimientos.length === 0) {
+        container.innerHTML = `<p class="subtitle">Todavía no hay movimientos de stock.</p>`;
+        return;
+      }
+
+      const cabecera = `
+        <div class="movimiento-row head">
+          <div>Fecha</div><div>Lote</div><div>Formato</div><div>Tipo</div><div>Antes</div><div>Después</div><div>Diferencia</div>
+        </div>
+      `;
+
+      const filas = movimientos.map(m => {
+        const fecha = new Date(m.fecha).toLocaleString("es-ES");
+        const signo = m.diferencia > 0 ? "positivo" : (m.diferencia < 0 ? "negativo" : "");
+        const diferenciaTexto = (m.diferencia > 0 ? "+" : "") + m.diferencia;
+
+        return `
+          <div class="movimiento-row">
+            <div>${fecha}</div>
+            <div>${m.codigo}</div>
+            <div>${etiquetaPesoAdmin(m.peso)}</div>
+            <div>${m.tipo === "envio" ? "Envío" : "Ajuste manual"}</div>
+            <div>${m.anterior}</div>
+            <div>${m.nuevo}</div>
+            <div class="movimiento-dif ${signo}">${diferenciaTexto}</div>
+          </div>
+        `;
+      }).join("");
+
+      container.innerHTML = cabecera + filas;
+    }
+
+    // ---------------------------------------------------------------- EXPORTAR ----------------------------------------------------------------
+
+    function csvEscape(valor) {
+      const texto = String(valor === undefined || valor === null ? "" : valor);
+      if (/[",;\n]/.test(texto)) {
+        return `"${texto.replace(/"/g, '""')}"`;
+      }
+      return texto;
+    }
+
+    function descargarCSV(nombreArchivo, headers, filas) {
+      const lineas = [headers.join(";")];
+      filas.forEach(fila => {
+        lineas.push(headers.map(h => csvEscape(fila[h])).join(";"));
+      });
+
+      // BOM al principio para que Excel detecte UTF-8 y muestre bien los acentos
+      const contenido = "﻿" + lineas.join("\r\n");
+      const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
+      descargarBlob(blob, nombreArchivo);
+    }
+
+    function descargarXLSX(nombreArchivo, nombreHoja, headers, filas) {
+      const hoja = XLSX.utils.json_to_sheet(filas, { header: headers });
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, nombreHoja);
+      XLSX.writeFile(libro, nombreArchivo);
+    }
+
+    function descargarBlob(blob, nombreArchivo) {
+      const url = URL.createObjectURL(blob);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = nombreArchivo;
+      document.body.appendChild(enlace);
+      enlace.click();
+      document.body.removeChild(enlace);
+      URL.revokeObjectURL(url);
+    }
+
+    function fechaParaArchivo() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    const HEADERS_PEDIDOS = [
+      "pedidoId", "fecha", "estado", "fechaEnvio",
+      "clienteNombre", "clienteApellidos", "clienteDni", "clienteTelefono", "clienteEmail",
+      "clienteDireccion", "clienteCodigoPostal", "clienteLocalidad", "clienteProvincia",
+      "producto", "proceso", "lote", "peso", "molienda", "tueste", "cantidad", "precioUnitario", "totalLinea"
+    ];
+
+    async function exportarPedidos(formato) {
+      const response = await fetch("/api/pedidos", { headers: { "x-admin-token": getToken() } });
+      const pedidos = await response.json();
+      if (!response.ok) { alert(pedidos.error || "No se pudieron cargar los pedidos"); return; }
+
+      const filas = [];
+      pedidos.forEach(pedido => {
+        const c = pedido.cliente || {};
+
+        pedido.items.forEach(item => {
+          filas.push({
+            pedidoId: pedido.id,
+            fecha: new Date(pedido.fecha).toLocaleString("es-ES"),
+            estado: pedido.estado,
+            fechaEnvio: pedido.fechaEnvio ? new Date(pedido.fechaEnvio).toLocaleString("es-ES") : "",
+            clienteNombre: c.nombre || "",
+            clienteApellidos: c.apellidos || "",
+            clienteDni: c.dni || "",
+            clienteTelefono: c.telefono || "",
+            clienteEmail: c.email || "",
+            clienteDireccion: c.direccion || "",
+            clienteCodigoPostal: c.codigoPostal || "",
+            clienteLocalidad: c.localidad || "",
+            clienteProvincia: c.provincia || "",
+            producto: item.nombre,
+            proceso: item.proceso,
+            lote: item.lote,
+            peso: etiquetaPesoAdmin(item.peso),
+            molienda: item.molienda,
+            tueste: item.tueste,
+            cantidad: item.cantidad,
+            precioUnitario: item.precioUnitario,
+            totalLinea: Number((item.precioUnitario * item.cantidad).toFixed(2))
+          });
+        });
+      });
+
+      const nombre = `pedidos-cafe-dmedina-${fechaParaArchivo()}`;
+      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_PEDIDOS, filas);
+      else descargarXLSX(`${nombre}.xlsx`, "Pedidos", HEADERS_PEDIDOS, filas);
+    }
+
+    const HEADERS_STOCK = ["codigo", "proceso", "peso", "real", "reservado", "disponible"];
+
+    function exportarStock(formato) {
+      const filas = [];
+      Object.keys(lotes).forEach(codigo => {
+        const lote = lotes[codigo];
+        PESOS.forEach(peso => {
+          const datos = (lote.stock && lote.stock[peso]) || { real: 0, reservado: 0, disponible: 0 };
+          filas.push({
+            codigo: lote.codigo,
+            proceso: lote.proceso,
+            peso: etiquetaPesoAdmin(peso),
+            real: datos.real,
+            reservado: datos.reservado,
+            disponible: datos.disponible
+          });
+        });
+      });
+
+      const nombre = `stock-cafe-dmedina-${fechaParaArchivo()}`;
+      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_STOCK, filas);
+      else descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
+    }
+
+    const HEADERS_MOVIMIENTOS = ["fecha", "codigo", "peso", "tipo", "anterior", "nuevo", "diferencia", "pedidoId"];
+
+    async function exportarMovimientos(formato) {
+      let movimientos;
+      try {
+        movimientos = await obtenerMovimientos();
+      } catch (error) {
+        alert(error.message || "No se pudieron cargar los movimientos");
+        return;
+      }
+
+      const filas = movimientos.map(m => ({
+        fecha: new Date(m.fecha).toLocaleString("es-ES"),
+        codigo: m.codigo,
+        peso: etiquetaPesoAdmin(m.peso),
+        tipo: m.tipo === "envio" ? "Envío" : "Ajuste manual",
+        anterior: m.anterior,
+        nuevo: m.nuevo,
+        diferencia: m.diferencia,
+        pedidoId: m.pedidoId || ""
+      }));
+
+      const nombre = `movimientos-stock-cafe-dmedina-${fechaParaArchivo()}`;
+      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_MOVIMIENTOS, filas);
+      else descargarXLSX(`${nombre}.xlsx`, "Movimientos", HEADERS_MOVIMIENTOS, filas);
+    }
+
+    async function descargarBackupCompleto() {
+      try {
+        const [pedidosResp, movimientosResp] = await Promise.all([
+          fetch("/api/pedidos", { headers: { "x-admin-token": getToken() } }),
+          fetch("/api/movimientos", { headers: { "x-admin-token": getToken() } })
+        ]);
+
+        const pedidos = await pedidosResp.json();
+        const movimientos = await movimientosResp.json();
+
+        if (!pedidosResp.ok || !movimientosResp.ok) {
+          throw new Error("No se pudo generar la copia de seguridad completa");
+        }
+
+        const backup = {
+          generadoEn: new Date().toISOString(),
+          lotes,
+          pedidos,
+          movimientos
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+        descargarBlob(blob, `backup-cafe-dmedina-${fechaParaArchivo()}.json`);
+
+      } catch (error) {
+        alert(error.message || "No se pudo generar la copia de seguridad.");
       }
     }
 

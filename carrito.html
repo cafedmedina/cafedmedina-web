@@ -232,6 +232,80 @@
       color: var(--gold-light);
     }
 
+    .cliente-form {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,.16);
+    }
+
+    .cliente-form h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 4px;
+      color: var(--white);
+    }
+
+    .cliente-form .form-subtitle {
+      color: var(--muted);
+      font-size: 13.5px;
+      margin-bottom: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .form-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+
+    .form-field input {
+      width: 100%;
+      height: 44px;
+      padding: 10px 14px;
+      background: #0f0d0c;
+      color: var(--white);
+      border: 1px solid rgba(200,169,106,.4);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .form-field input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(200,169,106,.18);
+    }
+
+    .form-field input.invalid {
+      border-color: #d64525;
+    }
+
+    .form-error {
+      margin-top: 4px;
+      min-height: 14px;
+      color: #ff8a8a;
+      font-size: 11.5px;
+    }
+
+    @media (max-width: 850px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .btn {
       margin-top: 32px;
 
@@ -923,6 +997,67 @@
         <span id="cart-total">0,00 €</span>
       </div>
 
+      <div class="cliente-form">
+        <h2>Datos de envío y facturación</h2>
+        <p class="form-subtitle">Los necesitamos para preparar tu envío y emitir la factura.</p>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Nombre</label>
+            <input id="cliente-nombre" type="text" autocomplete="given-name">
+            <div class="form-error" id="error-nombre"></div>
+          </div>
+
+          <div class="form-field">
+            <label>Apellidos</label>
+            <input id="cliente-apellidos" type="text" autocomplete="family-name">
+            <div class="form-error" id="error-apellidos"></div>
+          </div>
+
+          <div class="form-field">
+            <label>DNI / NIF / NIE</label>
+            <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A">
+            <div class="form-error" id="error-dni"></div>
+          </div>
+
+          <div class="form-field">
+            <label>Teléfono móvil</label>
+            <input id="cliente-telefono" type="tel" autocomplete="tel" placeholder="612345678">
+            <div class="form-error" id="error-telefono"></div>
+          </div>
+
+          <div class="form-field full">
+            <label>Email</label>
+            <input id="cliente-email" type="email" autocomplete="email">
+            <div class="form-error" id="error-email"></div>
+          </div>
+
+          <div class="form-field full">
+            <label>Dirección de envío</label>
+            <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso...">
+            <div class="form-error" id="error-direccion"></div>
+          </div>
+
+          <div class="form-field">
+            <label>Código postal</label>
+            <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001">
+            <div class="form-error" id="error-cp"></div>
+          </div>
+
+          <div class="form-field">
+            <label>Localidad</label>
+            <input id="cliente-localidad" type="text" autocomplete="address-level2">
+            <div class="form-error" id="error-localidad"></div>
+          </div>
+
+          <div class="form-field full">
+            <label>Provincia</label>
+            <input id="cliente-provincia" type="text" autocomplete="address-level1">
+            <div class="form-error" id="error-provincia"></div>
+          </div>
+        </div>
+      </div>
+
       <button class="btn" onclick="pagar()">
         Pagar ahora
       </button>
@@ -1060,11 +1195,123 @@
       renderCart();
     }
 
+    // ---------------------------------------------------------------- DATOS DE ENVÍO / FACTURACIÓN ----------------------------------------------------------------
+
+    function validarDniNie(valor) {
+      const v = (valor || "").trim().toUpperCase().replace(/[-\s]/g, "");
+      const dniRegex = /^(\d{8})([A-Z])$/;
+      const nieRegex = /^([XYZ])(\d{7})([A-Z])$/;
+      const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+      let numero, letra;
+
+      if (dniRegex.test(v)) {
+        const m = v.match(dniRegex);
+        numero = parseInt(m[1], 10);
+        letra = m[2];
+      } else if (nieRegex.test(v)) {
+        const m = v.match(nieRegex);
+        const prefijo = { X: "0", Y: "1", Z: "2" }[m[1]];
+        numero = parseInt(prefijo + m[2], 10);
+        letra = m[3];
+      } else {
+        return false;
+      }
+
+      return letras[numero % 23] === letra;
+    }
+
+    function validarEmail(valor) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((valor || "").trim());
+    }
+
+    function validarTelefonoMovil(valor) {
+      const v = (valor || "").replace(/[\s-]/g, "");
+      return /^[67]\d{8}$/.test(v);
+    }
+
+    function validarCodigoPostal(valor) {
+      return /^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test((valor || "").trim());
+    }
+
+    function leerClienteFormulario() {
+      return {
+        nombre: document.getElementById("cliente-nombre").value.trim(),
+        apellidos: document.getElementById("cliente-apellidos").value.trim(),
+        dni: document.getElementById("cliente-dni").value.trim().toUpperCase(),
+        telefono: document.getElementById("cliente-telefono").value.trim(),
+        email: document.getElementById("cliente-email").value.trim(),
+        direccion: document.getElementById("cliente-direccion").value.trim(),
+        codigoPostal: document.getElementById("cliente-cp").value.trim(),
+        localidad: document.getElementById("cliente-localidad").value.trim(),
+        provincia: document.getElementById("cliente-provincia").value.trim()
+      };
+    }
+
+    function limpiarErroresCliente() {
+      document.querySelectorAll(".form-error").forEach(el => el.textContent = "");
+      document.querySelectorAll(".form-field input").forEach(el => el.classList.remove("invalid"));
+    }
+
+    function marcarErrorCliente(campo, mensaje) {
+      const input = document.getElementById(`cliente-${campo}`);
+      const error = document.getElementById(`error-${campo}`);
+      if (input) input.classList.add("invalid");
+      if (error) error.textContent = mensaje;
+    }
+
+    function validarFormularioCliente(cliente) {
+      limpiarErroresCliente();
+      let valido = true;
+
+      if (!cliente.nombre) { marcarErrorCliente("nombre", "Introduce el nombre."); valido = false; }
+      if (!cliente.apellidos) { marcarErrorCliente("apellidos", "Introduce los apellidos."); valido = false; }
+
+      if (!cliente.dni) { marcarErrorCliente("dni", "Introduce el DNI/NIF/NIE."); valido = false; }
+      else if (!validarDniNie(cliente.dni)) { marcarErrorCliente("dni", "El DNI/NIF/NIE no es válido."); valido = false; }
+
+      if (!cliente.telefono) { marcarErrorCliente("telefono", "Introduce el teléfono."); valido = false; }
+      else if (!validarTelefonoMovil(cliente.telefono)) { marcarErrorCliente("telefono", "Debe ser un móvil español (9 dígitos, empieza por 6 o 7)."); valido = false; }
+
+      if (!cliente.email) { marcarErrorCliente("email", "Introduce el email."); valido = false; }
+      else if (!validarEmail(cliente.email)) { marcarErrorCliente("email", "El email no es válido."); valido = false; }
+
+      if (!cliente.direccion) { marcarErrorCliente("direccion", "Introduce la dirección de envío."); valido = false; }
+
+      if (!cliente.codigoPostal) { marcarErrorCliente("cp", "Introduce el código postal."); valido = false; }
+      else if (!validarCodigoPostal(cliente.codigoPostal)) { marcarErrorCliente("cp", "Código postal no válido."); valido = false; }
+
+      if (!cliente.localidad) { marcarErrorCliente("localidad", "Introduce la localidad."); valido = false; }
+      if (!cliente.provincia) { marcarErrorCliente("provincia", "Introduce la provincia."); valido = false; }
+
+      return valido;
+    }
+
+    function precargarCliente() {
+      const guardado = JSON.parse(localStorage.getItem("clienteCafeDMedina") || "null");
+      if (!guardado) return;
+
+      const mapaId = { codigoPostal: "cp" };
+
+      Object.keys(guardado).forEach(campo => {
+        const input = document.getElementById(`cliente-${mapaId[campo] || campo}`);
+        if (input) input.value = guardado[campo];
+      });
+    }
+
     async function pagar() {
       if (carrito.length === 0) {
         alert("Tu carrito está vacío.");
         return;
       }
+
+      const cliente = leerClienteFormulario();
+
+      if (!validarFormularioCliente(cliente)) {
+        document.querySelector(".cliente-form").scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      localStorage.setItem("clienteCafeDMedina", JSON.stringify(cliente));
 
       const btn = document.querySelector(".btn");
       if (btn) {
@@ -1078,7 +1325,7 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ carrito })
+          body: JSON.stringify({ carrito, cliente })
         });
 
         if (!response.ok) {
@@ -1106,6 +1353,7 @@
     (async function init() {
       await cargarLotes();
       renderCart();
+      precargarCliente();
     })();
   </script>
 
