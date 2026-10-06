@@ -4,6 +4,7 @@ const cors = require("cors");
 const { Resend } = require("resend");
 const fs = require("fs");
 const path = require("path");
+const PDFDocument = require("pdfkit");
 
 const app = express();
 
@@ -337,6 +338,14 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
     pedido.estadoPreparacion = "enviado";
     pedido.fechaEnvio = new Date().toISOString();
 
+    try {
+      pedido.albaran = { numero: await generarNumeroDocumento("ALB"), fecha: new Date().toISOString() };
+      const pdfAlbaran = await construirAlbaranPDF(pedido);
+      await enviarAlbaranPorEmail(pedido, pdfAlbaran);
+    } catch (error) {
+      console.error(`No se pudo generar/enviar el albarán del pedido ${pedido.id}:`, error);
+    }
+
     await redisSet("stock_real", stockReal);
     await redisSet("stock_reservado", reservado);
     await redisSet("pedidos", pedidos);
@@ -350,9 +359,283 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
   }
 });
 
+app.get("/api/pedidos/:id/factura", requiereAdmin, async (req, res) => {
+  try {
+    const pedidos = await leerPedidos();
+    const pedido = pedidos.find(p => p.id === req.params.id);
+
+    if (!pedido || !pedido.factura) {
+      return res.status(404).json({ error: "Este pedido todavía no tiene factura generada" });
+    }
+
+    const pdf = await construirFacturaPDF(pedido);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${pedido.factura.numero}.pdf"`);
+    res.send(pdf);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo generar la factura" });
+  }
+});
+
+app.get("/api/pedidos/:id/albaran", requiereAdmin, async (req, res) => {
+  try {
+    const pedidos = await leerPedidos();
+    const pedido = pedidos.find(p => p.id === req.params.id);
+
+    if (!pedido || !pedido.albaran) {
+      return res.status(404).json({ error: "Este pedido todavía no tiene albarán generado" });
+    }
+
+    const pdf = await construirAlbaranPDF(pedido);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${pedido.albaran.numero}.pdf"`);
+    res.send(pdf);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo generar el albarán" });
+  }
+});
+
 //-------------------------------------------------------------------------------------------------CIERRA - STOCK Y PEDIDOS--------------------------------------------------------------------------------------------//
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+//-------------------------------------------------------------------------------------------------ABRE - FACTURACIÓN (FACTURAS Y ALBARANES EN PDF)--------------------------------------------------------------------------------------------//
+
+const EMPRESA = {
+  nombre: "D’Medina Global Trade, S.L.",
+  nombreComercial: "Café D’Medina",
+  cif: "B05653621",
+  direccion: "Calle San Pedro del Pinatar, 24, 28939 Arroyomolinos, Madrid",
+  email: "info@cafedmedina.com",
+  telefono: "+34 660 736 866"
+};
+
+const IVA_TIPO = 0.10; // Los precios del catálogo ya incluyen este IVA
+
+async function redisIncr(key) {
+  if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
+
+  const response = await fetch(`${REDIS_URL}/incr/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` }
+  });
+
+  if (!response.ok) throw new Error(`Redis INCR "${key}" falló`);
+
+  const data = await response.json();
+  return data.result;
+}
+
+// Numeración correlativa por año y tipo de documento (FACT / ALB). Nunca se reutiliza ni se salta un número.
+async function generarNumeroDocumento(prefijo) {
+  const año = new Date().getFullYear();
+  const contador = await redisIncr(`contador_${prefijo.toLowerCase()}_${año}`);
+  return `${prefijo}-${año}-${String(contador).padStart(4, "0")}`;
+}
+
+function desglosarIva(totalConIva) {
+  const base = totalConIva / (1 + IVA_TIPO);
+  const iva = totalConIva - base;
+  return {
+    base: Math.round(base * 100) / 100,
+    iva: Math.round(iva * 100) / 100
+  };
+}
+
+function totalPedido(pedido) {
+  return pedido.items.reduce((suma, item) => suma + Number(item.precioUnitario) * Number(item.cantidad), 0);
+}
+
+function etiquetaPeso(peso) {
+  return peso === "1000" || Number(peso) === 1000 ? "1 kg" : `${peso} g`;
+}
+
+function generarPdfBuffer(dibujar) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    const partes = [];
+
+    doc.on("data", parte => partes.push(parte));
+    doc.on("end", () => resolve(Buffer.concat(partes)));
+    doc.on("error", reject);
+
+    dibujar(doc);
+    doc.end();
+  });
+}
+
+function dibujarCabeceraEmpresa(doc, tituloDocumento, numero, fecha) {
+  doc.fontSize(18).fillColor("#000").text(EMPRESA.nombreComercial);
+  doc.fontSize(9).fillColor("#555")
+    .text(EMPRESA.nombre)
+    .text(`CIF: ${EMPRESA.cif}`)
+    .text(EMPRESA.direccion)
+    .text(`${EMPRESA.email} · ${EMPRESA.telefono}`);
+
+  doc.fontSize(16).fillColor("#000").text(tituloDocumento, 50, 50, { align: "right" });
+  doc.fontSize(10).fillColor("#555")
+    .text(`Nº: ${numero}`, { align: "right" })
+    .text(`Fecha: ${new Date(fecha).toLocaleDateString("es-ES")}`, { align: "right" });
+
+  doc.moveDown(2);
+  doc.fillColor("#000");
+}
+
+function dibujarDatosCliente(doc, cliente) {
+  const c = cliente || {};
+  doc.fontSize(11).text("Datos del cliente", { underline: true });
+  doc.moveDown(0.3);
+  doc.fontSize(10)
+    .text(`${c.nombre || ""} ${c.apellidos || ""}`)
+    .text(`DNI/NIE: ${c.dni || "—"}`)
+    .text(c.direccion || "")
+    .text(`${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`)
+    .text(`${c.email || ""} · ${c.telefono || ""}`);
+  doc.moveDown(1.5);
+}
+
+function dibujarTablaItems(doc, pedido, { conPrecios }) {
+  const x = 50;
+  const anchoDesc = conPrecios ? 230 : 350;
+  const colCant = x + anchoDesc;
+  const colPrecio = colCant + 70;
+  const colTotal = colPrecio + 80;
+
+  function cabeceraTabla() {
+    const y = doc.y;
+    doc.fontSize(9).fillColor("#888");
+    doc.text("Producto", x, y, { width: anchoDesc });
+    doc.text("Cant.", colCant, y, { width: 60, align: "right" });
+    if (conPrecios) {
+      doc.text("Precio ud.", colPrecio, y, { width: 70, align: "right" });
+      doc.text("Total", colTotal, y, { width: 70, align: "right" });
+    }
+    doc.y = y + 14;
+    doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor("#ccc").stroke();
+    doc.y += 8;
+    doc.fillColor("#000");
+  }
+
+  cabeceraTabla();
+
+  pedido.items.forEach(item => {
+    if (doc.y > 680) {
+      doc.addPage();
+      doc.y = 50;
+      cabeceraTabla();
+    }
+
+    const y = doc.y;
+    const desc = `${item.nombre} · Lote ${item.lote} · ${etiquetaPeso(item.peso)} · ${item.molienda} · ${item.tueste}`;
+    const alturaDesc = doc.heightOfString(desc, { width: anchoDesc });
+
+    doc.fontSize(9).text(desc, x, y, { width: anchoDesc });
+    doc.text(String(item.cantidad), colCant, y, { width: 60, align: "right" });
+
+    if (conPrecios) {
+      doc.text(`${Number(item.precioUnitario).toFixed(2)} €`, colPrecio, y, { width: 70, align: "right" });
+      doc.text(`${(item.precioUnitario * item.cantidad).toFixed(2)} €`, colTotal, y, { width: 70, align: "right" });
+    }
+
+    doc.y = y + Math.max(alturaDesc, 14) + 6;
+  });
+
+  doc.moveDown(0.3);
+  doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor("#ccc").stroke();
+  doc.moveDown(0.8);
+}
+
+async function construirFacturaPDF(pedido) {
+  return generarPdfBuffer(doc => {
+    dibujarCabeceraEmpresa(doc, "FACTURA", pedido.factura.numero, pedido.factura.fecha);
+    doc.fontSize(9).fillColor("#555").text(`Pedido: ${pedido.id}`, { align: "right" });
+    doc.moveDown(1);
+
+    dibujarDatosCliente(doc, pedido.cliente);
+    dibujarTablaItems(doc, pedido, { conPrecios: true });
+
+    const total = totalPedido(pedido);
+    const { base, iva } = desglosarIva(total);
+
+    const xEtq = 350, xVal = 465;
+
+    function filaTotal(etiqueta, valor, negrita) {
+      const y = doc.y;
+      doc.fontSize(negrita ? 12 : 10).fillColor("#000");
+      doc.text(etiqueta, xEtq, y, { width: 110, align: "right" });
+      doc.text(valor, xVal, y, { width: 80, align: "right" });
+      doc.y = y + (negrita ? 18 : 15);
+    }
+
+    filaTotal("Base imponible:", `${base.toFixed(2)} €`);
+    filaTotal(`IVA (${Math.round(IVA_TIPO * 100)}%):`, `${iva.toFixed(2)} €`);
+    filaTotal("TOTAL:", `${total.toFixed(2)} €`, true);
+
+    doc.moveDown(2);
+    doc.fontSize(8).fillColor("#888").text(
+      "Factura emitida conforme al Reglamento por el que se regulan las obligaciones de facturación (RD 1619/2012). Conserve este documento a efectos fiscales.",
+      50, doc.y, { width: 495 }
+    );
+  });
+}
+
+async function construirAlbaranPDF(pedido) {
+  return generarPdfBuffer(doc => {
+    dibujarCabeceraEmpresa(doc, "ALBARÁN DE ENTREGA", pedido.albaran.numero, pedido.albaran.fecha);
+    doc.fontSize(9).fillColor("#555").text(`Pedido: ${pedido.id}`, { align: "right" });
+    if (pedido.factura) {
+      doc.text(`Factura: ${pedido.factura.numero}`, { align: "right" });
+    }
+    doc.moveDown(1);
+
+    dibujarDatosCliente(doc, pedido.cliente);
+    dibujarTablaItems(doc, pedido, { conPrecios: false });
+
+    doc.moveDown(3);
+    doc.fontSize(10).fillColor("#000").text("Recibido conforme:", 50, doc.y);
+    doc.moveDown(3);
+    doc.moveTo(50, doc.y).lineTo(250, doc.y).strokeColor("#888").stroke();
+    doc.fontSize(8).fillColor("#888").text("Firma y fecha", 50, doc.y + 4);
+  });
+}
+
+async function enviarFacturaPorEmail(pedido, pdfBuffer) {
+  const email = pedido.cliente && pedido.cliente.email;
+  if (!email) return;
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: `Factura ${pedido.factura.numero} · Café D’Medina`,
+    html: `
+      <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
+      <p>Gracias por tu compra en Café D’Medina. Adjuntamos la factura de tu pedido.</p>
+      <p>Te avisaremos en cuanto el pedido salga hacia tu dirección.</p>
+    `,
+    attachments: [{ filename: `${pedido.factura.numero}.pdf`, content: pdfBuffer }]
+  });
+}
+
+async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
+  const email = pedido.cliente && pedido.cliente.email;
+  if (!email) return;
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Tu pedido va en camino · Café D’Medina",
+    html: `
+      <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
+      <p>Tu pedido ya ha salido hacia tu dirección. Adjuntamos el albarán de entrega.</p>
+    `,
+    attachments: [{ filename: `${pedido.albaran.numero}.pdf`, content: pdfBuffer }]
+  });
+}
+
+//-------------------------------------------------------------------------------------------------CIERRA - FACTURACIÓN--------------------------------------------------------------------------------------------//
 
 
 /**-------------------------------------------------------------------------------------------------ABRE - EMAIL IONOS--------------------------------------------------------------------------------------------
@@ -482,6 +765,14 @@ async function confirmarPagoPedido(session) {
     sessionId: session.id,
     paymentIntentId: session.payment_intent || null
   };
+
+  try {
+    pedido.factura = { numero: await generarNumeroDocumento("FACT"), fecha: new Date().toISOString() };
+    const pdfFactura = await construirFacturaPDF(pedido);
+    await enviarFacturaPorEmail(pedido, pdfFactura);
+  } catch (error) {
+    console.error(`No se pudo generar/enviar la factura del pedido ${pedido.id}:`, error);
+  }
 
   await redisSet("stock_reservado", reservado);
   await redisSet("movimientos", movimientos);

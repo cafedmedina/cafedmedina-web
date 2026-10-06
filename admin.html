@@ -937,10 +937,33 @@
               `).join("<br>")}
             </div>
 
-            ${puedeEnviar ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
+            <div class="toolbar">
+              ${puedeEnviar ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
+              ${pedido.factura ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'factura')">Factura ${pedido.factura.numero}</button>` : ""}
+              ${pedido.albaran ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'albaran')">Albarán ${pedido.albaran.numero}</button>` : ""}
+            </div>
           </div>
         `;
       }).join("");
+    }
+
+    async function descargarDocumentoPedido(id, tipo) {
+      try {
+        const response = await fetch(`/api/pedidos/${encodeURIComponent(id)}/${tipo}`, {
+          headers: { "x-admin-token": getToken() }
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.error || `No se pudo descargar el ${tipo}.`);
+        }
+
+        const blob = await response.blob();
+        descargarBlob(blob, `${tipo}-${id}.pdf`);
+
+      } catch (error) {
+        alert(error.message || `No se pudo descargar el ${tipo}.`);
+      }
     }
 
     async function marcarEnviado(id) {
