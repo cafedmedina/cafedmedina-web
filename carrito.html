@@ -293,6 +293,31 @@
       border-color: #d64525;
     }
 
+    .tipo-toggle {
+      display: flex;
+      gap: 22px;
+    }
+
+    .tipo-opcion {
+      display: flex !important;
+      align-items: center;
+      gap: 7px;
+
+      color: var(--white) !important;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+
+      cursor: pointer;
+    }
+
+    .tipo-opcion input {
+      width: auto;
+      height: auto;
+      cursor: pointer;
+    }
+
     .form-error {
       margin-top: 4px;
       min-height: 14px;
@@ -1002,20 +1027,34 @@
         <p class="form-subtitle">Los necesitamos para preparar tu envío y emitir la factura.</p>
 
         <div class="form-grid">
+          <div class="form-field full">
+            <label>Tipo de cliente</label>
+            <div class="tipo-toggle">
+              <label class="tipo-opcion">
+                <input type="radio" name="tipo-cliente" value="particular" checked onchange="onTipoClienteChange()">
+                Particular
+              </label>
+              <label class="tipo-opcion">
+                <input type="radio" name="tipo-cliente" value="empresa" onchange="onTipoClienteChange()">
+                Empresa
+              </label>
+            </div>
+          </div>
+
           <div class="form-field">
-            <label>Nombre</label>
+            <label id="label-nombre">Nombre</label>
             <input id="cliente-nombre" type="text" autocomplete="given-name" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-nombre"></div>
           </div>
 
-          <div class="form-field">
+          <div class="form-field" id="campo-apellidos">
             <label>Apellidos</label>
             <input id="cliente-apellidos" type="text" autocomplete="family-name" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-apellidos"></div>
           </div>
 
           <div class="form-field">
-            <label>DNI / NIF / NIE</label>
+            <label id="label-dni">DNI / NIF / NIE</label>
             <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A" oninput="this.value = this.value.toUpperCase()">
             <div class="form-error" id="error-dni"></div>
           </div>
@@ -1273,6 +1312,24 @@
       return letras[numero % 23] === letra;
     }
 
+    // Validación de formato del CIF (letra de tipo de entidad + 7 dígitos + dígito/letra de control).
+    function validarCif(valor) {
+      const v = (valor || "").trim().toUpperCase().replace(/[-\s]/g, "");
+      return /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(v);
+    }
+
+    function onTipoClienteChange() {
+      const tipo = document.querySelector('input[name="tipo-cliente"]:checked').value;
+      const esEmpresa = tipo === "empresa";
+
+      document.getElementById("label-nombre").textContent = esEmpresa ? "Razón social" : "Nombre";
+      document.getElementById("label-dni").textContent = esEmpresa ? "CIF" : "DNI / NIF / NIE";
+      document.getElementById("cliente-dni").placeholder = esEmpresa ? "B12345678" : "12345678A";
+
+      document.getElementById("campo-apellidos").style.display = esEmpresa ? "none" : "";
+      if (esEmpresa) document.getElementById("cliente-apellidos").value = "";
+    }
+
     function validarEmail(valor) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((valor || "").trim());
     }
@@ -1287,9 +1344,12 @@
     }
 
     function leerClienteFormulario() {
+      const tipoCliente = document.querySelector('input[name="tipo-cliente"]:checked').value;
+
       return {
+        tipoCliente,
         nombre: document.getElementById("cliente-nombre").value.trim(),
-        apellidos: document.getElementById("cliente-apellidos").value.trim(),
+        apellidos: tipoCliente === "empresa" ? "" : document.getElementById("cliente-apellidos").value.trim(),
         dni: document.getElementById("cliente-dni").value.trim().toUpperCase(),
         telefono: document.getElementById("cliente-telefono").value.trim(),
         email: document.getElementById("cliente-email").value.trim(),
@@ -1316,11 +1376,20 @@
       limpiarErroresCliente();
       let valido = true;
 
-      if (!cliente.nombre) { marcarErrorCliente("nombre", "Introduce el nombre."); valido = false; }
-      if (!cliente.apellidos) { marcarErrorCliente("apellidos", "Introduce los apellidos."); valido = false; }
+      const esEmpresa = cliente.tipoCliente === "empresa";
 
-      if (!cliente.dni) { marcarErrorCliente("dni", "Introduce el DNI/NIF/NIE."); valido = false; }
-      else if (!validarDniNie(cliente.dni)) { marcarErrorCliente("dni", "El DNI/NIF/NIE no es válido."); valido = false; }
+      if (!cliente.nombre) { marcarErrorCliente("nombre", esEmpresa ? "Introduce la razón social." : "Introduce el nombre."); valido = false; }
+      if (!esEmpresa && !cliente.apellidos) { marcarErrorCliente("apellidos", "Introduce los apellidos."); valido = false; }
+
+      if (!cliente.dni) {
+        marcarErrorCliente("dni", esEmpresa ? "Introduce el CIF." : "Introduce el DNI/NIF/NIE.");
+        valido = false;
+      } else if (esEmpresa) {
+        if (!validarCif(cliente.dni)) { marcarErrorCliente("dni", "El CIF no es válido."); valido = false; }
+      } else if (!validarDniNie(cliente.dni)) {
+        marcarErrorCliente("dni", "El DNI/NIF/NIE no es válido.");
+        valido = false;
+      }
 
       if (!cliente.telefono) { marcarErrorCliente("telefono", "Introduce el teléfono."); valido = false; }
       else if (!validarTelefonoMovil(cliente.telefono)) { marcarErrorCliente("telefono", "Debe ser un móvil español (9 dígitos, empieza por 6 o 7)."); valido = false; }
@@ -1345,7 +1414,14 @@
 
       const mapaId = { codigoPostal: "cp" };
 
+      if (guardado.tipoCliente) {
+        const radio = document.querySelector(`input[name="tipo-cliente"][value="${guardado.tipoCliente}"]`);
+        if (radio) radio.checked = true;
+      }
+      onTipoClienteChange();
+
       Object.keys(guardado).forEach(campo => {
+        if (campo === "tipoCliente") return;
         const input = document.getElementById(`cliente-${mapaId[campo] || campo}`);
         if (input) input.value = guardado[campo];
       });

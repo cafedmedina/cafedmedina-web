@@ -153,6 +153,8 @@ async function leerStockReal() { return redisGet("stock_real", {}); }
 async function leerReservado() { return redisGet("stock_reservado", {}); }
 async function leerPedidos() { return redisGet("pedidos", []); }
 async function leerMovimientos() { return redisGet("movimientos", []); }
+// clientes: { "DNI/CIF normalizado": { tipo, nombre, apellidos, dni, ..., facturas: [...] }, ... }
+async function leerClientes() { return redisGet("clientes", {}); }
 
 function vacioParaCodigo(mapa, codigo) {
   return mapa[codigo] || { "250": 0, "500": 0, "1000": 0 };
@@ -288,6 +290,17 @@ app.get("/api/pedidos", requiereAdmin, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "No se pudieron leer los pedidos" });
+  }
+});
+
+// Ficha única por cliente (identificada por DNI/NIF/CIF), con su historial de facturas.
+app.get("/api/clientes", requiereAdmin, async (req, res) => {
+  try {
+    const clientes = await leerClientes();
+    res.json(clientes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer los clientes" });
   }
 });
 
@@ -679,17 +692,34 @@ function validarDniNie(valor) {
   return letras[numero % 23] === letra;
 }
 
+// Validación de formato del CIF (letra de tipo de entidad + 7 dígitos + dígito/letra de control).
+// No recalcula el dígito de control (depende del tipo de entidad): solo valida el formato.
+function validarCif(valor) {
+  const v = String(valor || "").trim().toUpperCase().replace(/[-\s]/g, "");
+  return /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(v);
+}
+
 function validarClienteServidor(cliente) {
   if (!cliente || typeof cliente !== "object") return "Faltan los datos de envío y facturación";
 
-  const requeridos = ["nombre", "apellidos", "dni", "telefono", "email", "direccion", "codigoPostal", "localidad", "provincia"];
+  const esEmpresa = cliente.tipoCliente === "empresa";
+
+  const requeridos = esEmpresa
+    ? ["nombre", "dni", "telefono", "email", "direccion", "codigoPostal", "localidad", "provincia"]
+    : ["nombre", "apellidos", "dni", "telefono", "email", "direccion", "codigoPostal", "localidad", "provincia"];
+
   for (const campo of requeridos) {
     if (!cliente[campo] || !String(cliente[campo]).trim()) {
       return `Falta el campo "${campo}" en los datos de envío/facturación`;
     }
   }
 
-  if (!validarDniNie(cliente.dni)) return "El DNI/NIF/NIE no es válido";
+  if (esEmpresa) {
+    if (!validarCif(cliente.dni)) return "El CIF no es válido";
+  } else if (!validarDniNie(cliente.dni)) {
+    return "El DNI/NIF/NIE no es válido";
+  }
+
   if (!/^[67]\d{8}$/.test(String(cliente.telefono).replace(/[\s-]/g, ""))) return "El teléfono móvil no es válido";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(cliente.email).trim())) return "El email no es válido";
   if (!/^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test(String(cliente.codigoPostal).trim())) return "El código postal no es válido";
