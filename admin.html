@@ -7,7 +7,7 @@
   <title>Inventario y precios | Café D’Medina</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 
   <style>
     :root {
@@ -1192,28 +1192,65 @@
       });
 
       const nombre = `clientes-cafe-dmedina-${fechaParaArchivo()}`;
-      descargarXLSX(`${nombre}.xlsx`, "Clientes", HEADERS_CLIENTES, filas);
+      await descargarXLSX(`${nombre}.xlsx`, "Clientes", HEADERS_CLIENTES, filas);
     }
 
-    const HEADERS_FACTURAS_CLIENTE = ["fecha", "numeroFactura", "dniCif", "importeBase", "importeIva", "total"];
+    const IVA_TIPO = 0.10; // Igual que en el servidor: los precios ya incluyen este IVA
 
-    function exportarFacturasCliente(clave) {
+    // Facturas antiguas (de antes de guardar base/IVA en la ficha) no traen f.base/f.iva: se recalculan aquí
+    // con la misma fórmula que usa el servidor, para que el Excel nunca salga con esas casillas en blanco.
+    function desglosarIvaCliente(totalConIva) {
+      const base = totalConIva / (1 + IVA_TIPO);
+      const iva = totalConIva - base;
+      return { base: Math.round(base * 100) / 100, iva: Math.round(iva * 100) / 100 };
+    }
+
+    async function exportarFacturasCliente(clave) {
       const c = clientesCache[clave];
       if (!c) return;
 
       const facturas = (c.facturas || []).slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-      const filas = facturas.map(f => ({
-        fecha: new Date(f.fecha).toLocaleDateString("es-ES"),
-        numeroFactura: f.numero,
-        dniCif: c.dni || "",
-        importeBase: f.base !== undefined ? f.base.toFixed(2) : "",
-        importeIva: f.iva !== undefined ? f.iva.toFixed(2) : "",
-        total: f.total.toFixed(2)
-      }));
+      const workbook = new ExcelJS.Workbook();
+      const hoja = workbook.addWorksheet("Facturas");
 
-      const nombre = `facturas-${c.dni || clave}-${fechaParaArchivo()}`;
-      descargarXLSX(`${nombre}.xlsx`, "Facturas", HEADERS_FACTURAS_CLIENTE, filas);
+      hoja.columns = [
+        { header: "Fecha", key: "fecha", width: 14 },
+        { header: "Nº Factura", key: "numeroFactura", width: 18 },
+        { header: "Nº Identificación", key: "dniCif", width: 18 },
+        { header: "Importe Base", key: "importeBase", width: 14 },
+        { header: "% IVA", key: "porcentajeIva", width: 10 },
+        { header: "Importe IVA", key: "importeIva", width: 14 },
+        { header: "Total", key: "total", width: 14 }
+      ];
+      hoja.getRow(1).font = { bold: true };
+
+      facturas.forEach(f => {
+        const total = Number(f.total || 0);
+        const { base, iva } = (f.base !== undefined && f.iva !== undefined)
+          ? { base: f.base, iva: f.iva }
+          : desglosarIvaCliente(total);
+
+        const fila = hoja.addRow({
+          fecha: new Date(f.fecha),
+          numeroFactura: f.numero,
+          dniCif: c.dni || "",
+          importeBase: base,
+          porcentajeIva: IVA_TIPO,
+          importeIva: iva,
+          total
+        });
+
+        fila.getCell("fecha").numFmt = "dd/mm/yyyy";
+        fila.getCell("importeBase").numFmt = "0.00";
+        fila.getCell("porcentajeIva").numFmt = "0%";
+        fila.getCell("importeIva").numFmt = "0.00";
+        fila.getCell("total").numFmt = "0.00";
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const nombre = `facturas-${c.dni || clave}-${fechaParaArchivo()}.xlsx`;
+      descargarBlob(new Blob([buffer], { type: "application/octet-stream" }), nombre);
     }
 
     async function marcarEnviado(id) {
@@ -1342,11 +1379,17 @@
 
     // ---------------------------------------------------------------- EXPORTAR ----------------------------------------------------------------
 
-    function descargarXLSX(nombreArchivo, nombreHoja, headers, filas) {
-      const hoja = XLSX.utils.json_to_sheet(filas, { header: headers });
-      const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, nombreHoja);
-      XLSX.writeFile(libro, nombreArchivo);
+    async function descargarXLSX(nombreArchivo, nombreHoja, headers, filas) {
+      const workbook = new ExcelJS.Workbook();
+      const hoja = workbook.addWorksheet(nombreHoja);
+
+      hoja.columns = headers.map(h => ({ header: h, key: h, width: Math.max(12, h.length + 2) }));
+      hoja.getRow(1).font = { bold: true };
+
+      filas.forEach(fila => hoja.addRow(fila));
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      descargarBlob(new Blob([buffer], { type: "application/octet-stream" }), nombreArchivo);
     }
 
     function descargarBlob(blob, nombreArchivo) {
@@ -1410,12 +1453,12 @@
       });
 
       const nombre = `pedidos-cafe-dmedina-${fechaParaArchivo()}`;
-      descargarXLSX(`${nombre}.xlsx`, "Pedidos", HEADERS_PEDIDOS, filas);
+      await descargarXLSX(`${nombre}.xlsx`, "Pedidos", HEADERS_PEDIDOS, filas);
     }
 
     const HEADERS_STOCK = ["codigo", "proceso", "peso", "real", "reservado", "disponible"];
 
-    function exportarStock() {
+    async function exportarStock() {
       const filas = [];
       Object.keys(lotes).forEach(codigo => {
         const lote = lotes[codigo];
@@ -1433,7 +1476,7 @@
       });
 
       const nombre = `stock-cafe-dmedina-${fechaParaArchivo()}`;
-      descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
+      await descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
     }
 
     const HEADERS_MOVIMIENTOS = ["fecha", "codigo", "peso", "tipo", "campo", "anterior", "nuevo", "diferencia", "pedidoId", "observaciones"];
@@ -1473,7 +1516,7 @@
       }));
 
       const nombre = `movimientos-stock-cafe-dmedina-${fechaParaArchivo()}`;
-      descargarXLSX(`${nombre}.xlsx`, "Movimientos", HEADERS_MOVIMIENTOS, filas);
+      await descargarXLSX(`${nombre}.xlsx`, "Movimientos", HEADERS_MOVIMIENTOS, filas);
     }
 
     async function descargarBackupCompleto() {
