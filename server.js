@@ -512,6 +512,9 @@ async function actualizarFichaCliente(pedido) {
   const clientes = await leerClientes();
   const existente = clientes[clave] || { primeraCompra: new Date().toISOString(), facturas: [] };
 
+  const total = Number(totalPedido(pedido).toFixed(2));
+  const { base, iva } = desglosarIva(total);
+
   clientes[clave] = {
     ...existente,
     tipo: cliente.tipoCliente === "empresa" ? "empresa" : "particular",
@@ -531,7 +534,9 @@ async function actualizarFichaCliente(pedido) {
         numero: pedido.factura.numero,
         fecha: pedido.factura.fecha,
         pedidoId: pedido.id,
-        total: Number(totalPedido(pedido).toFixed(2))
+        base,
+        iva,
+        total
       }
     ]
   };

@@ -370,48 +370,60 @@
     }
 
     .cliente-card {
-      margin-bottom: 10px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(200,169,106,.18);
-      overflow: hidden;
+      margin-bottom: 8px;
     }
 
-    .cliente-row {
-      display: flex;
-      justify-content: space-between;
+    .cliente-fila {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr .8fr 1.9fr .9fr 1.4fr .7fr;
+      gap: 10px;
       align-items: center;
-      gap: 12px;
-      padding: 16px 18px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.16);
+      font-size: 12.5px;
       cursor: pointer;
     }
 
-    .cliente-row:hover {
-      background: rgba(200,169,106,.06);
+    .cliente-fila > div {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .cliente-sub {
-      display: block;
-      margin-top: 4px;
+    .cliente-fila:hover {
+      background: rgba(200,169,106,.07);
+    }
+
+    .cliente-fila.cabecera {
+      background: transparent;
+      border: none;
       color: var(--muted);
-      font-size: 12px;
-      font-family: monospace;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 10.5px;
+      letter-spacing: .4px;
+      cursor: default;
+      padding: 4px 14px 10px;
     }
 
-    .cliente-row-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .cliente-fila.cabecera:hover {
+      background: transparent;
     }
 
     .cliente-chevron {
       color: var(--gold-light);
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .cliente-detalle {
-      padding: 14px 18px 18px;
-      border-top: 1px solid rgba(200,169,106,.14);
+      margin-top: 4px;
+      padding: 14px 16px 16px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(200,169,106,.12);
     }
 
     .export-box {
@@ -480,12 +492,10 @@
     <div class="export-box">
       <h2 class="section-title" style="margin-top:0">Exportar datos</h2>
       <div class="toolbar">
-        <button class="btn-secondary btn btn-small" onclick="exportarPedidos('csv')">Pedidos (CSV)</button>
-        <button class="btn-secondary btn btn-small" onclick="exportarPedidos('xlsx')">Pedidos (XLSX)</button>
-        <button class="btn-secondary btn btn-small" onclick="exportarStock('csv')">Stock (CSV)</button>
-        <button class="btn-secondary btn btn-small" onclick="exportarStock('xlsx')">Stock (XLSX)</button>
-        <button class="btn-secondary btn btn-small" onclick="exportarMovimientos('csv')">Movimientos (CSV)</button>
-        <button class="btn-secondary btn btn-small" onclick="exportarMovimientos('xlsx')">Movimientos (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarPedidos()">Pedidos (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarClientes()">Clientes (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarStock()">Stock (XLSX)</button>
+        <button class="btn-secondary btn btn-small" onclick="exportarMovimientos()">Movimientos (XLSX)</button>
         <button class="btn btn-small" onclick="descargarBackupCompleto()">Copia de seguridad completa</button>
       </div>
     </div>
@@ -1081,34 +1091,48 @@
 
       const ordenadas = entradas.slice().sort((a, b) => new Date(b[1].ultimaCompra) - new Date(a[1].ultimaCompra));
 
-      container.innerHTML = ordenadas.map(([clave, c]) => {
+      const cabecera = `
+        <div class="cliente-fila cabecera">
+          <div>Nombre / Razón social</div>
+          <div>DNI/NIE · CIF</div>
+          <div>Tipo</div>
+          <div>Dirección</div>
+          <div>Teléfono</div>
+          <div>Email</div>
+          <div>Facturas</div>
+        </div>
+      `;
+
+      const filas = ordenadas.map(([clave, c]) => {
         const esEmpresa = c.tipo === "empresa";
         const nombreMostrado = esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`.trim();
+        const direccionCompleta = `${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`;
         const facturas = (c.facturas || []).slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         return `
           <div class="cliente-card">
-            <div class="cliente-row" onclick="toggleCliente('${clave}')">
-              <div>
-                <strong>${nombreMostrado}</strong>
-                <span class="cliente-sub">${esEmpresa ? "CIF" : "DNI/NIE"} ${c.dni} · ${esEmpresa ? "Empresa" : "Particular"}</span>
-              </div>
-              <div class="cliente-row-right">
-                <span class="pedido-estado pendiente">${facturas.length} factura${facturas.length === 1 ? "" : "s"}</span>
-                <span class="cliente-chevron" id="chevron-${clave}">▾</span>
-              </div>
+            <div class="cliente-fila" onclick="toggleCliente('${clave}')">
+              <div title="${nombreMostrado}">${nombreMostrado}</div>
+              <div>${c.dni || ""}</div>
+              <div>${esEmpresa ? "Empresa" : "Particular"}</div>
+              <div title="${direccionCompleta}">${direccionCompleta}</div>
+              <div>${c.telefono || ""}</div>
+              <div title="${c.email || ""}">${c.email || ""}</div>
+              <div>${facturas.length} <span class="cliente-chevron" id="chevron-${clave}">▾</span></div>
             </div>
 
             <div class="cliente-detalle" id="detalle-${clave}" hidden>
               <div class="pedido-items">
-                ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
-                ${c.telefono || ""} · ${c.email || ""}<br>
                 Primera compra: ${c.primeraCompra ? new Date(c.primeraCompra).toLocaleDateString("es-ES") : "—"}
                 · Última compra: ${c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-ES") : "—"}
               </div>
 
               ${facturas.length > 0 ? `
-                <p class="subtitle" style="margin-bottom:10px">Facturas emitidas, de más reciente a más antigua:</p>
+                <div class="toolbar">
+                  <button class="btn-secondary btn btn-small" onclick="event.stopPropagation(); exportarFacturasCliente('${clave}')">Facturas de este cliente (XLSX)</button>
+                </div>
+
+                <p class="subtitle" style="margin:10px 0">Facturas emitidas, de más reciente a más antigua:</p>
                 <div class="toolbar">
                   ${facturas.map(f => `
                     <button class="btn-secondary btn btn-small" onclick="event.stopPropagation(); descargarDocumentoPedido('${f.pedidoId}', 'factura', '${f.numero}')">
@@ -1121,6 +1145,8 @@
           </div>
         `;
       }).join("");
+
+      container.innerHTML = cabecera + filas;
     }
 
     function toggleCliente(clave) {
@@ -1130,6 +1156,64 @@
 
       detalle.hidden = !detalle.hidden;
       if (chevron) chevron.textContent = detalle.hidden ? "▾" : "▴";
+    }
+
+    const HEADERS_CLIENTES = [
+      "tipo", "nombre", "apellidos", "dni", "telefono", "email",
+      "direccion", "codigoPostal", "localidad", "provincia",
+      "numFacturas", "totalFacturado", "primeraCompra", "ultimaCompra"
+    ];
+
+    async function exportarClientes() {
+      const response = await fetch("/api/clientes", { headers: { "x-admin-token": getToken() } });
+      const clientes = await response.json();
+      if (!response.ok) { alert(clientes.error || "No se pudieron cargar los clientes"); return; }
+
+      const filas = Object.values(clientes).map(c => {
+        const facturas = c.facturas || [];
+        const totalFacturado = facturas.reduce((suma, f) => suma + Number(f.total || 0), 0);
+
+        return {
+          tipo: c.tipo === "empresa" ? "Empresa" : "Particular",
+          nombre: c.nombre || "",
+          apellidos: c.apellidos || "",
+          dni: c.dni || "",
+          telefono: c.telefono || "",
+          email: c.email || "",
+          direccion: c.direccion || "",
+          codigoPostal: c.codigoPostal || "",
+          localidad: c.localidad || "",
+          provincia: c.provincia || "",
+          numFacturas: facturas.length,
+          totalFacturado: Number(totalFacturado.toFixed(2)),
+          primeraCompra: c.primeraCompra ? new Date(c.primeraCompra).toLocaleString("es-ES") : "",
+          ultimaCompra: c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleString("es-ES") : ""
+        };
+      });
+
+      const nombre = `clientes-cafe-dmedina-${fechaParaArchivo()}`;
+      descargarXLSX(`${nombre}.xlsx`, "Clientes", HEADERS_CLIENTES, filas);
+    }
+
+    const HEADERS_FACTURAS_CLIENTE = ["fecha", "numeroFactura", "dniCif", "importeBase", "importeIva", "total"];
+
+    function exportarFacturasCliente(clave) {
+      const c = clientesCache[clave];
+      if (!c) return;
+
+      const facturas = (c.facturas || []).slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+      const filas = facturas.map(f => ({
+        fecha: new Date(f.fecha).toLocaleDateString("es-ES"),
+        numeroFactura: f.numero,
+        dniCif: c.dni || "",
+        importeBase: f.base !== undefined ? f.base.toFixed(2) : "",
+        importeIva: f.iva !== undefined ? f.iva.toFixed(2) : "",
+        total: f.total.toFixed(2)
+      }));
+
+      const nombre = `facturas-${c.dni || clave}-${fechaParaArchivo()}`;
+      descargarXLSX(`${nombre}.xlsx`, "Facturas", HEADERS_FACTURAS_CLIENTE, filas);
     }
 
     async function marcarEnviado(id) {
@@ -1258,26 +1342,6 @@
 
     // ---------------------------------------------------------------- EXPORTAR ----------------------------------------------------------------
 
-    function csvEscape(valor) {
-      const texto = String(valor === undefined || valor === null ? "" : valor);
-      if (/[",;\n]/.test(texto)) {
-        return `"${texto.replace(/"/g, '""')}"`;
-      }
-      return texto;
-    }
-
-    function descargarCSV(nombreArchivo, headers, filas) {
-      const lineas = [headers.join(";")];
-      filas.forEach(fila => {
-        lineas.push(headers.map(h => csvEscape(fila[h])).join(";"));
-      });
-
-      // BOM al principio para que Excel detecte UTF-8 y muestre bien los acentos
-      const contenido = "﻿" + lineas.join("\r\n");
-      const blob = new Blob([contenido], { type: "text/csv;charset=utf-8;" });
-      descargarBlob(blob, nombreArchivo);
-    }
-
     function descargarXLSX(nombreArchivo, nombreHoja, headers, filas) {
       const hoja = XLSX.utils.json_to_sheet(filas, { header: headers });
       const libro = XLSX.utils.book_new();
@@ -1307,7 +1371,7 @@
       "producto", "proceso", "lote", "peso", "molienda", "tueste", "cantidad", "precioUnitario", "totalLinea"
     ];
 
-    async function exportarPedidos(formato) {
+    async function exportarPedidos() {
       const response = await fetch("/api/pedidos", { headers: { "x-admin-token": getToken() } });
       const pedidos = await response.json();
       if (!response.ok) { alert(pedidos.error || "No se pudieron cargar los pedidos"); return; }
@@ -1346,13 +1410,12 @@
       });
 
       const nombre = `pedidos-cafe-dmedina-${fechaParaArchivo()}`;
-      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_PEDIDOS, filas);
-      else descargarXLSX(`${nombre}.xlsx`, "Pedidos", HEADERS_PEDIDOS, filas);
+      descargarXLSX(`${nombre}.xlsx`, "Pedidos", HEADERS_PEDIDOS, filas);
     }
 
     const HEADERS_STOCK = ["codigo", "proceso", "peso", "real", "reservado", "disponible"];
 
-    function exportarStock(formato) {
+    function exportarStock() {
       const filas = [];
       Object.keys(lotes).forEach(codigo => {
         const lote = lotes[codigo];
@@ -1370,8 +1433,7 @@
       });
 
       const nombre = `stock-cafe-dmedina-${fechaParaArchivo()}`;
-      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_STOCK, filas);
-      else descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
+      descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
     }
 
     const HEADERS_MOVIMIENTOS = ["fecha", "codigo", "peso", "tipo", "campo", "anterior", "nuevo", "diferencia", "pedidoId", "observaciones"];
@@ -1388,7 +1450,7 @@
       correccion: "Corrección"
     };
 
-    async function exportarMovimientos(formato) {
+    async function exportarMovimientos() {
       let movimientos;
       try {
         movimientos = await obtenerMovimientos();
@@ -1411,8 +1473,7 @@
       }));
 
       const nombre = `movimientos-stock-cafe-dmedina-${fechaParaArchivo()}`;
-      if (formato === "csv") descargarCSV(`${nombre}.csv`, HEADERS_MOVIMIENTOS, filas);
-      else descargarXLSX(`${nombre}.xlsx`, "Movimientos", HEADERS_MOVIMIENTOS, filas);
+      descargarXLSX(`${nombre}.xlsx`, "Movimientos", HEADERS_MOVIMIENTOS, filas);
     }
 
     async function descargarBackupCompleto() {
