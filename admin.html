@@ -449,6 +449,7 @@
       <button class="tab-btn active" id="tab-btn-catalogo" onclick="cambiarTab('catalogo')">Catálogo y precios</button>
       <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
+      <button class="tab-btn" id="tab-btn-clientes" onclick="cambiarTab('clientes')">Clientes</button>
       <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
     </div>
 
@@ -487,6 +488,16 @@
       <div id="pedidos-container"></div>
     </div>
 
+    <!-- ===================== CLIENTES ===================== -->
+    <div id="tab-clientes" hidden>
+      <p class="subtitle">Ficha de cada cliente que ha comprado: datos de contacto e historial de facturas.</p>
+      <div class="toolbar">
+        <input type="text" id="clientes-buscador" placeholder="Buscar por nombre, DNI/CIF o email..." oninput="filtrarClientes()" style="max-width:320px">
+        <button class="btn-secondary btn" onclick="cargarClientes()">Actualizar lista</button>
+      </div>
+      <div id="clientes-container"></div>
+    </div>
+
     <!-- ===================== MOVIMIENTOS ===================== -->
     <div id="tab-movimientos" hidden>
       <p class="subtitle">Historial de cambios en el stock real: ajustes manuales y envíos de pedidos.</p>
@@ -510,12 +521,13 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos", "movimientos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "clientes", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
 
       if (nombre === "pedidos") cargarPedidos();
+      if (nombre === "clientes") cargarClientes();
       if (nombre === "movimientos") cargarMovimientos();
     }
 
@@ -908,6 +920,7 @@
         }[pedido.estadoPago] || { clase: "pendiente", texto: pedido.estadoPago || "—" };
 
         const puedeEnviar = pedido.estadoPago === "pagado" && pedido.estadoPreparacion !== "enviado";
+        const puedeEliminar = pedido.estadoPago !== "pagado" && pedido.estadoPago !== "pagado_sin_stock";
 
       return `
           <div class="pedido-card">
@@ -941,6 +954,7 @@
               ${puedeEnviar ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
               ${pedido.factura ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'factura')">Factura ${pedido.factura.numero}</button>` : ""}
               ${pedido.albaran ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'albaran')">Albarán ${pedido.albaran.numero}</button>` : ""}
+              ${puedeEliminar ? `<button class="btn-danger btn btn-small" onclick="eliminarPedido('${pedido.id}')">Eliminar</button>` : ""}
             </div>
           </div>
         `;
@@ -966,6 +980,97 @@
       }
     }
 
+    // ---------------------------------------------------------------- CLIENTES ----------------------------------------------------------------
+
+    let clientesCache = {};
+
+    async function cargarClientes() {
+      const container = document.getElementById("clientes-container");
+      container.innerHTML = `<p class="subtitle">Cargando...</p>`;
+
+      try {
+        const response = await fetch("/api/clientes", { headers: { "x-admin-token": getToken() } });
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+
+        clientesCache = await response.json();
+        if (!response.ok) throw new Error(clientesCache.error || "Error al cargar clientes");
+
+        document.getElementById("clientes-buscador").value = "";
+        renderClientes(Object.values(clientesCache));
+
+      } catch (error) {
+        container.innerHTML = `<p class="error-msg">${error.message || "No se pudieron cargar los clientes."}</p>`;
+      }
+    }
+
+    function filtrarClientes() {
+      const texto = document.getElementById("clientes-buscador").value.trim().toLowerCase();
+      const todos = Object.values(clientesCache);
+
+      if (!texto) { renderClientes(todos); return; }
+
+      const filtrados = todos.filter(c => {
+        const campos = [c.nombre, c.apellidos, c.dni, c.email, c.localidad].join(" ").toLowerCase();
+        return campos.includes(texto);
+      });
+
+      renderClientes(filtrados);
+    }
+
+    function renderClientes(clientes) {
+      const container = document.getElementById("clientes-container");
+
+      if (clientes.length === 0) {
+        container.innerHTML = `<p class="subtitle">No hay clientes que coincidan con la búsqueda.</p>`;
+        return;
+      }
+
+      const ordenados = clientes.slice().sort((a, b) => new Date(b.ultimaCompra) - new Date(a.ultimaCompra));
+
+      container.innerHTML = ordenados.map(c => {
+        const esEmpresa = c.tipo === "empresa";
+        const nombreMostrado = esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`;
+        const facturas = (c.facturas || []).slice().reverse();
+
+        return `
+          <div class="pedido-card">
+            <div class="pedido-head">
+              <div>
+                <strong>${nombreMostrado}</strong><br>
+                <span class="pedido-id">${esEmpresa ? "CIF" : "DNI/NIE"} ${c.dni} · ${esEmpresa ? "Empresa" : "Particular"}</span>
+              </div>
+              <span class="pedido-estado pendiente">${facturas.length} factura${facturas.length === 1 ? "" : "s"}</span>
+            </div>
+
+            <div class="pedido-items">
+              ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
+              ${c.telefono || ""} · ${c.email || ""}<br>
+              Primera compra: ${c.primeraCompra ? new Date(c.primeraCompra).toLocaleDateString("es-ES") : "—"}
+              · Última compra: ${c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-ES") : "—"}
+            </div>
+
+            ${facturas.length > 0 ? `
+              <div class="toolbar">
+                ${facturas.map(f => `
+                  <button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${f.pedidoId}', 'factura')">
+                    ${f.numero} · ${new Date(f.fecha).toLocaleDateString("es-ES")} · ${f.total.toFixed(2)} €
+                  </button>
+                `).join("")}
+              </div>
+            ` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+
     async function marcarEnviado(id) {
       if (!confirm("¿Confirmas que este pedido ha salido? Se descontará del stock real.")) return;
 
@@ -983,6 +1088,25 @@
 
       } catch (error) {
         alert(error.message || "No se pudo marcar el pedido como enviado.");
+      }
+    }
+
+    async function eliminarPedido(id) {
+      if (!confirm("¿Eliminar este pedido? Esta acción no se puede deshacer.")) return;
+
+      try {
+        const response = await fetch(`/api/pedidos/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: { "x-admin-token": getToken() }
+        });
+
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "No se pudo eliminar el pedido");
+
+        await cargarPedidos();
+
+      } catch (error) {
+        alert(error.message || "No se pudo eliminar el pedido.");
       }
     }
 

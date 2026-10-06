@@ -293,6 +293,32 @@ app.get("/api/pedidos", requiereAdmin, async (req, res) => {
   }
 });
 
+// Solo se pueden borrar pedidos que nunca llegaron a pagarse (intentos abandonados o caducados):
+// un pedido pagado tiene factura, stock reservado y puede tener albarán, así que no se elimina nunca.
+app.delete("/api/pedidos/:id", requiereAdmin, async (req, res) => {
+  try {
+    const pedidos = await leerPedidos();
+    const index = pedidos.findIndex(p => p.id === req.params.id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    if (pedidos[index].estadoPago === "pagado" || pedidos[index].estadoPago === "pagado_sin_stock") {
+      return res.status(400).json({ error: "No se puede eliminar un pedido ya pagado." });
+    }
+
+    pedidos.splice(index, 1);
+    await redisSet("pedidos", pedidos);
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo eliminar el pedido" });
+  }
+});
+
 // Ficha única por cliente (identificada por DNI/NIF/CIF), con su historial de facturas.
 app.get("/api/clientes", requiereAdmin, async (req, res) => {
   try {
@@ -464,6 +490,47 @@ function totalPedido(pedido) {
 
 function etiquetaPeso(peso) {
   return peso === "1000" || Number(peso) === 1000 ? "1 kg" : `${peso} g`;
+}
+
+// DNI/NIE/CIF normalizado -> clave única de la ficha de cliente (no se duplica aunque cambien mayúsculas/guiones).
+function claveCliente(cliente) {
+  return String((cliente && cliente.dni) || "").trim().toUpperCase().replace(/[-\s]/g, "");
+}
+
+// Se llama solo tras confirmarse el pago: crea o actualiza la ficha del cliente y añade la factura a su historial.
+async function actualizarFichaCliente(pedido) {
+  const cliente = pedido.cliente;
+  const clave = claveCliente(cliente);
+  if (!clave) return;
+
+  const clientes = await leerClientes();
+  const existente = clientes[clave] || { primeraCompra: new Date().toISOString(), facturas: [] };
+
+  clientes[clave] = {
+    ...existente,
+    tipo: cliente.tipoCliente === "empresa" ? "empresa" : "particular",
+    nombre: cliente.nombre || "",
+    apellidos: cliente.apellidos || "",
+    dni: cliente.dni,
+    telefono: cliente.telefono || "",
+    email: cliente.email || "",
+    direccion: cliente.direccion || "",
+    codigoPostal: cliente.codigoPostal || "",
+    localidad: cliente.localidad || "",
+    provincia: cliente.provincia || "",
+    ultimaCompra: new Date().toISOString(),
+    facturas: [
+      ...(existente.facturas || []),
+      {
+        numero: pedido.factura.numero,
+        fecha: pedido.factura.fecha,
+        pedidoId: pedido.id,
+        total: Number(totalPedido(pedido).toFixed(2))
+      }
+    ]
+  };
+
+  await redisSet("clientes", clientes);
 }
 
 function generarPdfBuffer(dibujar) {
@@ -800,6 +867,7 @@ async function confirmarPagoPedido(session) {
     pedido.factura = { numero: await generarNumeroDocumento("FACT"), fecha: new Date().toISOString() };
     const pdfFactura = await construirFacturaPDF(pedido);
     await enviarFacturaPorEmail(pedido, pdfFactura);
+    await actualizarFichaCliente(pedido);
   } catch (error) {
     console.error(`No se pudo generar/enviar la factura del pedido ${pedido.id}:`, error);
   }
