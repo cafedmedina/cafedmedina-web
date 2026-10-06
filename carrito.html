@@ -213,13 +213,48 @@
       font-weight: 900;
     }
 
+    .cart-shipping {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.13);
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .cart-shipping:empty {
+      display: none;
+    }
+
+    .shipping-amount {
+      font-weight: 900;
+      color: var(--white);
+    }
+
+    .shipping-free {
+      font-weight: 900;
+      color: var(--gold-light);
+    }
+
+    .shipping-hint {
+      width: 100%;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
     .cart-total {
       display: flex;
       justify-content: space-between;
       align-items: center;
 
-      margin-top: 26px;
-      padding-top: 24px;
+      margin-top: 18px;
+      padding-top: 18px;
 
       border-top: 1px solid rgba(255,255,255,.16);
 
@@ -1017,6 +1052,8 @@
 
       <div id="cart-items"></div>
 
+      <div class="cart-shipping" id="cart-shipping"></div>
+
       <div class="cart-total">
         <span>Total:</span>
         <span id="cart-total">0,00 €</span>
@@ -1113,6 +1150,9 @@
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     let lotes = {};
 
+    const IVA_ENVIO = 0.21;
+    let configEnvio = { umbralGratis: 60, tarifaBase: 8 };
+
     async function cargarLotes() {
       try {
         const response = await fetch("/api/lotes");
@@ -1122,6 +1162,24 @@
         console.error("No se pudo cargar el inventario:", error);
         lotes = {};
       }
+    }
+
+    async function cargarConfigEnvio() {
+      try {
+        const response = await fetch("/api/config-envio");
+        if (!response.ok) throw new Error("Respuesta no válida");
+        configEnvio = await response.json();
+      } catch (error) {
+        console.error("No se pudo cargar la configuración de envío:", error);
+      }
+    }
+
+    function calcularEnvioCarrito(totalCafe) {
+      if (totalCafe >= configEnvio.umbralGratis || totalCafe === 0) {
+        return { gratuito: true, total: 0 };
+      }
+      const total = Number((configEnvio.tarifaBase * (1 + IVA_ENVIO)).toFixed(2));
+      return { gratuito: false, total };
     }
 
     function actualizarContador() {
@@ -1139,12 +1197,14 @@
     function renderCart() {
       const cartItems = document.getElementById("cart-items");
       const cartTotal = document.getElementById("cart-total");
+      const cartShipping = document.getElementById("cart-shipping");
 
       actualizarContador();
 
       if (carrito.length === 0) {
         cartItems.innerHTML = `<div class="empty-cart">Tu carrito está vacío.</div>`;
         cartTotal.textContent = "0,00 €";
+        if (cartShipping) cartShipping.innerHTML = "";
         localStorage.setItem("carrito", JSON.stringify(carrito));
         return;
       }
@@ -1181,11 +1241,31 @@
         `;
       }).join("");
 
-      const total = carrito.reduce((sum, item) => {
+      const totalCafe = carrito.reduce((sum, item) => {
         return sum + Number(item.precio) * Number(item.cantidad);
       }, 0);
 
-      cartTotal.textContent = total.toLocaleString("es-ES", {
+      const envio = calcularEnvioCarrito(totalCafe);
+
+      if (cartShipping) {
+        if (envio.gratuito) {
+          cartShipping.innerHTML = `
+            <span>Envío</span>
+            <span class="shipping-free">Gratis</span>
+          `;
+        } else {
+          const faltan = (configEnvio.umbralGratis - totalCafe).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+          cartShipping.innerHTML = `
+            <span>Gastos de envío (Península)</span>
+            <span class="shipping-amount">${envio.total.toLocaleString("es-ES", { style: "currency", currency: "EUR" })}</span>
+            <span class="shipping-hint">Añade ${faltan} más a tu pedido y el envío sale gratis.</span>
+          `;
+        }
+      }
+
+      const totalFinal = totalCafe + envio.total;
+
+      cartTotal.textContent = totalFinal.toLocaleString("es-ES", {
         style: "currency",
         currency: "EUR"
       });
@@ -1480,7 +1560,7 @@
     }
 
     (async function init() {
-      await cargarLotes();
+      await Promise.all([cargarLotes(), cargarConfigEnvio()]);
       renderCart();
       precargarCliente();
     })();

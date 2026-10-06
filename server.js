@@ -113,6 +113,64 @@ app.put("/api/catalogo", requiereAdmin, (req, res) => {
 
 //-------------------------------------------------------------------------------------------------CIERRA - CATÁLOGO--------------------------------------------------------------------------------------------//
 
+//-------------------------------------------------------------------------------------------------ABRE - ENVÍO (GASTOS DE ENVÍO, SOLO PENÍNSULA POR AHORA)--------------------------------------------------------------------------------------------//
+
+// Los portes van al 21% (tipo general), distinto del 10% del café: nunca se mezclan en la misma línea de IVA.
+const IVA_ENVIO_TIPO = 0.21;
+
+// umbralGratis: importe del café (con su IVA del 10% incluido) a partir del cual no se cobra envío.
+// tarifaBase: coste del envío sin IVA cuando no se llega al umbral. Son valores de partida, editables
+// desde el panel admin en cuanto haya tarifas reales de transportista (MRW, SEUR, InPost...).
+async function leerConfigEnvio() {
+  return redisGet("config_envio", { umbralGratis: 60, tarifaBase: 8 });
+}
+
+app.get("/api/config-envio", async (req, res) => {
+  try {
+    res.json(await leerConfigEnvio());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer la configuración de envío" });
+  }
+});
+
+app.put("/api/config-envio", requiereAdmin, async (req, res) => {
+  try {
+    const umbralGratis = Number(req.body.umbralGratis);
+    const tarifaBase = Number(req.body.tarifaBase);
+
+    if (!Number.isFinite(umbralGratis) || umbralGratis < 0) {
+      return res.status(400).json({ error: "El importe mínimo para envío gratis no es válido" });
+    }
+    if (!Number.isFinite(tarifaBase) || tarifaBase < 0) {
+      return res.status(400).json({ error: "La tarifa de envío no es válida" });
+    }
+
+    const config = { umbralGratis, tarifaBase };
+    await redisSet("config_envio", config);
+    res.json({ success: true, config });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo guardar la configuración de envío" });
+  }
+});
+
+// A partir del total del café (con IVA), calcula si hay portes y su importe (base + 21% IVA).
+function calcularEnvio(totalCafeConIva, config) {
+  if (totalCafeConIva >= config.umbralGratis) {
+    return { gratuito: true, base: 0, iva: 0, total: 0 };
+  }
+
+  const base = Number(config.tarifaBase);
+  const iva = Math.round(base * IVA_ENVIO_TIPO * 100) / 100;
+  const total = Math.round((base + iva) * 100) / 100;
+
+  return { gratuito: false, base, iva, total };
+}
+
+//-------------------------------------------------------------------------------------------------CIERRA - ENVÍO--------------------------------------------------------------------------------------------//
+
 //-------------------------------------------------------------------------------------------------ABRE - STOCK Y PEDIDOS (UPSTASH REDIS, INSTANTÁNEO Y PERMANENTE)--------------------------------------------------------------------------------------------//
 
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
@@ -512,8 +570,15 @@ async function actualizarFichaCliente(pedido) {
   const clientes = await leerClientes();
   const existente = clientes[clave] || { primeraCompra: new Date().toISOString(), facturas: [] };
 
-  const total = Number(totalPedido(pedido).toFixed(2));
-  const { base, iva } = desglosarIva(total);
+  // Base/IVA del cliente suman café (10%) + envío (21%) cuando lo hay: el desglose por tipo
+  // exacto vive en el PDF de la factura, aquí solo se guarda el total a efectos de historial.
+  const totalCafe = Number(totalPedido(pedido).toFixed(2));
+  const { base: baseCafe, iva: ivaCafe } = desglosarIva(totalCafe);
+  const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
+
+  const total = Number((totalCafe + (envio ? envio.total : 0)).toFixed(2));
+  const base = Number((baseCafe + (envio ? envio.base : 0)).toFixed(2));
+  const iva = Number((ivaCafe + (envio ? envio.iva : 0)).toFixed(2));
 
   clientes[clave] = {
     ...existente,
@@ -674,24 +739,41 @@ async function construirFacturaPDF(pedido) {
     dibujarDatosCliente(doc, pedido.cliente);
     dibujarTablaItems(doc, pedido, { conPrecios: true });
 
-    const total = totalPedido(pedido);
-    const { base, iva } = desglosarIva(total);
+    const totalCafe = totalPedido(pedido);
+    const { base: baseCafe, iva: ivaCafe } = desglosarIva(totalCafe);
 
-    const xEtq = 350, xVal = 465;
+    const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
+    const totalGeneral = totalCafe + (envio ? envio.total : 0);
+
+    const xEtq = 295, xVal = 465;
 
     function filaTotal(etiqueta, valor, negrita) {
       const y = doc.y;
       doc.font(negrita ? "Helvetica-Bold" : "Helvetica").fontSize(negrita ? 12 : 10).fillColor(negrita ? COLOR_GOLD : COLOR_BLACK);
-      doc.text(etiqueta, xEtq, y, { width: 110, align: "right" });
+      doc.text(etiqueta, xEtq, y, { width: xVal - xEtq - 10, align: "right" });
       doc.text(valor, xVal, y, { width: 80, align: "right" });
       doc.y = y + (negrita ? 18 : 15);
     }
 
-    filaTotal("Base imponible:", `${base.toFixed(2)} €`);
-    filaTotal(`IVA (${Math.round(IVA_TIPO * 100)}%):`, `${iva.toFixed(2)} €`);
-    filaTotal("TOTAL:", `${total.toFixed(2)} €`, true);
+    filaTotal(`Base imponible café (${Math.round(IVA_TIPO * 100)}%):`, `${baseCafe.toFixed(2)} €`);
+    filaTotal(`IVA café (${Math.round(IVA_TIPO * 100)}%):`, `${ivaCafe.toFixed(2)} €`);
 
-    doc.moveDown(2);
+    if (envio) {
+      filaTotal(`Gastos de envío (base):`, `${envio.base.toFixed(2)} €`);
+      filaTotal(`IVA envío (${Math.round(IVA_ENVIO_TIPO * 100)}%):`, `${envio.iva.toFixed(2)} €`);
+    }
+
+    filaTotal("TOTAL:", `${totalGeneral.toFixed(2)} €`, true);
+
+    doc.moveDown(0.5);
+    doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
+      pedido.envio && pedido.envio.gratuito
+        ? "Envío gratuito aplicado por importe de pedido."
+        : (envio ? "Incluye gastos de envío a Península (tipo de IVA del 21%, distinto al del café)." : ""),
+      50, doc.y, { width: 495 }
+    );
+
+    doc.moveDown(1.5);
     doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
       "Factura emitida conforme al Reglamento por el que se regulan las obligaciones de facturación (RD 1619/2012). Conserve este documento a efectos fiscales.",
       50, doc.y, { width: 495 }
@@ -1001,9 +1083,31 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     }
 
+    // El importe del café (con su 10% de IVA) decide si hay portes: nunca nos fiamos de lo que
+    // calculó el navegador, se recalcula aquí con los precios reales del catálogo.
+    const totalCafe = lineItems.reduce((suma, li) => suma + li.precioUnitario * li.cantidad, 0);
+    const configEnvio = await leerConfigEnvio();
+    const envio = calcularEnvio(totalCafe, configEnvio);
+
+    const stripeLineItems = lineItems.map(li => li.lineItem);
+
+    if (!envio.gratuito) {
+      stripeLineItems.push({
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: "Gastos de envío",
+            description: "Envío a Península (IVA 21% incluido)"
+          },
+          unit_amount: Math.round(envio.total * 100)
+        },
+        quantity: 1
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: lineItems.map(li => li.lineItem),
+      line_items: stripeLineItems,
       mode: "payment",
       customer_email: cliente.email,
       success_url: "https://cafedmedina-web.onrender.com/success.html",
@@ -1044,7 +1148,8 @@ app.post("/create-checkout-session", async (req, res) => {
         tueste: li.item.tueste,
         cantidad: li.cantidad,
         precioUnitario: li.precioUnitario
-      }))
+      })),
+      envio
     });
     await redisSet("pedidos", pedidos);
 

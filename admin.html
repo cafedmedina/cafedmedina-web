@@ -505,6 +505,7 @@
       <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
       <button class="tab-btn" id="tab-btn-clientes" onclick="cambiarTab('clientes')">Clientes</button>
+      <button class="tab-btn" id="tab-btn-envio" onclick="cambiarTab('envio')">Envío</button>
       <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
     </div>
 
@@ -553,6 +554,33 @@
       <div id="clientes-container"></div>
     </div>
 
+    <!-- ===================== ENVÍO ===================== -->
+    <div id="tab-envio" hidden>
+      <p class="subtitle">
+        Umbral y tarifa de envío a Península. El envío se cobra aparte en el checkout (con 21% de IVA)
+        solo cuando el pedido de café no llega al importe mínimo.
+      </p>
+
+      <div class="box" style="margin:0">
+        <div class="field-grid">
+          <div class="field">
+            <label>Envío gratis a partir de (€, con IVA del café)</label>
+            <input type="number" id="envio-umbral" step="0.01" min="0">
+          </div>
+
+          <div class="field">
+            <label>Tarifa de envío (€, sin IVA)</label>
+            <input type="number" id="envio-tarifa" step="0.01" min="0">
+          </div>
+        </div>
+
+        <div class="save-bar" style="margin-top:20px;padding:0;border:none;background:transparent">
+          <button class="btn" id="save-envio-btn" onclick="guardarConfigEnvio()">Guardar</button>
+          <span id="envio-feedback"></span>
+        </div>
+      </div>
+    </div>
+
     <!-- ===================== MOVIMIENTOS ===================== -->
     <div id="tab-movimientos" hidden>
       <p class="subtitle">Historial de cambios en el stock real: ajustes manuales y envíos de pedidos.</p>
@@ -576,13 +604,14 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos", "clientes", "movimientos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "clientes", "envio", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
 
       if (nombre === "pedidos") cargarPedidos();
       if (nombre === "clientes") cargarClientes();
+      if (nombre === "envio") cargarConfigEnvio();
       if (nombre === "movimientos") cargarMovimientos();
     }
 
@@ -1032,6 +1061,71 @@
 
       } catch (error) {
         alert(error.message || `No se pudo descargar el ${tipo}.`);
+      }
+    }
+
+    // ---------------------------------------------------------------- ENVÍO ----------------------------------------------------------------
+
+    async function cargarConfigEnvio() {
+      const feedback = document.getElementById("envio-feedback");
+      feedback.className = "";
+      feedback.textContent = "";
+
+      try {
+        const response = await fetch("/api/config-envio");
+        if (!response.ok) throw new Error("No se pudo cargar la configuración de envío");
+
+        const config = await response.json();
+        document.getElementById("envio-umbral").value = config.umbralGratis;
+        document.getElementById("envio-tarifa").value = config.tarifaBase;
+
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudo cargar la configuración de envío.";
+      }
+    }
+
+    async function guardarConfigEnvio() {
+      const feedback = document.getElementById("envio-feedback");
+      const btn = document.getElementById("save-envio-btn");
+
+      const umbralGratis = Number(document.getElementById("envio-umbral").value);
+      const tarifaBase = Number(document.getElementById("envio-tarifa").value);
+
+      btn.disabled = true;
+      feedback.className = "";
+      feedback.textContent = "Guardando...";
+
+      try {
+        const response = await fetch("/api/config-envio", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": getToken()
+          },
+          body: JSON.stringify({ umbralGratis, tarifaBase })
+        });
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "Error al guardar");
+
+        feedback.className = "success-msg";
+        feedback.textContent = "Guardado. Ya se aplica en el carrito y en el próximo checkout.";
+
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudo guardar la configuración de envío.";
+      } finally {
+        btn.disabled = false;
       }
     }
 
