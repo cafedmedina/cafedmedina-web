@@ -9,6 +9,42 @@ const app = express();
 
 app.use(cors());
 app.use(express.static(__dirname));
+
+//-------------------------------------------------------------------------------------------------ABRE - STRIPE--------------------------------------------------------------------------------------------//
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+//-------------------------------------------------------------------------------------------------CIERRA - STRIPE--------------------------------------------------------------------------------------------//
+
+//-------------------------------------------------------------------------------------------------ABRE - WEBHOOK DE STRIPE (va ANTES de express.json(): necesita el body sin parsear para verificar la firma)--------------------------------------------------------------------------------------------//
+
+app.post("/webhook/stripe", express.raw({ type: "application/json" }), async (req, res) => {
+  let event;
+
+  try {
+    const firma = req.headers["stripe-signature"];
+    event = stripe.webhooks.constructEvent(req.body, firma, STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    console.error("Firma de webhook de Stripe inválida:", error.message);
+    return res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+
+  try {
+    if (event.type === "checkout.session.completed") {
+      await confirmarPagoPedido(event.data.object);
+    } else if (event.type === "checkout.session.expired") {
+      await cancelarPedidoExpirado(event.data.object);
+    }
+
+    res.json({ received: true });
+
+  } catch (error) {
+    console.error("Error procesando el webhook de Stripe:", error);
+    res.status(500).json({ error: "Error interno procesando el webhook" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - WEBHOOK DE STRIPE--------------------------------------------------------------------------------------------//
+
 app.use(express.json());
 
 //-------------------------------------------------------------------------------------------------ABRE - CATÁLOGO (PRECIOS Y FICHAS, VIVE EN GIT)--------------------------------------------------------------------------------------------//
@@ -219,6 +255,7 @@ app.put("/api/stock", requiereAdmin, async (req, res) => {
         codigo,
         peso,
         tipo: "ajuste_manual",
+        campo: "real",
         anterior,
         nuevo: unidades,
         diferencia: unidades - anterior
@@ -262,7 +299,11 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
       return res.status(404).json({ error: "Pedido no encontrado" });
     }
 
-    if (pedido.estado === "enviado") {
+    if (pedido.estadoPago !== "pagado") {
+      return res.status(400).json({ error: "Este pedido todavía no tiene el pago confirmado, no se puede enviar" });
+    }
+
+    if (pedido.estadoPreparacion === "enviado") {
       return res.status(400).json({ error: "Este pedido ya estaba marcado como enviado" });
     }
 
@@ -285,6 +326,7 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
         codigo: item.lote,
         peso: item.peso,
         tipo: "envio",
+        campo: "real",
         anterior,
         nuevo,
         diferencia: nuevo - anterior,
@@ -292,7 +334,7 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
       });
     }
 
-    pedido.estado = "enviado";
+    pedido.estadoPreparacion = "enviado";
     pedido.fechaEnvio = new Date().toISOString();
 
     await redisSet("stock_real", stockReal);
@@ -309,10 +351,6 @@ app.post("/api/pedidos/:id/enviar", requiereAdmin, async (req, res) => {
 });
 
 //-------------------------------------------------------------------------------------------------CIERRA - STOCK Y PEDIDOS--------------------------------------------------------------------------------------------//
-
-//-------------------------------------------------------------------------------------------------ABRE - STRIPE TEST--------------------------------------------------------------------------------------------//
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-//-------------------------------------------------------------------------------------------------CIERRA - STRIPE TEST--------------------------------------------------------------------------------------------//
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -377,6 +415,91 @@ function validarClienteServidor(cliente) {
 }
 
 //-------------------------------------------------------------------------------------------------CIERRA - VALIDACIÓN DE DATOS DEL CLIENTE--------------------------------------------------------------------------------------------//
+
+//-------------------------------------------------------------------------------------------------ABRE - CONFIRMACIÓN DE PAGO (solo se llama desde el webhook, nunca desde el navegador)--------------------------------------------------------------------------------------------//
+
+// Stripe confirma que el pago se ha cobrado de verdad: aquí (y solo aquí) se reserva el stock y se registra el movimiento.
+async function confirmarPagoPedido(session) {
+  const pedidos = await leerPedidos();
+  const pedido = pedidos.find(p => p.id === session.id);
+
+  if (!pedido) {
+    console.error(`Webhook: no se encontró el pedido para la sesión ${session.id}`);
+    return;
+  }
+
+  if (pedido.estadoPago === "pagado") {
+    return; // Stripe puede reenviar el mismo evento más de una vez: no reservamos dos veces
+  }
+
+  const stockReal = await leerStockReal();
+  const reservado = await leerReservado();
+  const movimientos = await leerMovimientos();
+
+  // Revalidamos stock por si ha cambiado entre que se creó la sesión y que se confirmó el pago
+  const faltantes = [];
+  for (const item of pedido.items) {
+    const real = Number(vacioParaCodigo(stockReal, item.lote)[item.peso] || 0);
+    const yaReservado = Number(vacioParaCodigo(reservado, item.lote)[item.peso] || 0);
+    const disponible = Math.max(0, real - yaReservado);
+
+    if (item.cantidad > disponible) {
+      faltantes.push(`${item.lote} / ${item.peso} g (necesita ${item.cantidad}, disponible ${disponible})`);
+    }
+  }
+
+  if (faltantes.length > 0) {
+    pedido.estadoPago = "pagado_sin_stock";
+    pedido.avisoStock = `Pago confirmado pero sin stock suficiente: ${faltantes.join("; ")}. Revisar manualmente.`;
+    await redisSet("pedidos", pedidos);
+    console.error(`ATENCIÓN: el pedido ${pedido.id} se ha pagado pero no hay stock suficiente. Revisar a mano.`);
+    return;
+  }
+
+  for (const item of pedido.items) {
+    reservado[item.lote] = vacioParaCodigo(reservado, item.lote);
+    const anterior = Number(reservado[item.lote][item.peso] || 0);
+    reservado[item.lote][item.peso] = anterior + item.cantidad;
+
+    movimientos.push({
+      fecha: new Date().toISOString(),
+      codigo: item.lote,
+      peso: item.peso,
+      tipo: "reserva",
+      campo: "reservado",
+      anterior,
+      nuevo: anterior + item.cantidad,
+      diferencia: item.cantidad,
+      pedidoId: pedido.id,
+      observaciones: "Reserva creada al confirmarse el pago"
+    });
+  }
+
+  pedido.estadoPago = "pagado";
+  pedido.estadoPreparacion = pedido.estadoPreparacion || "pendiente";
+  pedido.referenciaPago = {
+    proveedor: "stripe",
+    sessionId: session.id,
+    paymentIntentId: session.payment_intent || null
+  };
+
+  await redisSet("stock_reservado", reservado);
+  await redisSet("movimientos", movimientos);
+  await redisSet("pedidos", pedidos);
+}
+
+// La sesión de pago caducó sin que el cliente pagara: como ya no se reserva nada al crearla, solo hay que marcar el pedido.
+async function cancelarPedidoExpirado(session) {
+  const pedidos = await leerPedidos();
+  const pedido = pedidos.find(p => p.id === session.id);
+
+  if (!pedido || pedido.estadoPago !== "pendiente_pago") return;
+
+  pedido.estadoPago = "cancelado";
+  await redisSet("pedidos", pedidos);
+}
+
+//-------------------------------------------------------------------------------------------------CIERRA - CONFIRMACIÓN DE PAGO--------------------------------------------------------------------------------------------//
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
@@ -471,19 +594,16 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
-    // Reservamos el stock (no lo descontamos todavía: eso pasa cuando se marca el pedido como enviado)
-    for (const clave of Object.keys(unidadesNecesarias)) {
-      const [codigoLote, peso] = clave.split("|");
-      reservado[codigoLote] = vacioParaCodigo(reservado, codigoLote);
-      reservado[codigoLote][peso] = Number(reservado[codigoLote][peso] || 0) + unidadesNecesarias[clave];
-    }
-    await redisSet("stock_reservado", reservado);
-
+    // IMPORTANTE: aquí NO se reserva stock ni se crea movimiento todavía.
+    // El pedido queda "pendiente_pago" hasta que Stripe confirme el cobro por webhook
+    // (evento checkout.session.completed) — así nunca se bloquea stock por pagos
+    // abandonados o fallidos.
     const pedidos = await leerPedidos();
     pedidos.push({
       id: session.id,
       fecha: new Date().toISOString(),
-      estado: "pendiente_envio",
+      estadoPago: "pendiente_pago",
+      estadoPreparacion: "pendiente",
       cliente,
       items: lineItems.map(li => ({
         nombre: li.item.nombre,

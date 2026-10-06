@@ -350,6 +350,18 @@
       border: 1px solid rgba(142,230,161,.35);
     }
 
+    .pedido-estado.sin-stock {
+      color: var(--red);
+      background: rgba(255,138,138,.15);
+      border: 1px solid rgba(255,138,138,.4);
+    }
+
+    .pedido-estado.cancelado {
+      color: var(--muted);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
     .pedido-items {
       font-size: 13px;
       color: var(--muted);
@@ -368,7 +380,7 @@
 
     .movimiento-row {
       display: grid;
-      grid-template-columns: 1.1fr .9fr .6fr 1fr .8fr .8fr .8fr;
+      grid-template-columns: 1.1fr .9fr .6fr 1fr .6fr .8fr .8fr .8fr;
       gap: 10px;
       padding: 10px 14px;
       margin-bottom: 6px;
@@ -885,10 +897,17 @@
       }
 
       container.innerHTML = pedidos.map(pedido => {
-        const pendiente = pedido.estado !== "enviado";
         const fecha = new Date(pedido.fecha).toLocaleString("es-ES");
-
         const c = pedido.cliente || {};
+
+        const estadoInfo = {
+          pendiente_pago: { clase: "pendiente", texto: "Pendiente de pago" },
+          pagado: { clase: pedido.estadoPreparacion === "enviado" ? "enviado" : "pendiente", texto: pedido.estadoPreparacion === "enviado" ? "Enviado" : "Pagado · Pendiente de envío" },
+          pagado_sin_stock: { clase: "sin-stock", texto: "¡Revisar! Pagado sin stock" },
+          cancelado: { clase: "cancelado", texto: "Cancelado" }
+        }[pedido.estadoPago] || { clase: "pendiente", texto: pedido.estadoPago || "—" };
+
+        const puedeEnviar = pedido.estadoPago === "pagado" && pedido.estadoPreparacion !== "enviado";
 
       return `
           <div class="pedido-card">
@@ -897,10 +916,12 @@
                 <div class="pedido-id">${pedido.id}</div>
                 <div>${fecha}</div>
               </div>
-              <span class="pedido-estado ${pendiente ? "pendiente" : "enviado"}">
-                ${pendiente ? "Pendiente de envío" : "Enviado"}
+              <span class="pedido-estado ${estadoInfo.clase}">
+                ${estadoInfo.texto}
               </span>
             </div>
+
+            ${pedido.avisoStock ? `<p class="error-msg">${pedido.avisoStock}</p>` : ""}
 
             ${c.nombre ? `
               <div class="pedido-items">
@@ -916,7 +937,7 @@
               `).join("<br>")}
             </div>
 
-            ${pendiente ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
+            ${puedeEnviar ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
           </div>
         `;
       }).join("");
@@ -989,9 +1010,21 @@
 
       const cabecera = `
         <div class="movimiento-row head">
-          <div>Fecha</div><div>Lote</div><div>Formato</div><div>Tipo</div><div>Antes</div><div>Después</div><div>Diferencia</div>
+          <div>Fecha</div><div>Lote</div><div>Formato</div><div>Tipo</div><div>Campo</div><div>Antes</div><div>Después</div><div>Diferencia</div>
         </div>
       `;
+
+      const ETIQUETAS_TIPO = {
+        entrada_inicial: "Entrada inicial",
+        ajuste_manual: "Ajuste manual",
+        reserva: "Reserva (pago confirmado)",
+        venta: "Venta",
+        envio: "Envío",
+        cancelacion: "Cancelación",
+        devolucion: "Devolución",
+        merma: "Merma",
+        correccion: "Corrección"
+      };
 
       const filas = movimientos.map(m => {
         const fecha = new Date(m.fecha).toLocaleString("es-ES");
@@ -1003,7 +1036,8 @@
             <div>${fecha}</div>
             <div>${m.codigo}</div>
             <div>${etiquetaPesoAdmin(m.peso)}</div>
-            <div>${m.tipo === "envio" ? "Envío" : "Ajuste manual"}</div>
+            <div>${ETIQUETAS_TIPO[m.tipo] || m.tipo}</div>
+            <div>${m.campo || "real"}</div>
             <div>${m.anterior}</div>
             <div>${m.nuevo}</div>
             <div class="movimiento-dif ${signo}">${diferenciaTexto}</div>
@@ -1059,7 +1093,7 @@
     }
 
     const HEADERS_PEDIDOS = [
-      "pedidoId", "fecha", "estado", "fechaEnvio",
+      "pedidoId", "fecha", "estadoPago", "estadoPreparacion", "fechaEnvio",
       "clienteNombre", "clienteApellidos", "clienteDni", "clienteTelefono", "clienteEmail",
       "clienteDireccion", "clienteCodigoPostal", "clienteLocalidad", "clienteProvincia",
       "producto", "proceso", "lote", "peso", "molienda", "tueste", "cantidad", "precioUnitario", "totalLinea"
@@ -1078,7 +1112,8 @@
           filas.push({
             pedidoId: pedido.id,
             fecha: new Date(pedido.fecha).toLocaleString("es-ES"),
-            estado: pedido.estado,
+            estadoPago: pedido.estadoPago,
+            estadoPreparacion: pedido.estadoPreparacion || "",
             fechaEnvio: pedido.fechaEnvio ? new Date(pedido.fechaEnvio).toLocaleString("es-ES") : "",
             clienteNombre: c.nombre || "",
             clienteApellidos: c.apellidos || "",
@@ -1131,7 +1166,19 @@
       else descargarXLSX(`${nombre}.xlsx`, "Stock", HEADERS_STOCK, filas);
     }
 
-    const HEADERS_MOVIMIENTOS = ["fecha", "codigo", "peso", "tipo", "anterior", "nuevo", "diferencia", "pedidoId"];
+    const HEADERS_MOVIMIENTOS = ["fecha", "codigo", "peso", "tipo", "campo", "anterior", "nuevo", "diferencia", "pedidoId", "observaciones"];
+
+    const ETIQUETAS_TIPO_MOVIMIENTO = {
+      entrada_inicial: "Entrada inicial",
+      ajuste_manual: "Ajuste manual",
+      reserva: "Reserva (pago confirmado)",
+      venta: "Venta",
+      envio: "Envío",
+      cancelacion: "Cancelación",
+      devolucion: "Devolución",
+      merma: "Merma",
+      correccion: "Corrección"
+    };
 
     async function exportarMovimientos(formato) {
       let movimientos;
@@ -1146,11 +1193,13 @@
         fecha: new Date(m.fecha).toLocaleString("es-ES"),
         codigo: m.codigo,
         peso: etiquetaPesoAdmin(m.peso),
-        tipo: m.tipo === "envio" ? "Envío" : "Ajuste manual",
+        tipo: ETIQUETAS_TIPO_MOVIMIENTO[m.tipo] || m.tipo,
+        campo: m.campo || "real",
         anterior: m.anterior,
         nuevo: m.nuevo,
         diferencia: m.diferencia,
-        pedidoId: m.pedidoId || ""
+        pedidoId: m.pedidoId || "",
+        observaciones: m.observaciones || ""
       }));
 
       const nombre = `movimientos-stock-cafe-dmedina-${fechaParaArchivo()}`;
