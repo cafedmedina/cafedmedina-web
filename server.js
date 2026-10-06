@@ -455,6 +455,12 @@ const EMPRESA = {
 
 const IVA_TIPO = 0.10; // Los precios del catálogo ya incluyen este IVA
 
+// Identidad visual de los PDF (factura/albarán), a juego con la web.
+const LOGO_PATH = path.join(__dirname, "logo.png");
+const COLOR_GOLD = "#a9822f";   // versión del dorado de la web ajustada para que se lea bien en fondo blanco impreso
+const COLOR_BLACK = "#11100f";
+const COLOR_MUTED = "#6b6459";
+
 async function redisIncr(key) {
   if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
 
@@ -548,29 +554,52 @@ function generarPdfBuffer(dibujar) {
 }
 
 function dibujarCabeceraEmpresa(doc, tituloDocumento, numero, fecha) {
-  doc.fontSize(18).fillColor("#000").text(EMPRESA.nombreComercial);
-  doc.fontSize(9).fillColor("#555")
-    .text(EMPRESA.nombre)
-    .text(`CIF: ${EMPRESA.cif}`)
-    .text(EMPRESA.direccion)
-    .text(`${EMPRESA.email} · ${EMPRESA.telefono}`);
+  const logoExiste = fs.existsSync(LOGO_PATH);
+  const xTexto = logoExiste ? 106 : 50;
+  let y = 50;
 
-  doc.fontSize(16).fillColor("#000").text(tituloDocumento, 50, 50, { align: "right" });
-  doc.fontSize(10).fillColor("#555")
-    .text(`Nº: ${numero}`, { align: "right" })
-    .text(`Fecha: ${new Date(fecha).toLocaleDateString("es-ES")}`, { align: "right" });
+  if (logoExiste) {
+    try {
+      doc.image(LOGO_PATH, 50, 44, { width: 46 });
+    } catch (error) {
+      console.error("No se pudo insertar el logo en el PDF:", error.message);
+    }
+  }
 
-  doc.moveDown(2);
-  doc.fillColor("#000");
+  doc.font("Times-Bold").fontSize(20).fillColor(COLOR_GOLD).text(EMPRESA.nombreComercial, xTexto, y);
+  y += 25;
+
+  doc.font("Helvetica").fontSize(8.5).fillColor(COLOR_MUTED);
+  [EMPRESA.nombre, `CIF: ${EMPRESA.cif}`, EMPRESA.direccion, `${EMPRESA.email} · ${EMPRESA.telefono}`].forEach(linea => {
+    doc.text(linea, xTexto, y);
+    y += 11;
+  });
+
+  let yDer = 50;
+  doc.font("Times-Bold").fontSize(16).fillColor(COLOR_BLACK).text(tituloDocumento, 50, yDer, { align: "right" });
+  yDer += 22;
+  doc.font("Helvetica").fontSize(10).fillColor(COLOR_MUTED);
+  doc.text(`Nº: ${numero}`, 50, yDer, { align: "right" });
+  yDer += 14;
+  doc.text(`Fecha: ${new Date(fecha).toLocaleDateString("es-ES")}`, 50, yDer, { align: "right" });
+  yDer += 14;
+
+  doc.y = Math.max(y, yDer, 108) + 8;
+  doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).lineWidth(1.3).stroke();
+  doc.y += 16;
+  doc.lineWidth(1);
+  doc.font("Helvetica").fillColor(COLOR_BLACK);
 }
 
 function dibujarDatosCliente(doc, cliente) {
   const c = cliente || {};
-  doc.fontSize(11).text("Datos del cliente", { underline: true });
+  const esEmpresa = c.tipoCliente === "empresa";
+
+  doc.font("Times-Bold").fontSize(11).fillColor(COLOR_GOLD).text("Datos del cliente");
   doc.moveDown(0.3);
-  doc.fontSize(10)
-    .text(`${c.nombre || ""} ${c.apellidos || ""}`)
-    .text(`DNI/NIE: ${c.dni || "—"}`)
+  doc.font("Helvetica").fontSize(10).fillColor(COLOR_BLACK)
+    .text(`${c.nombre || ""} ${c.apellidos || ""}`.trim())
+    .text(`${esEmpresa ? "CIF" : "DNI/NIE"}: ${c.dni || "—"}`)
     .text(c.direccion || "")
     .text(`${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`)
     .text(`${c.email || ""} · ${c.telefono || ""}`);
@@ -586,7 +615,7 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
 
   function cabeceraTabla() {
     const y = doc.y;
-    doc.fontSize(9).fillColor("#888");
+    doc.font("Helvetica-Bold").fontSize(9).fillColor(COLOR_GOLD);
     doc.text("Producto", x, y, { width: anchoDesc });
     doc.text("Cant.", colCant, y, { width: 60, align: "right" });
     if (conPrecios) {
@@ -594,9 +623,9 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
       doc.text("Total", colTotal, y, { width: 70, align: "right" });
     }
     doc.y = y + 14;
-    doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor("#ccc").stroke();
+    doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
     doc.y += 8;
-    doc.fillColor("#000");
+    doc.font("Helvetica").fillColor(COLOR_BLACK);
   }
 
   cabeceraTabla();
@@ -612,7 +641,7 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
     const desc = `${item.nombre} · Lote ${item.lote} · ${etiquetaPeso(item.peso)} · ${item.molienda} · ${item.tueste}`;
     const alturaDesc = doc.heightOfString(desc, { width: anchoDesc });
 
-    doc.fontSize(9).text(desc, x, y, { width: anchoDesc });
+    doc.font("Helvetica").fontSize(9).fillColor(COLOR_BLACK).text(desc, x, y, { width: anchoDesc });
     doc.text(String(item.cantidad), colCant, y, { width: 60, align: "right" });
 
     if (conPrecios) {
@@ -624,15 +653,18 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
   });
 
   doc.moveDown(0.3);
-  doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor("#ccc").stroke();
+  doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
   doc.moveDown(0.8);
 }
 
 async function construirFacturaPDF(pedido) {
   return generarPdfBuffer(doc => {
     dibujarCabeceraEmpresa(doc, "FACTURA", pedido.factura.numero, pedido.factura.fecha);
-    doc.fontSize(9).fillColor("#555").text(`Pedido: ${pedido.id}`, { align: "right" });
-    doc.moveDown(1);
+
+    if (pedido.numeroPedido) {
+      doc.font("Helvetica").fontSize(9).fillColor(COLOR_MUTED).text(`Pedido: ${pedido.numeroPedido}`, { align: "right" });
+      doc.moveDown(1);
+    }
 
     dibujarDatosCliente(doc, pedido.cliente);
     dibujarTablaItems(doc, pedido, { conPrecios: true });
@@ -644,7 +676,7 @@ async function construirFacturaPDF(pedido) {
 
     function filaTotal(etiqueta, valor, negrita) {
       const y = doc.y;
-      doc.fontSize(negrita ? 12 : 10).fillColor("#000");
+      doc.font(negrita ? "Helvetica-Bold" : "Helvetica").fontSize(negrita ? 12 : 10).fillColor(negrita ? COLOR_GOLD : COLOR_BLACK);
       doc.text(etiqueta, xEtq, y, { width: 110, align: "right" });
       doc.text(valor, xVal, y, { width: 80, align: "right" });
       doc.y = y + (negrita ? 18 : 15);
@@ -655,7 +687,7 @@ async function construirFacturaPDF(pedido) {
     filaTotal("TOTAL:", `${total.toFixed(2)} €`, true);
 
     doc.moveDown(2);
-    doc.fontSize(8).fillColor("#888").text(
+    doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
       "Factura emitida conforme al Reglamento por el que se regulan las obligaciones de facturación (RD 1619/2012). Conserve este documento a efectos fiscales.",
       50, doc.y, { width: 495 }
     );
@@ -665,20 +697,20 @@ async function construirFacturaPDF(pedido) {
 async function construirAlbaranPDF(pedido) {
   return generarPdfBuffer(doc => {
     dibujarCabeceraEmpresa(doc, "ALBARÁN DE ENTREGA", pedido.albaran.numero, pedido.albaran.fecha);
-    doc.fontSize(9).fillColor("#555").text(`Pedido: ${pedido.id}`, { align: "right" });
-    if (pedido.factura) {
-      doc.text(`Factura: ${pedido.factura.numero}`, { align: "right" });
-    }
+
+    doc.font("Helvetica").fontSize(9).fillColor(COLOR_MUTED);
+    if (pedido.numeroPedido) doc.text(`Pedido: ${pedido.numeroPedido}`, { align: "right" });
+    if (pedido.factura) doc.text(`Factura: ${pedido.factura.numero}`, { align: "right" });
     doc.moveDown(1);
 
     dibujarDatosCliente(doc, pedido.cliente);
     dibujarTablaItems(doc, pedido, { conPrecios: false });
 
     doc.moveDown(3);
-    doc.fontSize(10).fillColor("#000").text("Recibido conforme:", 50, doc.y);
+    doc.font("Helvetica").fontSize(10).fillColor(COLOR_BLACK).text("Recibido conforme:", 50, doc.y);
     doc.moveDown(3);
-    doc.moveTo(50, doc.y).lineTo(250, doc.y).strokeColor("#888").stroke();
-    doc.fontSize(8).fillColor("#888").text("Firma y fecha", 50, doc.y + 4);
+    doc.moveTo(50, doc.y).lineTo(250, doc.y).strokeColor(COLOR_MUTED).stroke();
+    doc.fontSize(8).fillColor(COLOR_MUTED).text("Firma y fecha", 50, doc.y + 4);
   });
 }
 
@@ -987,9 +1019,13 @@ app.post("/create-checkout-session", async (req, res) => {
     // El pedido queda "pendiente_pago" hasta que Stripe confirme el cobro por webhook
     // (evento checkout.session.completed) — así nunca se bloquea stock por pagos
     // abandonados o fallidos.
+    //
+    // numeroPedido es solo una referencia legible (PED-2026-0001...) para mostrar al cliente
+    // y en el panel admin: el id real de Stripe (cs_test_... / cs_live_...) nunca debe mostrarse.
     const pedidos = await leerPedidos();
     pedidos.push({
       id: session.id,
+      numeroPedido: await generarNumeroDocumento("PED"),
       fecha: new Date().toISOString(),
       estadoPago: "pendiente_pago",
       estadoPreparacion: "pendiente",

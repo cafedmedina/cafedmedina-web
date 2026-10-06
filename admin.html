@@ -369,6 +369,51 @@
       margin-bottom: 10px;
     }
 
+    .cliente-card {
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.18);
+      overflow: hidden;
+    }
+
+    .cliente-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+    }
+
+    .cliente-row:hover {
+      background: rgba(200,169,106,.06);
+    }
+
+    .cliente-sub {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .cliente-row-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cliente-chevron {
+      color: var(--gold-light);
+      font-size: 14px;
+    }
+
+    .cliente-detalle {
+      padding: 14px 18px 18px;
+      border-top: 1px solid rgba(200,169,106,.14);
+    }
+
     .export-box {
       max-width: 960px;
       margin: 0 auto 28px;
@@ -926,7 +971,7 @@
           <div class="pedido-card">
             <div class="pedido-head">
               <div>
-                <div class="pedido-id">${pedido.id}</div>
+                <div class="pedido-id">${pedido.numeroPedido || "—"}</div>
                 <div>${fecha}</div>
               </div>
               <span class="pedido-estado ${estadoInfo.clase}">
@@ -952,8 +997,8 @@
 
             <div class="toolbar">
               ${puedeEnviar ? `<button class="btn btn-small" onclick="marcarEnviado('${pedido.id}')">Marcar como enviado</button>` : ""}
-              ${pedido.factura ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'factura')">Factura ${pedido.factura.numero}</button>` : ""}
-              ${pedido.albaran ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'albaran')">Albarán ${pedido.albaran.numero}</button>` : ""}
+              ${pedido.factura ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'factura', '${pedido.factura.numero}')">Factura ${pedido.factura.numero}</button>` : ""}
+              ${pedido.albaran ? `<button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${pedido.id}', 'albaran', '${pedido.albaran.numero}')">Albarán ${pedido.albaran.numero}</button>` : ""}
               ${puedeEliminar ? `<button class="btn-danger btn btn-small" onclick="eliminarPedido('${pedido.id}')">Eliminar</button>` : ""}
             </div>
           </div>
@@ -961,7 +1006,7 @@
       }).join("");
     }
 
-    async function descargarDocumentoPedido(id, tipo) {
+    async function descargarDocumentoPedido(id, tipo, numero) {
       try {
         const response = await fetch(`/api/pedidos/${encodeURIComponent(id)}/${tipo}`, {
           headers: { "x-admin-token": getToken() }
@@ -973,7 +1018,7 @@
         }
 
         const blob = await response.blob();
-        descargarBlob(blob, `${tipo}-${id}.pdf`);
+        descargarBlob(blob, `${numero || tipo}.pdf`);
 
       } catch (error) {
         alert(error.message || `No se pudo descargar el ${tipo}.`);
@@ -1004,7 +1049,7 @@
         if (!response.ok) throw new Error(clientesCache.error || "Error al cargar clientes");
 
         document.getElementById("clientes-buscador").value = "";
-        renderClientes(Object.values(clientesCache));
+        renderClientes(Object.entries(clientesCache));
 
       } catch (error) {
         container.innerHTML = `<p class="error-msg">${error.message || "No se pudieron cargar los clientes."}</p>`;
@@ -1013,62 +1058,78 @@
 
     function filtrarClientes() {
       const texto = document.getElementById("clientes-buscador").value.trim().toLowerCase();
-      const todos = Object.values(clientesCache);
+      const todas = Object.entries(clientesCache);
 
-      if (!texto) { renderClientes(todos); return; }
+      if (!texto) { renderClientes(todas); return; }
 
-      const filtrados = todos.filter(c => {
+      const filtradas = todas.filter(([, c]) => {
         const campos = [c.nombre, c.apellidos, c.dni, c.email, c.localidad].join(" ").toLowerCase();
         return campos.includes(texto);
       });
 
-      renderClientes(filtrados);
+      renderClientes(filtradas);
     }
 
-    function renderClientes(clientes) {
+    // entradas: [ [clave, cliente], ... ] — clave es el DNI/CIF normalizado, único por cliente.
+    function renderClientes(entradas) {
       const container = document.getElementById("clientes-container");
 
-      if (clientes.length === 0) {
+      if (entradas.length === 0) {
         container.innerHTML = `<p class="subtitle">No hay clientes que coincidan con la búsqueda.</p>`;
         return;
       }
 
-      const ordenados = clientes.slice().sort((a, b) => new Date(b.ultimaCompra) - new Date(a.ultimaCompra));
+      const ordenadas = entradas.slice().sort((a, b) => new Date(b[1].ultimaCompra) - new Date(a[1].ultimaCompra));
 
-      container.innerHTML = ordenados.map(c => {
+      container.innerHTML = ordenadas.map(([clave, c]) => {
         const esEmpresa = c.tipo === "empresa";
-        const nombreMostrado = esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`;
-        const facturas = (c.facturas || []).slice().reverse();
+        const nombreMostrado = esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`.trim();
+        const facturas = (c.facturas || []).slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         return `
-          <div class="pedido-card">
-            <div class="pedido-head">
+          <div class="cliente-card">
+            <div class="cliente-row" onclick="toggleCliente('${clave}')">
               <div>
-                <strong>${nombreMostrado}</strong><br>
-                <span class="pedido-id">${esEmpresa ? "CIF" : "DNI/NIE"} ${c.dni} · ${esEmpresa ? "Empresa" : "Particular"}</span>
+                <strong>${nombreMostrado}</strong>
+                <span class="cliente-sub">${esEmpresa ? "CIF" : "DNI/NIE"} ${c.dni} · ${esEmpresa ? "Empresa" : "Particular"}</span>
               </div>
-              <span class="pedido-estado pendiente">${facturas.length} factura${facturas.length === 1 ? "" : "s"}</span>
+              <div class="cliente-row-right">
+                <span class="pedido-estado pendiente">${facturas.length} factura${facturas.length === 1 ? "" : "s"}</span>
+                <span class="cliente-chevron" id="chevron-${clave}">▾</span>
+              </div>
             </div>
 
-            <div class="pedido-items">
-              ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
-              ${c.telefono || ""} · ${c.email || ""}<br>
-              Primera compra: ${c.primeraCompra ? new Date(c.primeraCompra).toLocaleDateString("es-ES") : "—"}
-              · Última compra: ${c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-ES") : "—"}
-            </div>
-
-            ${facturas.length > 0 ? `
-              <div class="toolbar">
-                ${facturas.map(f => `
-                  <button class="btn-secondary btn btn-small" onclick="descargarDocumentoPedido('${f.pedidoId}', 'factura')">
-                    ${f.numero} · ${new Date(f.fecha).toLocaleDateString("es-ES")} · ${f.total.toFixed(2)} €
-                  </button>
-                `).join("")}
+            <div class="cliente-detalle" id="detalle-${clave}" hidden>
+              <div class="pedido-items">
+                ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
+                ${c.telefono || ""} · ${c.email || ""}<br>
+                Primera compra: ${c.primeraCompra ? new Date(c.primeraCompra).toLocaleDateString("es-ES") : "—"}
+                · Última compra: ${c.ultimaCompra ? new Date(c.ultimaCompra).toLocaleDateString("es-ES") : "—"}
               </div>
-            ` : ""}
+
+              ${facturas.length > 0 ? `
+                <p class="subtitle" style="margin-bottom:10px">Facturas emitidas, de más reciente a más antigua:</p>
+                <div class="toolbar">
+                  ${facturas.map(f => `
+                    <button class="btn-secondary btn btn-small" onclick="event.stopPropagation(); descargarDocumentoPedido('${f.pedidoId}', 'factura', '${f.numero}')">
+                      ${f.numero} · ${new Date(f.fecha).toLocaleDateString("es-ES")} · ${f.total.toFixed(2)} €
+                    </button>
+                  `).join("")}
+                </div>
+              ` : `<p class="subtitle">Sin facturas todavía.</p>`}
+            </div>
           </div>
         `;
       }).join("");
+    }
+
+    function toggleCliente(clave) {
+      const detalle = document.getElementById(`detalle-${clave}`);
+      const chevron = document.getElementById(`chevron-${clave}`);
+      if (!detalle) return;
+
+      detalle.hidden = !detalle.hidden;
+      if (chevron) chevron.textContent = detalle.hidden ? "▾" : "▴";
     }
 
     async function marcarEnviado(id) {
