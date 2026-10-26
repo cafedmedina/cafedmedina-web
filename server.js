@@ -597,12 +597,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const EMPRESA = {
   nombre: "D’Medina Global Trade, S.L.",
-  nombreComercial: "Café D’Medina",
+  nombreComercial: "AURINEGRA",
   cif: "B05653621",
   direccion: "Calle San Pedro del Pinatar, 24, 28939 Arroyomolinos, Madrid",
-  email: "info@cafedmedina.com",
+  email: "info@aurinegracafe.com",
   telefono: "+34 660 736 866"
 };
+
+// Remitente de todos los emails (facturas, albaranes, solicitudes). El dominio tiene que estar verificado en Resend.
+const REMITENTE_EMAIL = `${EMPRESA.nombreComercial} <${EMPRESA.email}>`;
 
 const IVA_TIPO = 0.10; // Los precios del catálogo ya incluyen este IVA
 
@@ -983,12 +986,12 @@ async function enviarFacturaPorEmail(pedido, pdfBuffer) {
   if (!email) return;
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: REMITENTE_EMAIL,
     to: email,
-    subject: `Factura ${pedido.factura.numero} · Café D’Medina`,
+    subject: `Factura ${pedido.factura.numero} · ${EMPRESA.nombreComercial}`,
     html: `
       <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
-      <p>Gracias por tu compra en Café D’Medina. Adjuntamos la factura de tu pedido.</p>
+      <p>Gracias por tu compra en ${EMPRESA.nombreComercial}. Adjuntamos la factura de tu pedido.</p>
       <p>Te avisaremos en cuanto el pedido salga hacia tu dirección.</p>
     `,
     attachments: [{ filename: `${pedido.factura.numero}.pdf`, content: pdfBuffer }]
@@ -1000,9 +1003,9 @@ async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
   if (!email) return;
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: REMITENTE_EMAIL,
     to: email,
-    subject: "Tu pedido va en camino · Café D’Medina",
+    subject: `Tu pedido va en camino · ${EMPRESA.nombreComercial}`,
     html: `
       <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
       <p>Tu pedido ya ha salido hacia tu dirección. Adjuntamos el albarán de entrega.</p>
@@ -1357,12 +1360,11 @@ app.post("/contacto", async (req, res) => {
 
     await resend.emails.send({
 
-      from: "onboarding@resend.dev",
+      from: REMITENTE_EMAIL,
 
-      /*to: "info@cafedmedina.com",*/
-      to: "juliana.medina416@gmail.com",
+      to: EMPRESA.email,
 
-      subject: "Nueva solicitud comercial Café D’Medina",
+      subject: "Nueva solicitud comercial AURINEGRA",
 
       html: `
         <h2>Nueva solicitud comercial</h2>
