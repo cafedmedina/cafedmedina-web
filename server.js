@@ -331,6 +331,99 @@ app.put("/api/stock", requiereAdmin, async (req, res) => {
   }
 });
 
+// Paso único de "pruebas -> operación real": borra pedidos, reservas, movimientos, clientes y los
+// contadores de documentos del año (para que la primera factura real sea FACT-AAAA-0001) y fija el
+// inventario inicial. Devuelve una copia de todo lo borrado para guardarla antes de perderlo.
+const CLAVES_CONTADORES = ["fact", "alb", "ped"];
+
+async function redisDel(key) {
+  if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
+
+  const response = await fetch(`${REDIS_URL}/del/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` }
+  });
+
+  if (!response.ok) throw new Error(`Redis DEL "${key}" falló`);
+}
+
+app.post("/api/iniciar-operacion", requiereAdmin, async (req, res) => {
+  try {
+    const { confirmacion, stockInicial } = req.body;
+
+    if (confirmacion !== "EMPEZAR") {
+      return res.status(400).json({ error: 'Escribe EMPEZAR para confirmar' });
+    }
+
+    const catalogo = leerCatalogo();
+    const nuevoStock = {};
+
+    for (const codigo of Object.keys(catalogo)) {
+      nuevoStock[codigo] = { "250": 0, "500": 0, "1000": 0 };
+
+      for (const peso of PESOS_VALIDOS) {
+        const unidades = Number((stockInicial && stockInicial[codigo] && stockInicial[codigo][peso]) || 0);
+        if (!Number.isInteger(unidades) || unidades < 0) {
+          return res.status(400).json({ error: `Stock inválido en ${codigo} (${peso} g): debe ser un entero mayor o igual a 0` });
+        }
+        nuevoStock[codigo][peso] = unidades;
+      }
+    }
+
+    const año = new Date().getFullYear();
+    const clavesContador = CLAVES_CONTADORES.map(p => `contador_${p}_${año}`);
+
+    const backup = {
+      generadoEn: new Date().toISOString(),
+      motivo: "Copia antes de iniciar la operación real (datos de pruebas)",
+      stock_real: await leerStockReal(),
+      stock_reservado: await leerReservado(),
+      pedidos: await leerPedidos(),
+      movimientos: await leerMovimientos(),
+      clientes: await leerClientes(),
+      contadores: {}
+    };
+
+    for (const clave of clavesContador) {
+      backup.contadores[clave] = await redisGet(clave, null);
+    }
+
+    const fecha = new Date().toISOString();
+    const movimientos = [];
+
+    for (const codigo of Object.keys(nuevoStock)) {
+      for (const peso of PESOS_VALIDOS) {
+        if (nuevoStock[codigo][peso] > 0) {
+          movimientos.push({
+            fecha,
+            codigo,
+            peso,
+            tipo: "inventario_inicial",
+            campo: "real",
+            anterior: 0,
+            nuevo: nuevoStock[codigo][peso],
+            diferencia: nuevoStock[codigo][peso]
+          });
+        }
+      }
+    }
+
+    await redisSet("stock_real", nuevoStock);
+    await redisSet("stock_reservado", {});
+    await redisSet("pedidos", []);
+    await redisSet("movimientos", movimientos);
+    await redisSet("clientes", {});
+    for (const clave of clavesContador) {
+      await redisDel(clave);
+    }
+
+    res.json({ success: true, backup });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo iniciar la operación" });
+  }
+});
+
 app.get("/api/movimientos", requiereAdmin, async (req, res) => {
   try {
     const movimientos = await leerMovimientos();
@@ -676,23 +769,68 @@ function dibujarDatosCliente(doc, cliente) {
   doc.moveDown(1.5);
 }
 
-function dibujarTablaItems(doc, pedido, { conPrecios }) {
+// Pasa de los items/envío del pedido a líneas genéricas de factura: descripción, cantidad,
+// precio unitario SIN IVA, tipo de IVA de esa línea y total CON IVA. El café va al 10%, el
+// envío (si lo hay) va al 21%: cada línea lleva su propio tipo, nunca se mezclan en una sola.
+function construirLineasFactura(pedido) {
+  const lineas = pedido.items.map(item => {
+    const precioConIva = Number(item.precioUnitario);
+    return {
+      descripcion: `${item.nombre} · Lote ${item.lote} · ${etiquetaPeso(item.peso)} · ${item.molienda} · ${item.tueste}`,
+      cantidad: item.cantidad,
+      precioUnitarioSinIva: Math.round((precioConIva / (1 + IVA_TIPO)) * 100) / 100,
+      tipoIva: IVA_TIPO,
+      totalConIva: precioConIva * item.cantidad
+    };
+  });
+
+  if (pedido.envio && !pedido.envio.gratuito) {
+    lineas.push({
+      descripcion: "Gastos de envío (Península)",
+      cantidad: 1,
+      precioUnitarioSinIva: pedido.envio.base,
+      tipoIva: IVA_ENVIO_TIPO,
+      totalConIva: pedido.envio.total
+    });
+  }
+
+  return lineas;
+}
+
+function construirLineasAlbaran(pedido) {
+  return pedido.items.map(item => ({
+    descripcion: `${item.nombre} · Lote ${item.lote} · ${etiquetaPeso(item.peso)} · ${item.molienda} · ${item.tueste}`,
+    cantidad: item.cantidad
+  }));
+}
+
+// lineas: [{ descripcion, cantidad, precioUnitarioSinIva?, tipoIva?, totalConIva? }]
+function dibujarTablaItems(doc, lineas, { conPrecios }) {
   const x = 50;
-  const anchoDesc = conPrecios ? 230 : 350;
+  const anchoDesc = conPrecios ? 195 : 350;
+  const anchoCant = 40;
+  const anchoPrecio = 95;
+  const anchoIva = 35;
+  const anchoTotal = 75;
+
   const colCant = x + anchoDesc;
-  const colPrecio = colCant + 70;
-  const colTotal = colPrecio + 80;
+  const colPrecio = colCant + anchoCant;
+  const colIva = colPrecio + anchoPrecio;
+  const colTotal = colIva + anchoIva;
 
   function cabeceraTabla() {
     const y = doc.y;
     doc.font("Helvetica-Bold").fontSize(9).fillColor(COLOR_GOLD);
     doc.text("Producto", x, y, { width: anchoDesc });
-    doc.text("Cant.", colCant, y, { width: 60, align: "right" });
+    doc.text("Cant.", colCant, y, { width: anchoCant, align: "right" });
     if (conPrecios) {
-      doc.text("Precio ud.", colPrecio, y, { width: 70, align: "right" });
-      doc.text("Total", colTotal, y, { width: 70, align: "right" });
+      doc.text("Precio (sin IVA)", colPrecio, y, { width: anchoPrecio, align: "right" });
+      doc.text("IVA", colIva, y, { width: anchoIva, align: "right" });
+      doc.text("Total", colTotal, y, { width: anchoTotal, align: "right" });
     }
-    doc.y = y + 14;
+    // Altura fija de 2 líneas: si alguna etiqueta de cabecera llega a partirse en dos renglones,
+    // nunca choca con la línea divisoria de abajo.
+    doc.y = y + 24;
     doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
     doc.y += 8;
     doc.font("Helvetica").fillColor(COLOR_BLACK);
@@ -700,7 +838,7 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
 
   cabeceraTabla();
 
-  pedido.items.forEach(item => {
+  lineas.forEach(linea => {
     if (doc.y > 680) {
       doc.addPage();
       doc.y = 50;
@@ -708,15 +846,15 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
     }
 
     const y = doc.y;
-    const desc = `${item.nombre} · Lote ${item.lote} · ${etiquetaPeso(item.peso)} · ${item.molienda} · ${item.tueste}`;
-    const alturaDesc = doc.heightOfString(desc, { width: anchoDesc });
+    const alturaDesc = doc.heightOfString(linea.descripcion, { width: anchoDesc });
 
-    doc.font("Helvetica").fontSize(9).fillColor(COLOR_BLACK).text(desc, x, y, { width: anchoDesc });
-    doc.text(String(item.cantidad), colCant, y, { width: 60, align: "right" });
+    doc.font("Helvetica").fontSize(9).fillColor(COLOR_BLACK).text(linea.descripcion, x, y, { width: anchoDesc });
+    doc.text(String(linea.cantidad), colCant, y, { width: anchoCant, align: "right" });
 
     if (conPrecios) {
-      doc.text(`${Number(item.precioUnitario).toFixed(2)} €`, colPrecio, y, { width: 70, align: "right" });
-      doc.text(`${(item.precioUnitario * item.cantidad).toFixed(2)} €`, colTotal, y, { width: 70, align: "right" });
+      doc.text(`${linea.precioUnitarioSinIva.toFixed(2)} €`, colPrecio, y, { width: anchoPrecio, align: "right" });
+      doc.text(`${Math.round(linea.tipoIva * 100)}%`, colIva, y, { width: anchoIva, align: "right" });
+      doc.text(`${linea.totalConIva.toFixed(2)} €`, colTotal, y, { width: anchoTotal, align: "right" });
     }
 
     doc.y = y + Math.max(alturaDesc, 14) + 6;
@@ -725,6 +863,59 @@ function dibujarTablaItems(doc, pedido, { conPrecios }) {
   doc.moveDown(0.3);
   doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
   doc.moveDown(0.8);
+}
+
+// Tabla de desglose de IVA: una fila por cada tipo aplicado (% · Base imponible · Cuota IVA · Total)
+// y una fila final de TOTAL que suma todos los tipos. Es la forma correcta de facturar cuando
+// una misma factura mezcla conceptos a distinto tipo (aquí: café al 10% y envío al 21%).
+function dibujarDesgloseIva(doc, grupos) {
+  const x = 50;
+  const anchoPct = 60;
+  const anchoBase = 150;
+  const anchoIva = 150;
+  const colPct = x;
+  const colBase = colPct + anchoPct;
+  const colIva = colBase + anchoBase;
+  const colTotal = colIva + anchoIva;
+  const anchoTotal = 545 - colTotal;
+
+  const yCab = doc.y;
+  doc.font("Helvetica-Bold").fontSize(9).fillColor(COLOR_GOLD);
+  doc.text("% IVA", colPct, yCab, { width: anchoPct });
+  doc.text("Base imponible", colBase, yCab, { width: anchoBase, align: "right" });
+  doc.text("Cuota IVA", colIva, yCab, { width: anchoIva, align: "right" });
+  doc.text("Total", colTotal, yCab, { width: anchoTotal, align: "right" });
+  doc.y = yCab + 14;
+  doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
+  doc.y += 8;
+
+  let totalBase = 0, totalIva = 0, totalGeneral = 0;
+
+  grupos.forEach(grupo => {
+    const y = doc.y;
+    doc.font("Helvetica").fontSize(10).fillColor(COLOR_BLACK);
+    doc.text(`${Math.round(grupo.pct * 100)}%`, colPct, y, { width: anchoPct });
+    doc.text(`${grupo.base.toFixed(2)} €`, colBase, y, { width: anchoBase, align: "right" });
+    doc.text(`${grupo.iva.toFixed(2)} €`, colIva, y, { width: anchoIva, align: "right" });
+    doc.text(`${grupo.total.toFixed(2)} €`, colTotal, y, { width: anchoTotal, align: "right" });
+    doc.y = y + 16;
+
+    totalBase += grupo.base;
+    totalIva += grupo.iva;
+    totalGeneral += grupo.total;
+  });
+
+  doc.moveTo(x, doc.y).lineTo(545, doc.y).strokeColor(COLOR_GOLD).stroke();
+  doc.y += 6;
+
+  const yTotal = doc.y;
+  doc.font("Helvetica-Bold").fontSize(11).fillColor(COLOR_GOLD);
+  doc.text("TOTAL", colPct, yTotal, { width: anchoPct });
+  doc.text(`${totalBase.toFixed(2)} €`, colBase, yTotal, { width: anchoBase, align: "right" });
+  doc.text(`${totalIva.toFixed(2)} €`, colIva, yTotal, { width: anchoIva, align: "right" });
+  doc.text(`${totalGeneral.toFixed(2)} €`, colTotal, yTotal, { width: anchoTotal, align: "right" });
+  doc.y = yTotal + 22;
+  doc.font("Helvetica").fillColor(COLOR_BLACK);
 }
 
 async function construirFacturaPDF(pedido) {
@@ -737,43 +928,29 @@ async function construirFacturaPDF(pedido) {
     }
 
     dibujarDatosCliente(doc, pedido.cliente);
-    dibujarTablaItems(doc, pedido, { conPrecios: true });
+
+    const lineas = construirLineasFactura(pedido);
+    dibujarTablaItems(doc, lineas, { conPrecios: true });
 
     const totalCafe = totalPedido(pedido);
     const { base: baseCafe, iva: ivaCafe } = desglosarIva(totalCafe);
 
     const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
-    const totalGeneral = totalCafe + (envio ? envio.total : 0);
 
-    const xEtq = 295, xVal = 465;
-
-    function filaTotal(etiqueta, valor, negrita) {
-      const y = doc.y;
-      doc.font(negrita ? "Helvetica-Bold" : "Helvetica").fontSize(negrita ? 12 : 10).fillColor(negrita ? COLOR_GOLD : COLOR_BLACK);
-      doc.text(etiqueta, xEtq, y, { width: xVal - xEtq - 10, align: "right" });
-      doc.text(valor, xVal, y, { width: 80, align: "right" });
-      doc.y = y + (negrita ? 18 : 15);
-    }
-
-    filaTotal(`Base imponible café (${Math.round(IVA_TIPO * 100)}%):`, `${baseCafe.toFixed(2)} €`);
-    filaTotal(`IVA café (${Math.round(IVA_TIPO * 100)}%):`, `${ivaCafe.toFixed(2)} €`);
-
+    const grupos = [{ pct: IVA_TIPO, base: baseCafe, iva: ivaCafe, total: totalCafe }];
     if (envio) {
-      filaTotal(`Gastos de envío (base):`, `${envio.base.toFixed(2)} €`);
-      filaTotal(`IVA envío (${Math.round(IVA_ENVIO_TIPO * 100)}%):`, `${envio.iva.toFixed(2)} €`);
+      grupos.push({ pct: IVA_ENVIO_TIPO, base: envio.base, iva: envio.iva, total: envio.total });
     }
 
-    filaTotal("TOTAL:", `${totalGeneral.toFixed(2)} €`, true);
+    dibujarDesgloseIva(doc, grupos);
 
-    doc.moveDown(0.5);
-    doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
-      pedido.envio && pedido.envio.gratuito
-        ? "Envío gratuito aplicado por importe de pedido."
-        : (envio ? "Incluye gastos de envío a Península (tipo de IVA del 21%, distinto al del café)." : ""),
-      50, doc.y, { width: 495 }
-    );
+    if (pedido.envio && pedido.envio.gratuito) {
+      doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
+        "Envío gratuito aplicado por importe de pedido.", 50, doc.y, { width: 495 }
+      );
+      doc.moveDown(1);
+    }
 
-    doc.moveDown(1.5);
     doc.font("Helvetica").fontSize(8).fillColor(COLOR_MUTED).text(
       "Factura emitida conforme al Reglamento por el que se regulan las obligaciones de facturación (RD 1619/2012). Conserve este documento a efectos fiscales.",
       50, doc.y, { width: 495 }
@@ -791,7 +968,7 @@ async function construirAlbaranPDF(pedido) {
     doc.moveDown(1);
 
     dibujarDatosCliente(doc, pedido.cliente);
-    dibujarTablaItems(doc, pedido, { conPrecios: false });
+    dibujarTablaItems(doc, construirLineasAlbaran(pedido), { conPrecios: false });
 
     doc.moveDown(3);
     doc.font("Helvetica").fontSize(10).fillColor(COLOR_BLACK).text("Recibido conforme:", 50, doc.y);

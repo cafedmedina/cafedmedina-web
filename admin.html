@@ -533,6 +533,20 @@
     <div id="tab-stock" hidden>
       <p class="subtitle">El stock se guarda al instante, sin pasar por GitHub. "Disponible" ya descuenta lo vendido y aún no enviado.</p>
       <div id="stock-container"></div>
+
+      <div class="git-hint" style="margin-top:32px">
+        <h2 class="section-title" style="margin-top:0">Empezar a operar (salir de pruebas)</h2>
+        <p>
+          Hazlo <strong>una sola vez</strong>, el día que la tienda empiece a vender de verdad. Se borran todos los pedidos,
+          reservas, movimientos y clientes de prueba, la numeración de facturas, albaranes y pedidos vuelve a empezar en 0001,
+          y el stock queda con las unidades que pongas aquí abajo. Antes de borrar nada se descarga automáticamente una copia de seguridad.
+        </p>
+        <div id="inventario-inicial-container"></div>
+        <div class="login-row" style="margin-top:14px">
+          <input type="text" id="confirmar-inicio" placeholder="Escribe EMPEZAR para confirmar" autocomplete="off">
+          <button class="btn" id="iniciar-operacion-btn" onclick="iniciarOperacion()">Borrar pruebas y cargar inventario real</button>
+        </div>
+      </div>
     </div>
 
     <!-- ===================== PEDIDOS ===================== -->
@@ -913,6 +927,84 @@
           </div>
         `;
       }).join("");
+
+      renderInventarioInicial();
+    }
+
+    function renderInventarioInicial() {
+      const container = document.getElementById("inventario-inicial-container");
+      const codigos = Object.keys(lotes).filter(codigo => !codigo.startsWith("NUEVO-"));
+
+      container.innerHTML = codigos.map(codigo => `
+        <div class="stock-row">
+          <div class="stock-row-head">
+            ${codigo}
+            <small>${lotes[codigo].proceso || ""}</small>
+          </div>
+
+          ${PESOS.map(peso => `
+            <div class="stock-field">
+              <label><span>${peso === "1000" ? "1 kg" : peso + " g"}</span></label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value="0"
+                data-inicial-codigo="${codigo}"
+                data-inicial-peso="${peso}">
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+    }
+
+    async function iniciarOperacion() {
+      const confirmacion = document.getElementById("confirmar-inicio").value.trim();
+      if (confirmacion !== "EMPEZAR") {
+        alert('Escribe EMPEZAR en la casilla para confirmar.');
+        return;
+      }
+
+      const stockInicial = {};
+      let totalUnidades = 0;
+      document.querySelectorAll("[data-inicial-codigo]").forEach(input => {
+        const codigo = input.dataset.inicialCodigo;
+        const unidades = Math.max(0, Math.trunc(Number(input.value) || 0));
+        stockInicial[codigo] = stockInicial[codigo] || {};
+        stockInicial[codigo][input.dataset.inicialPeso] = unidades;
+        totalUnidades += unidades;
+      });
+
+      if (!confirm(`Se borrarán todos los datos de prueba y el stock quedará con ${totalUnidades} unidades en total. Esto no se puede deshacer (salvo con la copia que se descargará). ¿Continuar?`)) return;
+
+      const boton = document.getElementById("iniciar-operacion-btn");
+      boton.disabled = true;
+
+      try {
+        const response = await fetch("/api/iniciar-operacion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-token": getToken()
+          },
+          body: JSON.stringify({ confirmacion, stockInicial })
+        });
+
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "No se pudo iniciar la operación");
+
+        const blob = new Blob([JSON.stringify(resultado.backup, null, 2)], { type: "application/json" });
+        descargarBlob(blob, `backup-pruebas-cafe-dmedina-${fechaParaArchivo()}.json`);
+
+        document.getElementById("confirmar-inicio").value = "";
+        await cargarLotes();
+        alert("Listo: datos de prueba borrados e inventario real cargado. Se ha descargado la copia de seguridad de las pruebas.");
+
+      } catch (error) {
+        alert(error.message || "No se pudo iniciar la operación.");
+      } finally {
+        boton.disabled = false;
+      }
     }
 
     async function guardarStock(input) {
@@ -1440,6 +1532,7 @@
       const ETIQUETAS_TIPO = {
         entrada_inicial: "Entrada inicial",
         ajuste_manual: "Ajuste manual",
+        inventario_inicial: "Inventario inicial",
         reserva: "Reserva (pago confirmado)",
         venta: "Venta",
         envio: "Envío",
@@ -1578,6 +1671,7 @@
     const ETIQUETAS_TIPO_MOVIMIENTO = {
       entrada_inicial: "Entrada inicial",
       ajuste_manual: "Ajuste manual",
+      inventario_inicial: "Inventario inicial",
       reserva: "Reserva (pago confirmado)",
       venta: "Venta",
       envio: "Envío",
