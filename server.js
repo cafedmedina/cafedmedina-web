@@ -353,6 +353,19 @@ app.get("/api/cata/:codigo", (req, res) => {
   res.sendFile(ruta);
 });
 
+// Dirección corta que llevan los QR impresos (fichas, empaques): aurinegracafe.com/lote/DM-2026-001.
+// Es fija a propósito: si algún día cambia la página de la ficha, se cambia aquí y los QR ya impresos siguen valiendo.
+app.get("/lote/:codigo", (req, res) => {
+  const codigo = String(req.params.codigo).trim().toUpperCase();
+  const catalogo = leerCatalogo();
+
+  if (!catalogo[codigo]) {
+    return res.redirect(302, "/pasaporte.html");
+  }
+
+  res.redirect(302, `/ficha-cata.html?lote=${encodeURIComponent(codigo)}`);
+});
+
 // Privado: detalle real/reservado/disponible para el panel de administración.
 app.get("/api/lotes-admin", requiereAdmin, async (req, res) => {
   try {

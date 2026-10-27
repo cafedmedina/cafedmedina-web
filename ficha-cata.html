@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+
+  <title>Ficha de cata | AURINEGRA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --black: #11100f;
+      --cream: #f3eadc;
+      --text: #2a2520;
+      --muted: #6d6258;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+      /* El visor no deja seleccionar ni arrastrar las páginas */
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    header {
+      height: 72px;
+      padding: 0 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--black);
+      border-bottom: 1px solid rgba(200,169,106,.25);
+    }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .volver {
+      color: var(--cream);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .volver:hover {
+      color: var(--gold);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 16px 60px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      color: var(--black);
+    }
+
+    .subtitulo {
+      color: var(--muted);
+      margin: 4px 0 24px;
+    }
+
+    #paginas canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      pointer-events: none;
+    }
+
+    #estado {
+      color: var(--muted);
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    /* Si alguien intenta imprimir la página, no sale la ficha */
+    @media print {
+      body * {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html" class="brand">AURINEGRA</a>
+    <a href="tienda.html" class="volver">← Volver a la tienda</a>
+  </header>
+
+  <main>
+    <h1>Ficha de cata</h1>
+    <p class="subtitulo" id="subtitulo"></p>
+
+    <p id="estado">Cargando la ficha de cata...</p>
+    <div id="paginas"></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    // Visor de solo lectura: cada página del PDF se dibuja como imagen, sin barra de descarga ni impresión.
+    // Ojo: esto lo hace difícil, no imposible (siempre se puede hacer una captura de pantalla).
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    document.addEventListener("dragstart", e => e.preventDefault());
+    document.addEventListener("keydown", e => {
+      const tecla = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (tecla === "s" || tecla === "p")) {
+        e.preventDefault();
+      }
+    });
+
+    async function mostrarFicha() {
+      const estado = document.getElementById("estado");
+      const codigo = (new URLSearchParams(location.search).get("lote") || "").trim().toUpperCase();
+
+      if (!codigo) {
+        estado.textContent = "No se ha indicado ningún lote.";
+        return;
+      }
+
+      document.getElementById("subtitulo").textContent = `Lote ${codigo}`;
+
+      try {
+        const response = await fetch(`/api/cata/${encodeURIComponent(codigo)}`, {
+          headers: { "x-visor-cata": "1" }
+        });
+
+        if (!response.ok) throw new Error("No disponible");
+
+        const pdf = await pdfjsLib.getDocument({ data: await response.arrayBuffer() }).promise;
+        const contenedor = document.getElementById("paginas");
+        const nitidez = Math.min(window.devicePixelRatio || 1, 2);
+
+        for (let numero = 1; numero <= pdf.numPages; numero++) {
+          const pagina = await pdf.getPage(numero);
+          const anchoBase = pagina.getViewport({ scale: 1 }).width;
+          const escala = (contenedor.clientWidth / anchoBase) * nitidez;
+          const viewport = pagina.getViewport({ scale: escala });
+
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          contenedor.appendChild(canvas);
+
+          await pagina.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        }
+
+        estado.hidden = true;
+
+      } catch (error) {
+        estado.textContent = "La ficha de cata de este lote todavía no está disponible.";
+      }
+    }
+
+    mostrarFicha();
+  </script>
+
+</body>
+</html>
