@@ -13,20 +13,6 @@
       "1000": 64
     }
   },
-  "DM-2025-009": {
-    "codigo": "DM-2025-009",
-    "proceso": "Lavado",
-    "cosecha": "Diciembre 2025",
-    "fechaCata": "20/12/2025",
-    "puntaje": 85.5,
-    "perfil": "Chocolate, panela, frutos secos y acidez media.",
-    "estado": "activo",
-    "precios": {
-      "250": 17.5,
-      "500": 32,
-      "1000": 60
-    }
-  },
   "DM-2026-002": {
     "codigo": "DM-2026-002",
     "proceso": "Honey",
@@ -39,20 +25,6 @@
       "250": 19.5,
       "500": 36,
       "1000": 68
-    }
-  },
-  "DM-2026-003": {
-    "codigo": "DM-2026-003",
-    "proceso": "Natural",
-    "cosecha": "Octubre 2026",
-    "fechaCata": "25/10/2026",
-    "puntaje": 86.5,
-    "perfil": "Perfil intenso, afrutado y complejo, con notas a frutos rojos y cacao.",
-    "estado": "activo",
-    "precios": {
-      "250": 21,
-      "500": 39,
-      "1000": 74
     }
   }
 }

@@ -1201,7 +1201,9 @@
       document.getElementById("info-lote-codigo").textContent = lote.codigo;
       document.getElementById("info-cosecha").textContent = lote.cosecha || "—";
       document.getElementById("fecha-cata").textContent = lote.fechaCata || "—";
-      document.getElementById("puntaje").textContent = lote.puntaje || "—";
+      document.getElementById("puntaje").textContent = lote.puntaje
+        ? Number(lote.puntaje).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : "—";
       document.getElementById("perfil").textContent = lote.perfil || "—";
 
       const enlacePasaporte = document.getElementById("ficha-pasaporte");
