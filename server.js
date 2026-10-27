@@ -9,7 +9,34 @@ const PDFDocument = require("pdfkit");
 const app = express();
 
 app.use(cors());
-app.use(express.static(__dirname));
+
+// Solo se publica lo que la web necesita (páginas, imágenes y vídeos). Todo lo demás queda privado:
+// código (server.js), datos (data/), dependencias, Excel/PDF internos y las fichas de cata
+// (cata/<codigo>.pdf), que solo se ven desde ficha-cata.html a través de /api/cata/:codigo.
+const EXTENSIONES_PUBLICAS = [".html", ".css", ".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".ico", ".mp4", ".webm"];
+const CARPETAS_PRIVADAS = ["node_modules", "data", "cata"];
+
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/") || req.path.startsWith("/webhook/")) return next();
+
+  let ruta;
+  try {
+    ruta = decodeURIComponent(req.path).toLowerCase();
+  } catch (error) {
+    return res.status(404).end();
+  }
+
+  const primeraCarpeta = ruta.split("/")[1] || "";
+  const extension = path.extname(ruta);
+
+  if (CARPETAS_PRIVADAS.includes(primeraCarpeta) || (extension && !EXTENSIONES_PUBLICAS.includes(extension))) {
+    return res.status(404).end();
+  }
+
+  next();
+});
+
+app.use(express.static(__dirname, { dotfiles: "deny" }));
 
 //-------------------------------------------------------------------------------------------------ABRE - STRIPE--------------------------------------------------------------------------------------------//
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -65,6 +92,13 @@ const TUESTES = {
 
 function etiquetaTueste(lote) {
   return TUESTES[lote.tueste] || "";
+}
+
+// Ficha de cata en PDF de cada lote: cata/dm-2026-001.pdf (código del lote en minúsculas).
+const CATA_DIR = path.join(__dirname, "cata");
+
+function rutaFichaCata(codigo) {
+  return path.join(CATA_DIR, `${String(codigo).toLowerCase()}.pdf`);
 }
 
 function leerCatalogo() {
@@ -267,7 +301,7 @@ async function construirLotesConStock() {
       stock[peso] = { real: r, reservado: rv, disponible: Math.max(0, r - rv) };
     }
 
-    lotes[codigo] = { ...catalogo[codigo], stock };
+    lotes[codigo] = { ...catalogo[codigo], fichaCata: fs.existsSync(rutaFichaCata(codigo)), stock };
   }
 
   return lotes;
@@ -296,6 +330,27 @@ app.get("/api/lotes", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "No se pudo leer el inventario" });
   }
+});
+
+// Ficha de cata para el visor de cata.html. Solo responde a lotes del catálogo (el código nunca se usa
+// como ruta libre) y a peticiones del visor: abrir la URL directamente en el navegador no devuelve el PDF.
+app.get("/api/cata/:codigo", (req, res) => {
+  const catalogo = leerCatalogo();
+  const lote = catalogo[req.params.codigo];
+
+  if (!lote || req.get("x-visor-cata") !== "1") {
+    return res.status(404).json({ error: "Ficha de cata no disponible" });
+  }
+
+  const ruta = rutaFichaCata(lote.codigo);
+  if (!fs.existsSync(ruta)) {
+    return res.status(404).json({ error: "Ficha de cata no disponible" });
+  }
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", "inline");
+  res.setHeader("Cache-Control", "no-store");
+  res.sendFile(ruta);
 });
 
 // Privado: detalle real/reservado/disponible para el panel de administración.
