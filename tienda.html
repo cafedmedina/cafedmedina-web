@@ -373,8 +373,10 @@
       display: none !important;
     }
 
-    #molienda-field[hidden] {
-      display: none;
+    #molienda-field[hidden],
+    #ficha-cata[hidden],
+    .tostion-info[hidden] {
+      display: none !important;
     }
 
     .cantidad-row {
@@ -1011,12 +1013,17 @@
           </div>
 
           <div class="cata-box">
+            <p><strong>Fecha de tueste:</strong> <span id="fecha-tueste">—</span></p>
             <p><strong>Fecha de cata:</strong> <span id="fecha-cata">—</span></p>
             <p><strong>Puntaje SCA:</strong> <span id="puntaje">—</span></p>
             <p><strong>Perfil sensorial:</strong> <span id="perfil">—</span></p>
 
             <a href="pasaporte.html" id="ficha-pasaporte" class="btn btn-primary cata-passport-btn">
               Ver pasaporte del café
+            </a>
+
+            <a href="ficha-cata.html" id="ficha-cata" class="btn btn-primary cata-passport-btn" hidden>
+              Ver ficha de cata
             </a>
           </div>
 
@@ -1183,6 +1190,7 @@
       if (!lote) {
         document.getElementById("info-lote-codigo").textContent = "—";
         document.getElementById("info-cosecha").textContent = "—";
+        document.getElementById("fecha-tueste").textContent = "—";
         document.getElementById("fecha-cata").textContent = "—";
         document.getElementById("puntaje").textContent = "—";
         document.getElementById("perfil").textContent = "—";
@@ -1195,6 +1203,7 @@
 
       document.getElementById("info-lote-codigo").textContent = lote.codigo;
       document.getElementById("info-cosecha").textContent = lote.cosecha || "—";
+      document.getElementById("fecha-tueste").textContent = lote.fechaTueste || "—";
       document.getElementById("fecha-cata").textContent = lote.fechaCata || "—";
       document.getElementById("puntaje").textContent = lote.puntaje
         ? Number(lote.puntaje).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -1205,6 +1214,11 @@
       if (enlacePasaporte) {
         enlacePasaporte.href = "pasaporte.html?codigo=" + lote.codigo;
       }
+
+      // Solo se muestra si el lote tiene su PDF en la carpeta cata/ del servidor
+      const enlaceCata = document.getElementById("ficha-cata");
+      enlaceCata.hidden = !lote.fichaCata;
+      enlaceCata.href = "ficha-cata.html?lote=" + encodeURIComponent(lote.codigo);
 
       const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
       peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");

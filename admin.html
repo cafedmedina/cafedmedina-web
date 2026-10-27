@@ -684,6 +684,7 @@
         codigo: codigoTemporal,
         proceso: "",
         cosecha: "",
+        fechaTueste: "",
         fechaCata: "",
         puntaje: "",
         tueste: "",
@@ -745,6 +746,11 @@
               <div class="field">
                 <label>Cosecha</label>
                 <input data-field="cosecha" type="text" value="${lote.cosecha || ""}" placeholder="Octubre 2026">
+              </div>
+
+              <div class="field">
+                <label>Fecha de tueste</label>
+                <input data-field="fechaTueste" type="text" value="${lote.fechaTueste || ""}" placeholder="14/10/2026">
               </div>
 
               <div class="field">
@@ -824,6 +830,7 @@
           codigo,
           proceso: card.querySelector('[data-field="proceso"]').value.trim(),
           cosecha: card.querySelector('[data-field="cosecha"]').value.trim(),
+          fechaTueste: card.querySelector('[data-field="fechaTueste"]').value.trim(),
           fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
           puntaje: Math.round((Number(card.querySelector('[data-field="puntaje"]').value) || 0) * 100) / 100,
           tueste: card.querySelector('[data-field="tueste"]').value,
