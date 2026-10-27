@@ -609,6 +609,7 @@
   <script>
     const PESOS = ["250", "500", "1000"];
     const ESTADOS = ["activo", "archivado"];
+    const TUESTES = { "suave": "Suave", "medio": "Medio", "medio-plus": "Medio +", "medio-alto": "Medio-alto", "alto": "Alto" };
 
     let lotes = {};
     let contadorNuevos = 0;
@@ -685,6 +686,7 @@
         cosecha: "",
         fechaCata: "",
         puntaje: "",
+        tueste: "",
         perfil: "",
         estado: "activo",
         stock: { "250": { real: 0, reservado: 0, disponible: 0 }, "500": { real: 0, reservado: 0, disponible: 0 }, "1000": { real: 0, reservado: 0, disponible: 0 } },
@@ -737,7 +739,7 @@
 
               <div class="field">
                 <label>Proceso</label>
-                <input data-field="proceso" type="text" value="${lote.proceso || ""}" placeholder="Lavado / Honey / Natural...">
+                <input data-field="proceso" type="text" value="${lote.proceso || ""}" placeholder="Lavado doble fermentación">
               </div>
 
               <div class="field">
@@ -753,6 +755,16 @@
               <div class="field">
                 <label>Puntaje SCA</label>
                 <input data-field="puntaje" type="number" step="0.01" min="0" max="100" placeholder="86.25" value="${lote.puntaje !== undefined && lote.puntaje !== "" ? Number(lote.puntaje).toFixed(2) : ""}">
+              </div>
+
+              <div class="field">
+                <label>Tueste (viene tostado de origen)</label>
+                <select data-field="tueste">
+                  <option value="" ${!lote.tueste ? "selected" : ""}>— Sin indicar —</option>
+                  ${Object.keys(TUESTES).map(clave => `
+                    <option value="${clave}" ${lote.tueste === clave ? "selected" : ""}>${TUESTES[clave]}</option>
+                  `).join("")}
+                </select>
               </div>
 
               <div class="field">
@@ -814,6 +826,7 @@
           cosecha: card.querySelector('[data-field="cosecha"]').value.trim(),
           fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
           puntaje: Math.round((Number(card.querySelector('[data-field="puntaje"]').value) || 0) * 100) / 100,
+          tueste: card.querySelector('[data-field="tueste"]').value,
           perfil: card.querySelector('[data-field="perfil"]').value.trim(),
           estado: card.querySelector('[data-field="estado"]').value,
           precios

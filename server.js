@@ -54,6 +54,19 @@ const CATALOGO_FILE = path.join(__dirname, "data", "lotes.json");
 const PESOS_VALIDOS = ["250", "500", "1000"];
 const ESTADOS_VALIDOS = ["activo", "archivado"];
 
+// El café llega ya tostado de Colombia: el tueste es un dato fijo de cada lote, no lo elige el cliente.
+const TUESTES = {
+  "suave": "Suave",
+  "medio": "Medio",
+  "medio-plus": "Medio +",
+  "medio-alto": "Medio-alto",
+  "alto": "Alto"
+};
+
+function etiquetaTueste(lote) {
+  return TUESTES[lote.tueste] || "";
+}
+
 function leerCatalogo() {
   const raw = fs.readFileSync(CATALOGO_FILE, "utf-8");
   return JSON.parse(raw);
@@ -89,6 +102,10 @@ app.put("/api/catalogo", requiereAdmin, (req, res) => {
 
       if (!ESTADOS_VALIDOS.includes(lote.estado)) {
         return res.status(400).json({ error: `Estado inválido en el lote "${codigo}"` });
+      }
+
+      if (lote.tueste && !TUESTES[lote.tueste]) {
+        return res.status(400).json({ error: `Tueste inválido en el lote "${codigo}"` });
       }
 
       const formatosConPrecio = Object.keys(lote.precios || {}).filter(peso =>
@@ -1241,7 +1258,7 @@ app.post("/create-checkout-session", async (req, res) => {
             currency: "eur",
             product_data: {
               name: item.nombre,
-              description: `Lote ${lote.codigo} · ${lote.proceso} · ${item.peso} g · ${item.molienda} · ${item.tueste}`
+              description: [`Lote ${lote.codigo}`, lote.proceso, `${item.peso} g`, item.molienda, etiquetaTueste(lote) && `Tueste ${etiquetaTueste(lote)}`].filter(Boolean).join(" · ")
             },
             unit_amount: Math.round(precioUnitario * 100)
           },
@@ -1325,7 +1342,7 @@ app.post("/create-checkout-session", async (req, res) => {
         lote: li.lote.codigo,
         peso: li.item.peso,
         molienda: li.item.molienda,
-        tueste: li.item.tueste,
+        tueste: etiquetaTueste(li.lote),
         cantidad: li.cantidad,
         precioUnitario: li.precioUnitario
       })),

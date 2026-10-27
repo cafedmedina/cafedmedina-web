@@ -697,7 +697,7 @@
                     <h3>DM-2026-001</h3>
                         <p>
                             <strong>Proceso:</strong>
-                            Lavado
+                            Lavado doble fermentación
                         </p>
                         <p>
                             <strong>Cosecha:</strong>
@@ -706,31 +706,27 @@
                         <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-001')">Elegir este lote</button>
                     </article>
                     <article class="lot-card">
-                        <h3>DM-2026-002</h3>
+                        <h3>Próximamente</h3>
                         <p>
-                            <strong>Proceso:</strong> Honey</p><p><strong>
-                                Cosecha:
-                            </strong> 
-                            Octubre 2026
+                            <strong>Proceso:</strong>
+                            Honey
                         </p>
-                        <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-002')">Elegir este lote</button>
+                        <p>Nuevo lote en preparación.</p>
                     </article>
                     <article class="lot-card">
-                        <h3>DM-2026-003</h3>
-                            <p>
+                        <h3>Próximamente</h3>
+                        <p>
                             <strong>Proceso:</strong>
-                             Natural</p>
-                            <p>
-                                <strong>Cosecha:</strong> 
-                                Octubre 2026</p>
-                                <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-003')">Elegir este lote</button>
-                            </article>
+                            Natural
+                        </p>
+                        <p>Nuevo lote en preparación.</p>
+                    </article>
                         </div>
                         <div class="password-box">
                             <input id="codigo-lote" type="text" placeholder="Código exclusivo del empaque">
                             <button class="btn" onclick="validarCodigo()">Acceder al contenido exclusivo</button>
                         </div>
-                        <p class="password-help">Ejemplo interno de prueba: DM-2026-001 / DM-2026-002 / DM-2026-003. Después cambiamos estos códigos por los reales del empaque.</p>
+                        <p class="password-help">Ejemplo interno de prueba: DM-2026-001. Después cambiamos estos códigos por los reales del empaque.</p>
                         <div id="access-message" class="access-message">
                         </div>
                     </div>
@@ -777,9 +773,7 @@
   actualizarIconoCarrito();
 
   const paginasLote = {
-    "DM-2026-001": "lotes/dm-2026-001.html",
-    "DM-2026-002": "lotes/dm-2026-002.html",
-    "DM-2026-003": "lotes/dm-2026-003.html"
+    "DM-2026-001": "lotes/dm-2026-001.html"
   };
 
   function seleccionarLote(codigo) {

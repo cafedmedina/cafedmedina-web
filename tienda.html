@@ -983,7 +983,7 @@
   </div>
 
   <h1>Tienda</h1>
-  <p class="intro">Selecciona el proceso, el lote, el peso, la molienda y el tueste de tu café.</p>
+  <p class="intro">Selecciona el proceso, el lote, el peso y la molienda de tu café.</p>
 
   <div class="container">
 
@@ -1058,16 +1058,6 @@
               </select>
             </div>
 
-            <div class="option-field">
-              <label>Tueste</label>
-              <select id="tueste" onchange="actualizarTuesteInfo()">
-                <option value="claro">Claro</option>
-                <option value="medio" selected>Medio</option>
-                <option value="medio-oscuro">Medio-oscuro</option>
-                <option value="oscuro">Oscuro</option>
-              </select>
-            </div>
-
           </div>
 
           <div class="price" id="precio">Selecciona un lote</div>
@@ -1101,17 +1091,21 @@
     const NOMBRE_PRODUCTO = "AURINEGRA";
     const LOW_STOCK_UNIDADES = 5; // a partir de cuántas unidades se avisa "últimas unidades"
 
+    // Honey y Natural no tienen lote a la venta ahora mismo; sus textos se quedan listos para cuando entre un lote.
     const descripcionesProceso = {
-      "Lavado": "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado.",
+      "Lavado doble fermentación": "Nuestro Lavado con doble fermentación lleva el proceso lavado un paso más allá. Tras la recolección manual y la selección grano a grano, el café pasa por dos fermentaciones controladas antes del lavado: la primera desarrolla dulzor y complejidad, la segunda afina la taza. El resultado es un café limpio y elegante, con una acidez brillante y notas frutales más profundas.",
       "Honey": "El proceso Honey conserva parte del mucílago natural de la cereza durante el secado, aportando mayor dulzor, cuerpo y complejidad aromática. Obtenemos una taza envolvente y aterciopelada, con notas frutales intensas, miel y azúcar moreno.",
-      "Natural": "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente, permitiendo que el grano absorba los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosa y afrutada."
+      "Natural": "Nuestro proceso Natural desarrolla la expresión más intensa y exótica del café. Las cerezas se secan completas lentamente, permitiendo que el grano absorba los azúcares y compuestos aromáticos de la fruta. El resultado es una taza compleja, vinosa y afrutada.",
+      "Lavado": "Nuestro proceso Lavado representa la expresión más limpia y elegante del café de origen. Tras una recolección manual y selección grano a grano, las cerezas pasan por una fermentación controlada y un lavado cuidadoso que resalta la claridad de taza, la acidez brillante y un perfil sensorial refinado.",
     };
 
+    // El café llega ya tostado de Colombia: el tueste lo fija cada lote (panel admin), el cliente no lo elige.
     const tuestes = {
-      "claro": "<strong>Tueste claro:</strong> resalta la acidez y los aromas florales y frutales, ideal para apreciar el origen con máxima claridad.",
-      "medio": "<strong>Tueste medio · Recomendado:</strong> equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad.",
-      "medio-oscuro": "<strong>Tueste medio-oscuro:</strong> mayor cuerpo y dulzor caramelizado, con una acidez más suave.",
-      "oscuro": "<strong>Tueste oscuro:</strong> perfil intenso y especiado, con menor acidez y notas tostadas marcadas."
+      "suave": { nombre: "Suave", texto: "resalta la acidez y los aromas florales y frutales, ideal para apreciar el origen con máxima claridad." },
+      "medio": { nombre: "Medio", texto: "equilibrio entre aroma, dulzor y cuerpo. Resalta el carácter del origen sin perder complejidad." },
+      "medio-plus": { nombre: "Medio +", texto: "un punto más de desarrollo que el medio: gana dulzor y cuerpo manteniendo la acidez viva del origen." },
+      "medio-alto": { nombre: "Medio-alto", texto: "mayor cuerpo y dulzor caramelizado, con una acidez más redonda y suave." },
+      "alto": { nombre: "Alto", texto: "perfil intenso, con cuerpo pleno, acidez baja y notas tostadas y de cacao marcadas." }
     };
 
     const PESOS_ORDEN = ["250", "500", "1000"];
@@ -1193,6 +1187,7 @@
         document.getElementById("puntaje").textContent = "—";
         document.getElementById("perfil").textContent = "—";
         peso.innerHTML = "";
+        actualizarTuesteInfo();
         document.getElementById("precio").textContent = "No hay lotes disponibles";
         document.getElementById("add-to-cart-btn").disabled = true;
         return;
@@ -1214,6 +1209,7 @@
       const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
       peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");
 
+      actualizarTuesteInfo();
       actualizarPrecioYStock();
     }
 
@@ -1223,8 +1219,14 @@
     }
 
     function actualizarTuesteInfo() {
-      const tueste = document.getElementById("tueste").value;
-      document.getElementById("tostion-info").innerHTML = tuestes[tueste];
+      const lote = loteSeleccionado();
+      const info = document.getElementById("tostion-info");
+      const tueste = lote && tuestes[lote.tueste];
+
+      info.hidden = !tueste;
+      info.innerHTML = tueste
+        ? `<strong>Tueste ${tueste.nombre.toLowerCase()} · tostado en origen:</strong> ${tueste.texto}`
+        : "";
     }
 
     // unidades del lote+formato indicado que ya están reservadas en el carrito guardado en este navegador
@@ -1297,8 +1299,7 @@
       const lote = loteSeleccionado();
       const peso = document.getElementById("peso").value;
       const tipo = document.getElementById("tipo").value;
-      const tuesteSelect = document.getElementById("tueste");
-      const tueste = tuesteSelect.options[tuesteSelect.selectedIndex].text;
+      const tueste = (lote && tuestes[lote.tueste]) ? tuestes[lote.tueste].nombre : "";
       const cantidad = Number(document.getElementById("cantidad").value);
 
       const molienda = tipo === "grano"
@@ -1391,7 +1392,6 @@
       poblarProcesos();
       onProcesoChange();
       onTipoChange();
-      actualizarTuesteInfo();
       actualizarIconoCarrito();
     })();
   </script>
