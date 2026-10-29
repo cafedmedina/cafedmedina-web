@@ -456,7 +456,7 @@ app.put("/api/stock", requiereAdmin, async (req, res) => {
 // Paso único de "pruebas -> operación real": borra pedidos, reservas, movimientos, clientes y los
 // contadores de documentos del año (para que la primera factura real sea FACT-AAAA-0001) y fija el
 // inventario inicial. Devuelve una copia de todo lo borrado para guardarla antes de perderlo.
-const CLAVES_CONTADORES = ["fact", "alb", "ped"];
+const CLAVES_CONTADORES = ["fact", "alb", "ped", "fm"]; // fm: facturas de mayoristas emitidas desde el ERP
 
 async function redisDel(key) {
   if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
