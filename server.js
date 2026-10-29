@@ -5,6 +5,9 @@ const { Resend } = require("resend");
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+const QRCode = require("qrcode");
+const crypto = require("crypto");
+const verifactu = require("./verifactu");
 
 const app = express();
 
@@ -256,6 +259,40 @@ async function redisSet(key, valor) {
   if (!response.ok) throw new Error(`Redis SET "${key}" falló`);
 }
 
+// Cualquier comando de Redis (INCR, RPUSH, LRANGE, SET ... NX PX, EVAL...) enviado como array JSON.
+async function redisComando(...args) {
+  if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
+
+  const response = await fetch(REDIS_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(args.map(String))
+  });
+
+  if (!response.ok) throw new Error(`Redis ${args[0]} falló`);
+
+  const data = await response.json();
+  return data.result;
+}
+
+// Ejecuta fn() en exclusiva entre todas las peticiones (p. ej. dos pagos confirmados a la vez).
+async function conBloqueo(clave, fn, { esperaMs = 15000, duracionMs = 30000 } = {}) {
+  const token = crypto.randomUUID();
+  const limite = Date.now() + esperaMs;
+
+  while ((await redisComando("SET", clave, token, "NX", "PX", duracionMs)) !== "OK") {
+    if (Date.now() > limite) throw new Error(`No se pudo obtener el bloqueo "${clave}"`);
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+
+  try {
+    return await fn();
+  } finally {
+    // Solo se libera si sigue siendo nuestro (si caducó, otro proceso puede tenerlo ya).
+    await redisComando("EVAL", "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end", 1, clave, token);
+  }
+}
+
 // stockReal: { "DM-2026-001": { "250": 10, "500": 20, "1000": 12 }, ... } -> unidades físicas reales
 // reservado: misma forma -> unidades vendidas y pagadas pero aún no enviadas
 async function leerStockReal() { return redisGet("stock_real", {}); }
@@ -433,6 +470,11 @@ async function redisDel(key) {
 
 app.post("/api/iniciar-operacion", requiereAdmin, async (req, res) => {
   try {
+    // Con VERI*FACTU las facturas emitidas y sus registros no se pueden borrar ni renumerar.
+    if (VERIFACTU.activo) {
+      return res.status(400).json({ error: "Con VERI*FACTU activo no se pueden borrar pedidos, facturas ni contadores." });
+    }
+
     const { confirmacion, stockInicial } = req.body;
 
     if (confirmacion !== "EMPEZAR") {
@@ -832,7 +874,8 @@ function dibujarCabeceraEmpresa(doc, tituloDocumento, numero, fecha) {
   doc.font("Helvetica").fontSize(10).fillColor(COLOR_MUTED);
   doc.text(`Nº: ${numero}`, 50, yDer, { align: "right" });
   yDer += 14;
-  doc.text(`Fecha: ${new Date(fecha).toLocaleDateString("es-ES")}`, 50, yDer, { align: "right" });
+  // Fecha en hora de Madrid (el servidor de Render va en UTC): debe coincidir con la fecha de expedición registrada.
+  doc.text(`Fecha: ${new Date(fecha).toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" })}`, 50, yDer, { align: "right" });
   yDer += 14;
 
   doc.y = Math.max(y, yDer, 108) + 8;
@@ -842,19 +885,36 @@ function dibujarCabeceraEmpresa(doc, tituloDocumento, numero, fecha) {
   doc.font("Helvetica").fillColor(COLOR_BLACK);
 }
 
-function dibujarDatosCliente(doc, cliente) {
+function dibujarDatosCliente(doc, cliente, ancho = 495) {
   const c = cliente || {};
   const esEmpresa = c.tipoCliente === "empresa";
 
-  doc.font("Times-Bold").fontSize(11).fillColor(COLOR_GOLD).text("Datos del cliente");
+  doc.font("Times-Bold").fontSize(11).fillColor(COLOR_GOLD).text("Datos del cliente", 50, doc.y, { width: ancho });
   doc.moveDown(0.3);
   doc.font("Helvetica").fontSize(10).fillColor(COLOR_BLACK)
-    .text(`${c.nombre || ""} ${c.apellidos || ""}`.trim())
-    .text(`${esEmpresa ? "CIF" : "DNI/NIE"}: ${c.dni || "—"}`)
-    .text(c.direccion || "")
-    .text(`${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`)
-    .text(`${c.email || ""} · ${c.telefono || ""}`);
+    .text(`${c.nombre || ""} ${c.apellidos || ""}`.trim(), { width: ancho })
+    .text(`${esEmpresa ? "CIF" : "DNI/NIE"}: ${c.dni || "—"}`, { width: ancho })
+    .text(c.direccion || "", { width: ancho })
+    .text(`${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`, { width: ancho })
+    .text(`${c.email || ""} · ${c.telefono || ""}`, { width: ancho });
   doc.moveDown(1.5);
+}
+
+// Código QR de VERI*FACTU (Orden HAC/1177/2024): al inicio de la factura, entre 30 y 40 mm, con la leyenda.
+const LADO_QR = 99; // 35 mm en puntos PDF
+
+async function qrFacturaPng(factura) {
+  if (!qrImprimible(factura)) return null;
+  return QRCode.toBuffer(factura.verifactu.qr, { errorCorrectionLevel: "M", margin: 0, width: 400 });
+}
+
+function dibujarQrVerifactu(doc, png, y) {
+  const x = 545 - LADO_QR;
+  doc.image(png, x, y, { width: LADO_QR, height: LADO_QR });
+  doc.font("Helvetica-Bold").fontSize(8).fillColor(COLOR_BLACK).text("VERI*FACTU", x - 10, y + LADO_QR + 4, { width: LADO_QR + 20, align: "center" });
+  doc.font("Helvetica").fontSize(6.5).fillColor(COLOR_MUTED)
+    .text("Factura verificable en la sede electrónica de la AEAT", x - 10, doc.y + 1, { width: LADO_QR + 20, align: "center" });
+  return doc.y;
 }
 
 // Pasa de los items/envío del pedido a líneas genéricas de factura: descripción, cantidad,
@@ -1007,15 +1067,24 @@ function dibujarDesgloseIva(doc, grupos) {
 }
 
 async function construirFacturaPDF(pedido) {
+  const qrPng = await qrFacturaPng(pedido.factura);
+
   return generarPdfBuffer(doc => {
     dibujarCabeceraEmpresa(doc, "FACTURA", pedido.factura.numero, pedido.factura.fecha);
 
+    // Con QR, la referencia del pedido y los datos del cliente se estrechan para dejarle sitio a la derecha.
+    const yInicio = doc.y;
+    const anchoTexto = qrPng ? 495 - LADO_QR - 25 : 495;
+    const yFinQr = qrPng ? dibujarQrVerifactu(doc, qrPng, yInicio) : 0;
+    doc.y = yInicio;
+
     if (pedido.numeroPedido) {
-      doc.font("Helvetica").fontSize(9).fillColor(COLOR_MUTED).text(`Pedido: ${pedido.numeroPedido}`, { align: "right" });
+      doc.font("Helvetica").fontSize(9).fillColor(COLOR_MUTED).text(`Pedido: ${pedido.numeroPedido}`, 50, yInicio, { width: anchoTexto, align: qrPng ? "left" : "right" });
       doc.moveDown(1);
     }
 
-    dibujarDatosCliente(doc, pedido.cliente);
+    dibujarDatosCliente(doc, pedido.cliente, anchoTexto);
+    doc.y = Math.max(doc.y, yFinQr + 12);
 
     const lineas = construirLineasFactura(pedido);
     dibujarTablaItems(doc, lineas, { conPrecios: true });
@@ -1100,6 +1169,307 @@ async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
 }
 
 //-------------------------------------------------------------------------------------------------CIERRA - FACTURACIÓN--------------------------------------------------------------------------------------------//
+
+//-------------------------------------------------------------------------------------------------ABRE - VERI*FACTU (REGISTRO DE FACTURAS EN LA AEAT)--------------------------------------------------------------------------------------------//
+
+// Este servidor es el sistema de facturación de la empresa (RD 1007/2023): las facturas de la tienda (FACT) y las de
+// mayoristas que pide el ERP (FM) se numeran aquí y, con VERIFACTU_ACTIVO=1, cada una genera un registro de alta
+// encadenado (una única cadena de huellas para todas las series) que se remite a la AEAT desde una cola.
+// Sin VERIFACTU_ACTIVO todo funciona como antes: solo numeración, sin registro ni QR.
+//
+// Variables de entorno: VERIFACTU_ACTIVO=1, VERIFACTU_ENTORNO=pruebas|produccion,
+// VERIFACTU_CERT_PATH (Secret File de Render con el .p12/.pfx) o VERIFACTU_CERT_BASE64, VERIFACTU_CERT_PASSWORD.
+const VERIFACTU = {
+  activo: process.env.VERIFACTU_ACTIVO === "1",
+  entorno: process.env.VERIFACTU_ENTORNO === "produccion" ? "produccion" : "pruebas",
+  sistema: {
+    nombreRazon: EMPRESA.nombre,
+    nif: EMPRESA.cif,
+    nombre: "AURINEGRA FACTURACION",
+    id: "AU",
+    version: "1.0",
+    numeroInstalacion: process.env.VERIFACTU_INSTALACION || "RENDER-1"
+  }
+};
+const SERIES_RESERVADAS = ["FACT", "ALB", "PED"];
+
+// Las claves de Redis llevan el entorno: la cadena de pruebas y la de producción son independientes,
+// así que al pasar a producción la primera factura real empieza su propia cadena (PrimerRegistro).
+function vfClave(nombre) {
+  return `verifactu_${VERIFACTU.entorno}_${nombre}`;
+}
+
+// El QR solo se imprime con el entorno de producción: el de pruebas no sirve para que el cliente coteje la factura.
+function qrImprimible(factura) {
+  return Boolean(factura && factura.verifactu && factura.verifactu.entorno === "produccion");
+}
+
+function certificadoVerifactu() {
+  const ruta = process.env.VERIFACTU_CERT_PATH;
+  const base64 = process.env.VERIFACTU_CERT_BASE64;
+  const pfx = base64 ? Buffer.from(base64, "base64") : (ruta && fs.existsSync(ruta) ? fs.readFileSync(ruta) : null);
+
+  if (!pfx) throw new Error("Falta el certificado electrónico (VERIFACTU_CERT_PATH o VERIFACTU_CERT_BASE64)");
+  return { pfx, passphrase: process.env.VERIFACTU_CERT_PASSWORD || "" };
+}
+
+// registro: { id, tipo: "alta" | "anulacion", numSerie, fechaExpedicion, tipoFactura, importeTotal, huella, xml,
+//             estado: "pendiente" | "Correcto" | "AceptadoConErrores" | "Incorrecto", error, csv, creado, enviado }
+async function leerRegistroVerifactu(id) { return redisGet(vfClave(`registro:${id}`), null); }
+async function guardarRegistroVerifactu(registro) { await redisSet(vfClave(`registro:${registro.id}`), registro); }
+
+// Añade un registro al final de la cadena. Debe llamarse dentro del bloqueo de la cadena (vfClave("lock_cadena")).
+async function encadenarRegistro(construir, datosRegistro) {
+  const ahora = new Date();
+  const anterior = await redisGet(vfClave("ultimo"), null);
+  const { huella, xml } = construir({
+    nifEmisor: EMPRESA.cif,
+    marcaTemporal: verifactu.marcaTemporal(ahora),
+    huellaAnterior: anterior ? anterior.huella : "",
+    anterior,
+    sistema: VERIFACTU.sistema
+  });
+
+  const id = await redisComando("INCR", vfClave("contador_registros"));
+  await guardarRegistroVerifactu({ id, ...datosRegistro, huella, xml, estado: "pendiente", creado: ahora.toISOString() });
+  await redisComando("RPUSH", vfClave("cola"), id);
+  await redisSet(vfClave("ultimo"), {
+    nifEmisor: EMPRESA.cif, numSerie: datosRegistro.numSerie, fechaExpedicion: datosRegistro.fechaExpedicion, huella, registroId: id
+  });
+  return { id, huella };
+}
+
+// Emite una factura: siguiente número de su serie y, con VERI*FACTU, su registro de alta.
+// datos: { serie, tipoFactura, descripcion, destinatario, desglose: [{ tipo, base, cuota, tipoRE?, cuotaRE?, exencion? }],
+//          cuotaTotal, importeTotal, facturasRectificadas? }  (importes en céntimos)
+// idempotencia: clave opcional para que un reintento del ERP no emita la misma factura dos veces.
+async function emitirFactura(datos, idempotencia = null) {
+  const factura = await conBloqueo(vfClave("lock_cadena"), async () => {
+    if (idempotencia) {
+      const previa = await redisGet(`factura_emitida:${idempotencia}`, null);
+      if (previa) return previa;
+    }
+
+    const ahora = new Date();
+    const numero = await generarNumeroDocumento(datos.serie);
+    const fechaExpedicion = verifactu.fechaMadrid(ahora);
+    const emitida = { numero, fecha: ahora.toISOString(), fechaExpedicion };
+
+    if (VERIFACTU.activo) {
+      const { id, huella } = await encadenarRegistro(
+        base => verifactu.registroAlta({ ...base, ...datos, nombreEmisor: EMPRESA.nombre, numSerie: numero, fechaExpedicion }),
+        { tipo: "alta", numSerie: numero, fechaExpedicion, tipoFactura: datos.tipoFactura, importeTotal: datos.importeTotal }
+      );
+      await redisSet(vfClave(`factura:${numero}`), id);
+      emitida.verifactu = {
+        registroId: id,
+        huella,
+        entorno: VERIFACTU.entorno,
+        qr: verifactu.urlQR({ nifEmisor: EMPRESA.cif, numSerie: numero, fechaExpedicion, importeTotal: datos.importeTotal, entorno: VERIFACTU.entorno })
+      };
+    }
+
+    if (idempotencia) await redisSet(`factura_emitida:${idempotencia}`, emitida);
+    return emitida;
+  });
+
+  procesarColaVerifactu().catch(error => console.error("VERI*FACTU: error procesando la cola:", error.message));
+  return factura;
+}
+
+// Datos de registro de la factura de un pedido de la tienda: café al 10 % y, si lo hay, envío al 21 %,
+// con los mismos importes redondeados que aparecen en el PDF.
+function datosFacturaPedido(pedido) {
+  const totalCafe = Number(totalPedido(pedido).toFixed(2));
+  const { base, iva } = desglosarIva(totalCafe);
+  const desglose = [{ tipo: 10, base: verifactu.aCentimos(base), cuota: verifactu.aCentimos(iva) }];
+  const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
+  if (envio) desglose.push({ tipo: 21, base: verifactu.aCentimos(envio.base), cuota: verifactu.aCentimos(envio.iva) });
+
+  const cuotaTotal = desglose.reduce((suma, d) => suma + d.cuota, 0);
+  const c = pedido.cliente || {};
+  return {
+    serie: "FACT",
+    tipoFactura: "F1",
+    descripcion: "Venta de café en la tienda online",
+    destinatario: { nombre: `${c.nombre || ""} ${c.apellidos || ""}`.trim(), nif: claveCliente(c) },
+    desglose,
+    cuotaTotal,
+    importeTotal: desglose.reduce((suma, d) => suma + d.base, 0) + cuotaTotal
+  };
+}
+
+// Anula el registro de una factura expedida por error (no sustituye a una rectificativa).
+async function anularFactura(numSerie) {
+  if (!VERIFACTU.activo) throw new Error("VERI*FACTU no está activo");
+
+  const resultado = await conBloqueo(vfClave("lock_cadena"), async () => {
+    const idAlta = await redisGet(vfClave(`factura:${numSerie}`), null);
+    const alta = idAlta && await leerRegistroVerifactu(idAlta);
+    if (!alta) throw Object.assign(new Error("No hay registro de esa factura"), { status: 404 });
+    if (alta.anulada) throw Object.assign(new Error("La factura ya estaba anulada"), { status: 400 });
+
+    const { id } = await encadenarRegistro(
+      base => verifactu.registroAnulacion({ ...base, numSerie, fechaExpedicion: alta.fechaExpedicion }),
+      { tipo: "anulacion", numSerie, fechaExpedicion: alta.fechaExpedicion }
+    );
+    await guardarRegistroVerifactu({ ...alta, anulada: id });
+    return { registroId: id };
+  });
+
+  procesarColaVerifactu().catch(error => console.error("VERI*FACTU: error procesando la cola:", error.message));
+  return resultado;
+}
+
+// Envía a la AEAT los registros en cola, respetando el TiempoEsperaEnvio que indique la AEAT
+// (o antes, si se acumulan 1000). Un fallo de comunicación deja los registros en cola para el siguiente intento.
+let enviandoVerifactu = false;
+
+async function procesarColaVerifactu() {
+  if (!VERIFACTU.activo || !redisConfigurado() || enviandoVerifactu) return;
+  enviandoVerifactu = true;
+
+  try {
+    const ids = (await redisComando("LRANGE", vfClave("cola"), 0, verifactu.MAX_REGISTROS_POR_ENVIO - 1)) || [];
+    const esperaHasta = Number(await redisGet(vfClave("espera_hasta"), 0));
+    if (ids.length === 0 || (Date.now() < esperaHasta && ids.length < verifactu.MAX_REGISTROS_POR_ENVIO)) return;
+
+    const registros = (await Promise.all(ids.map(leerRegistroVerifactu))).filter(Boolean);
+    let respuesta;
+    try {
+      const sobre = verifactu.sobreEnvio({ nombreRazon: EMPRESA.nombre, nif: EMPRESA.cif }, registros.map(r => r.xml));
+      respuesta = await verifactu.enviar(sobre, { entorno: VERIFACTU.entorno, certificado: certificadoVerifactu() });
+    } catch (error) {
+      await redisSet(vfClave("espera_hasta"), Date.now() + verifactu.ESPERA_POR_DEFECTO_S * 1000);
+      await redisSet(vfClave("ultimo_error"), { fecha: new Date().toISOString(), error: error.message });
+      console.error("VERI*FACTU: no se pudo enviar a la AEAT, se reintentará:", error.message);
+      return;
+    }
+
+    const lineas = new Map(respuesta.lineas.map(l => [`${l.operacion === "Anulacion" ? "anulacion" : "alta"}|${l.numSerie}`, l]));
+    const sinRespuesta = [];
+    for (const registro of registros) {
+      const linea = lineas.get(`${registro.tipo}|${registro.numSerie}`);
+      if (!linea) {
+        sinRespuesta.push(registro.id);
+        continue;
+      }
+      // Un duplicado significa que la AEAT ya tenía ese registro (p. ej. de un envío anterior sin respuesta).
+      const estado = linea.codigoError === "3000" && linea.estadoDuplicado
+        ? (linea.estadoDuplicado === "Correcta" ? "Correcto" : linea.estadoDuplicado === "AceptadaConErrores" ? "AceptadoConErrores" : "Incorrecto")
+        : linea.estado;
+      await guardarRegistroVerifactu({
+        ...registro, estado, codigoError: linea.codigoError, error: linea.error, csv: respuesta.csv, enviado: new Date().toISOString()
+      });
+      if (estado === "Incorrecto") console.error(`VERI*FACTU: registro ${registro.numSerie} rechazado: ${linea.codigoError} ${linea.error}`);
+    }
+
+    // Se sacan de la cola los enviados; los que no vinieron en la respuesta vuelven al final.
+    await redisComando("LTRIM", vfClave("cola"), ids.length, -1);
+    if (sinRespuesta.length) await redisComando("RPUSH", vfClave("cola"), ...sinRespuesta);
+    await redisSet(vfClave("espera_hasta"), Date.now() + respuesta.esperaSegundos * 1000);
+    await redisSet(vfClave("ultimo_envio"), { fecha: new Date().toISOString(), estado: respuesta.estadoEnvio, csv: respuesta.csv, registros: registros.length });
+    await redisSet(vfClave("ultimo_error"), null);
+  } finally {
+    enviandoVerifactu = false;
+  }
+}
+
+if (VERIFACTU.activo) {
+  console.log(`VERI*FACTU activo (entorno: ${VERIFACTU.entorno})`);
+  setInterval(() => procesarColaVerifactu().catch(error => console.error("VERI*FACTU:", error.message)), 60 * 1000);
+}
+
+// Estado para el ERP/panel: cola, último envío y los últimos registros (sin el XML).
+app.get("/api/verifactu/estado", requiereAdmin, async (req, res) => {
+  try {
+    const total = Number(await redisGet(vfClave("contador_registros"), 0));
+    const ids = [];
+    for (let id = total; id > 0 && ids.length < 200; id--) ids.push(id);
+    const crudos = ids.length ? await redisComando("MGET", ...ids.map(id => vfClave(`registro:${id}`))) : [];
+    const registros = crudos.filter(Boolean).map(texto => {
+      const { xml, ...resumen } = JSON.parse(texto);
+      return resumen;
+    });
+
+    res.json({
+      activo: VERIFACTU.activo,
+      entorno: VERIFACTU.entorno,
+      enCola: Number(await redisComando("LLEN", vfClave("cola"))),
+      ultimoEnvio: await redisGet(vfClave("ultimo_envio"), null),
+      ultimoError: await redisGet(vfClave("ultimo_error"), null),
+      registros
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer el estado de VERI*FACTU" });
+  }
+});
+
+app.post("/api/verifactu/enviar", requiereAdmin, async (req, res) => {
+  try {
+    await redisSet(vfClave("espera_hasta"), 0);
+    await procesarColaVerifactu();
+    res.json({ success: true, enCola: Number(await redisComando("LLEN", vfClave("cola"))) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/verifactu/anular", requiereAdmin, async (req, res) => {
+  try {
+    res.json({ success: true, ...(await anularFactura(String((req.body || {}).numero || ""))) });
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
+  }
+});
+
+function validarFacturaErp(d) {
+  if (!d || typeof d !== "object") return "Faltan los datos de la factura";
+  if (!/^[\w-]{8,64}$/.test(String(d.idempotencia || ""))) return "Falta la clave de idempotencia";
+  if (!/^[A-Z0-9]{1,10}$/.test(String(d.serie || "")) || SERIES_RESERVADAS.includes(d.serie)) return "Serie no válida";
+  if (!["F1", "F2", "R1", "R2", "R3", "R4", "R5"].includes(d.tipoFactura)) return "Tipo de factura no válido";
+  if (d.tipoFactura.startsWith("R") && !(Array.isArray(d.facturasRectificadas) && d.facturasRectificadas.length)) {
+    return "Una rectificativa debe indicar la factura rectificada";
+  }
+  const dest = d.destinatario;
+  if (d.tipoFactura !== "F2" && !(dest && dest.nombre && (dest.nif || (dest.pais && dest.id)))) return "Faltan los datos del destinatario";
+  if (!Array.isArray(d.desglose) || d.desglose.length < 1 || d.desglose.length > 12) return "El desglose debe tener entre 1 y 12 líneas";
+
+  const enteros = d.desglose.flatMap(l => [l.base, l.cuota || 0, l.cuotaRE || 0]).concat([d.cuotaTotal, d.importeTotal]);
+  if (!enteros.every(Number.isInteger)) return "Los importes deben ir en céntimos (enteros)";
+  const cuotas = d.desglose.reduce((s, l) => s + (l.cuota || 0) + (l.cuotaRE || 0), 0);
+  const bases = d.desglose.reduce((s, l) => s + l.base, 0);
+  if (cuotas !== d.cuotaTotal || bases + cuotas !== d.importeTotal) return "Los totales no cuadran con el desglose";
+  return null;
+}
+
+// El ERP emite aquí las facturas de mayoristas: así toda la facturación comparte numeración, cadena y envío a la AEAT.
+app.post("/api/facturas-erp", requiereAdmin, async (req, res) => {
+  try {
+    const d = req.body;
+    const error = validarFacturaErp(d);
+    if (error) return res.status(400).json({ error });
+
+    const factura = await emitirFactura({
+      serie: d.serie,
+      tipoFactura: d.tipoFactura,
+      descripcion: String(d.descripcion || "Venta de café").slice(0, 500),
+      destinatario: d.destinatario,
+      desglose: d.desglose,
+      cuotaTotal: d.cuotaTotal,
+      importeTotal: d.importeTotal,
+      tipoRectificativa: d.tipoRectificativa,
+      facturasRectificadas: d.facturasRectificadas
+    }, `erp-${d.idempotencia}`);
+    res.json(factura);
+  } catch (error) {
+    console.error("No se pudo emitir la factura del ERP:", error);
+    res.status(500).json({ error: "No se pudo emitir la factura" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - VERI*FACTU--------------------------------------------------------------------------------------------//
 
 
 /**-------------------------------------------------------------------------------------------------ABRE - EMAIL IONOS--------------------------------------------------------------------------------------------
@@ -1248,7 +1618,8 @@ async function confirmarPagoPedido(session) {
   };
 
   try {
-    pedido.factura = { numero: await generarNumeroDocumento("FACT"), fecha: new Date().toISOString() };
+    // Si Stripe reenvía el evento tras un fallo a medias, la clave del pedido evita emitir otra factura.
+    pedido.factura = await emitirFactura(datosFacturaPedido(pedido), `pedido-${pedido.id}`);
     const pdfFactura = await construirFacturaPDF(pedido);
     await enviarFacturaPorEmail(pedido, pdfFactura);
     await actualizarFichaCliente(pedido);
