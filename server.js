@@ -167,21 +167,52 @@ app.put("/api/catalogo", requiereAdmin, (req, res) => {
 
 //-------------------------------------------------------------------------------------------------CIERRA - CATÁLOGO--------------------------------------------------------------------------------------------//
 
-//-------------------------------------------------------------------------------------------------ABRE - ENVÍO (GASTOS DE ENVÍO, SOLO PENÍNSULA POR AHORA)--------------------------------------------------------------------------------------------//
+//-------------------------------------------------------------------------------------------------ABRE - ENVÍO (GASTOS DE ENVÍO: PENÍNSULA Y BALEARES)--------------------------------------------------------------------------------------------//
 
-// Los portes van al 21% (tipo general), distinto del 10% del café: nunca se mezclan en la misma línea de IVA.
-const IVA_ENVIO_TIPO = 0.21;
+// Los portes que cobramos junto con el café son una prestación accesoria de la venta (art. 78.Dos.2º
+// LIVA): forman parte de la base imponible de la entrega y llevan su mismo tipo, el 10 %.
+// Cada pedido guarda el tipo con el que se cobró (envio.tipo). Los pedidos anteriores a este cambio
+// no lo tienen y se facturaron al 21 %: tipoIvaEnvio() los sigue tratando así para no alterar
+// facturas ya emitidas.
+const IVA_ENVIO_TIPO = 0.10;
+const IVA_ENVIO_TIPO_ANTIGUO = 0.21;
+
+function tipoIvaEnvio(envio) {
+  const tipo = Number(envio && envio.tipo);
+  return Number.isFinite(tipo) && tipo >= 0 ? tipo : IVA_ENVIO_TIPO_ANTIGUO;
+}
 
 // umbralGratis: importe del café (con su IVA del 10% incluido) a partir del cual no se cobra envío.
 // tarifaBase: coste del envío sin IVA cuando no se llega al umbral. Son valores de partida, editables
 // desde el panel admin en cuanto haya tarifas reales de transportista (MRW, SEUR, InPost...).
+// tarifaBaleares: igual que tarifaBase, para códigos postales 07xxx. DHL cobra más a Palma (zona B)
+// que a la Península (zona A), y el resto de islas puede llevar recargo: se aplica a todo Baleares.
+const CONFIG_ENVIO_DEFECTO = { umbralGratis: 60, tarifaBase: 8, tarifaBaleares: 10 };
+
 async function leerConfigEnvio() {
-  return redisGet("config_envio", { umbralGratis: 60, tarifaBase: 8 });
+  return { ...CONFIG_ENVIO_DEFECTO, ...(await redisGet("config_envio", CONFIG_ENVIO_DEFECTO)) };
+}
+
+// Zona de envío según el código postal. Canarias (35, 38), Ceuta (51) y Melilla (52) quedan fuera:
+// no llevan IVA sino IGIC/IPSI y el envío requiere trámite aduanero.
+const ZONAS_ENVIO = {
+  peninsula: "Península",
+  baleares: "Baleares"
+};
+
+function zonaEnvio(codigoPostal) {
+  const prefijo = String(codigoPostal || "").trim().slice(0, 2);
+  if (["35", "38", "51", "52"].includes(prefijo)) return null;
+  return prefijo === "07" ? "baleares" : "peninsula";
+}
+
+function etiquetaZonaEnvio(envio) {
+  return ZONAS_ENVIO[envio && envio.zona] || ZONAS_ENVIO.peninsula;
 }
 
 app.get("/api/config-envio", async (req, res) => {
   try {
-    res.json(await leerConfigEnvio());
+    res.json({ ...(await leerConfigEnvio()), ivaTipo: IVA_ENVIO_TIPO });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "No se pudo leer la configuración de envío" });
@@ -192,15 +223,19 @@ app.put("/api/config-envio", requiereAdmin, async (req, res) => {
   try {
     const umbralGratis = Number(req.body.umbralGratis);
     const tarifaBase = Number(req.body.tarifaBase);
+    const tarifaBaleares = Number(req.body.tarifaBaleares);
 
     if (!Number.isFinite(umbralGratis) || umbralGratis < 0) {
       return res.status(400).json({ error: "El importe mínimo para envío gratis no es válido" });
     }
     if (!Number.isFinite(tarifaBase) || tarifaBase < 0) {
-      return res.status(400).json({ error: "La tarifa de envío no es válida" });
+      return res.status(400).json({ error: "La tarifa de envío a Península no es válida" });
+    }
+    if (!Number.isFinite(tarifaBaleares) || tarifaBaleares < 0) {
+      return res.status(400).json({ error: "La tarifa de envío a Baleares no es válida" });
     }
 
-    const config = { umbralGratis, tarifaBase };
+    const config = { umbralGratis, tarifaBase, tarifaBaleares };
     await redisSet("config_envio", config);
     res.json({ success: true, config });
 
@@ -210,17 +245,18 @@ app.put("/api/config-envio", requiereAdmin, async (req, res) => {
   }
 });
 
-// A partir del total del café (con IVA), calcula si hay portes y su importe (base + 21% IVA).
-function calcularEnvio(totalCafeConIva, config) {
+// A partir del total del café (con IVA) y la zona del cliente, calcula si hay portes y su importe
+// (base + IVA del envío). El umbral de envío gratis es el mismo para todas las zonas.
+function calcularEnvio(totalCafeConIva, config, zona) {
   if (totalCafeConIva >= config.umbralGratis) {
-    return { gratuito: true, base: 0, iva: 0, total: 0 };
+    return { gratuito: true, base: 0, iva: 0, total: 0, tipo: IVA_ENVIO_TIPO, zona };
   }
 
-  const base = Number(config.tarifaBase);
+  const base = Number(zona === "baleares" ? config.tarifaBaleares : config.tarifaBase);
   const iva = Math.round(base * IVA_ENVIO_TIPO * 100) / 100;
   const total = Math.round((base + iva) * 100) / 100;
 
-  return { gratuito: false, base, iva, total };
+  return { gratuito: false, base, iva, total, tipo: IVA_ENVIO_TIPO, zona };
 }
 
 //-------------------------------------------------------------------------------------------------CIERRA - ENVÍO--------------------------------------------------------------------------------------------//
@@ -456,7 +492,7 @@ app.put("/api/stock", requiereAdmin, async (req, res) => {
 // Paso único de "pruebas -> operación real": borra pedidos, reservas, movimientos, clientes y los
 // contadores de documentos del año (para que la primera factura real sea FACT-AAAA-0001) y fija el
 // inventario inicial. Devuelve una copia de todo lo borrado para guardarla antes de perderlo.
-const CLAVES_CONTADORES = ["fact", "alb", "ped", "fm"]; // fm: facturas de mayoristas emitidas desde el ERP
+const CLAVES_CONTADORES = ["fact", "alb", "ped", "fm", "r"]; // fm: facturas de mayoristas del ERP · r: rectificativas
 
 async function redisDel(key) {
   if (!redisConfigurado()) throw new Error("UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN no configurados");
@@ -793,7 +829,7 @@ async function actualizarFichaCliente(pedido) {
   const clientes = await leerClientes();
   const existente = clientes[clave] || { primeraCompra: new Date().toISOString(), facturas: [] };
 
-  // Base/IVA del cliente suman café (10%) + envío (21%) cuando lo hay: el desglose por tipo
+  // Base/IVA del cliente suman café + envío cuando lo hay: el desglose por tipo
   // exacto vive en el PDF de la factura, aquí solo se guarda el total a efectos de historial.
   const totalCafe = Number(totalPedido(pedido).toFixed(2));
   const { base: baseCafe, iva: ivaCafe } = desglosarIva(totalCafe);
@@ -918,8 +954,8 @@ function dibujarQrVerifactu(doc, png, y) {
 }
 
 // Pasa de los items/envío del pedido a líneas genéricas de factura: descripción, cantidad,
-// precio unitario SIN IVA, tipo de IVA de esa línea y total CON IVA. El café va al 10%, el
-// envío (si lo hay) va al 21%: cada línea lleva su propio tipo, nunca se mezclan en una sola.
+// precio unitario SIN IVA, tipo de IVA de esa línea y total CON IVA. El café va al 10% y el
+// envío (si lo hay) al tipo guardado en el pedido (10%; 21% en pedidos antiguos).
 function construirLineasFactura(pedido) {
   const lineas = pedido.items.map(item => {
     const precioConIva = Number(item.precioUnitario);
@@ -934,10 +970,10 @@ function construirLineasFactura(pedido) {
 
   if (pedido.envio && !pedido.envio.gratuito) {
     lineas.push({
-      descripcion: "Gastos de envío (Península)",
+      descripcion: `Gastos de envío (${etiquetaZonaEnvio(pedido.envio)})`,
       cantidad: 1,
       precioUnitarioSinIva: pedido.envio.base,
-      tipoIva: IVA_ENVIO_TIPO,
+      tipoIva: tipoIvaEnvio(pedido.envio),
       totalConIva: pedido.envio.total
     });
   }
@@ -1015,7 +1051,8 @@ function dibujarTablaItems(doc, lineas, { conPrecios }) {
 
 // Tabla de desglose de IVA: una fila por cada tipo aplicado (% · Base imponible · Cuota IVA · Total)
 // y una fila final de TOTAL que suma todos los tipos. Es la forma correcta de facturar cuando
-// una misma factura mezcla conceptos a distinto tipo (aquí: café al 10% y envío al 21%).
+// una misma factura mezcla conceptos a distinto tipo. Si dos grupos comparten tipo (café y envío
+// al 10%), se juntan en una sola fila.
 function dibujarDesgloseIva(doc, grupos) {
   const x = 50;
   const anchoPct = 60;
@@ -1094,10 +1131,10 @@ async function construirFacturaPDF(pedido) {
 
     const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
 
-    const grupos = [{ pct: IVA_TIPO, base: baseCafe, iva: ivaCafe, total: totalCafe }];
-    if (envio) {
-      grupos.push({ pct: IVA_ENVIO_TIPO, base: envio.base, iva: envio.iva, total: envio.total });
-    }
+    const grupos = agruparPorTipo([
+      { pct: IVA_TIPO, base: baseCafe, iva: ivaCafe, total: totalCafe },
+      ...(envio ? [{ pct: tipoIvaEnvio(envio), base: envio.base, iva: envio.iva, total: envio.total }] : [])
+    ], "pct", ["base", "iva", "total"]);
 
     dibujarDesgloseIva(doc, grupos);
 
@@ -1277,14 +1314,33 @@ async function emitirFactura(datos, idempotencia = null) {
   return factura;
 }
 
-// Datos de registro de la factura de un pedido de la tienda: café al 10 % y, si lo hay, envío al 21 %,
-// con los mismos importes redondeados que aparecen en el PDF.
+// Junta las filas que comparten el mismo tipo de IVA sumando sus importes (VERI*FACTU y el PDF
+// esperan una sola línea de desglose por tipo). Los importes se suman redondeados a céntimos.
+function agruparPorTipo(filas, campoTipo, campos) {
+  const grupos = [];
+  for (const fila of filas) {
+    const existente = grupos.find(g => g[campoTipo] === fila[campoTipo]);
+    if (!existente) { grupos.push({ ...fila }); continue; }
+    for (const campo of campos) existente[campo] = Math.round((existente[campo] + fila[campo]) * 100) / 100;
+  }
+  return grupos;
+}
+
+// Datos de registro de la factura de un pedido de la tienda: café al 10 % y, si lo hay, envío a su
+// tipo (10 %, o 21 % en pedidos antiguos), con los mismos importes redondeados que aparecen en el PDF.
 function datosFacturaPedido(pedido) {
   const totalCafe = Number(totalPedido(pedido).toFixed(2));
   const { base, iva } = desglosarIva(totalCafe);
-  const desglose = [{ tipo: 10, base: verifactu.aCentimos(base), cuota: verifactu.aCentimos(iva) }];
+  const filas = [{ tipo: 10, base: verifactu.aCentimos(base), cuota: verifactu.aCentimos(iva) }];
   const envio = pedido.envio && !pedido.envio.gratuito ? pedido.envio : null;
-  if (envio) desglose.push({ tipo: 21, base: verifactu.aCentimos(envio.base), cuota: verifactu.aCentimos(envio.iva) });
+  if (envio) {
+    filas.push({
+      tipo: Math.round(tipoIvaEnvio(envio) * 100),
+      base: verifactu.aCentimos(envio.base),
+      cuota: verifactu.aCentimos(envio.iva)
+    });
+  }
+  const desglose = agruparPorTipo(filas, "tipo", ["base", "cuota"]);
 
   const cuotaTotal = desglose.reduce((suma, d) => suma + d.cuota, 0);
   const c = pedido.cliente || {};
@@ -1544,6 +1600,7 @@ function validarClienteServidor(cliente) {
   if (!/^[67]\d{8}$/.test(String(cliente.telefono).replace(/[\s-]/g, ""))) return "El teléfono móvil no es válido";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(cliente.email).trim())) return "El email no es válido";
   if (!/^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test(String(cliente.codigoPostal).trim())) return "El código postal no es válido";
+  if (!zonaEnvio(cliente.codigoPostal)) return "De momento solo enviamos a Península y Baleares";
 
   return null;
 }
@@ -1723,7 +1780,7 @@ app.post("/create-checkout-session", async (req, res) => {
     // calculó el navegador, se recalcula aquí con los precios reales del catálogo.
     const totalCafe = lineItems.reduce((suma, li) => suma + li.precioUnitario * li.cantidad, 0);
     const configEnvio = await leerConfigEnvio();
-    const envio = calcularEnvio(totalCafe, configEnvio);
+    const envio = calcularEnvio(totalCafe, configEnvio, zonaEnvio(cliente.codigoPostal));
 
     const stripeLineItems = lineItems.map(li => li.lineItem);
 
@@ -1733,7 +1790,7 @@ app.post("/create-checkout-session", async (req, res) => {
           currency: "eur",
           product_data: {
             name: "Gastos de envío",
-            description: "Envío a Península (IVA 21% incluido)"
+            description: `Envío a ${etiquetaZonaEnvio(envio)} (IVA ${Math.round(envio.tipo * 100)}% incluido)`
           },
           unit_amount: Math.round(envio.total * 100)
         },

@@ -1085,8 +1085,16 @@
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     let lotes = {};
 
-    const IVA_ENVIO = 0.21;
-    let configEnvio = { umbralGratis: 60, tarifaBase: 8 };
+    // Tipo de IVA del envío: lo manda el servidor en /api/config-envio (ivaTipo); 10 % por defecto.
+    let configEnvio = { umbralGratis: 60, tarifaBase: 8, tarifaBaleares: 10, ivaTipo: 0.10 };
+
+    // Misma regla que el servidor (zonaEnvio en server.js): 07xxx = Baleares; Canarias, Ceuta y
+    // Melilla no tienen envío. Sin código postal todavía, se muestra la tarifa de Península.
+    function zonaEnvioCarrito() {
+      const prefijo = (document.getElementById("cliente-cp")?.value || "").trim().slice(0, 2);
+      if (["35", "38", "51", "52"].includes(prefijo)) return null;
+      return prefijo === "07" ? "baleares" : "peninsula";
+    }
 
     async function cargarLotes() {
       try {
@@ -1113,7 +1121,9 @@
       if (totalCafe >= configEnvio.umbralGratis || totalCafe === 0) {
         return { gratuito: true, total: 0 };
       }
-      const total = Number((configEnvio.tarifaBase * (1 + IVA_ENVIO)).toFixed(2));
+      const base = Number(zonaEnvioCarrito() === "baleares" ? configEnvio.tarifaBaleares : configEnvio.tarifaBase);
+      const iva = Math.round(base * Number(configEnvio.ivaTipo ?? 0.10) * 100) / 100;
+      const total = Number((base + iva).toFixed(2));
       return { gratuito: false, total };
     }
 
@@ -1191,7 +1201,7 @@
         } else {
           const faltan = (configEnvio.umbralGratis - totalCafe).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
           cartShipping.innerHTML = `
-            <span>Gastos de envío (Península)</span>
+            <span>Gastos de envío (${zonaEnvioCarrito() === "baleares" ? "Baleares" : "Península"})</span>
             <span class="shipping-amount">${envio.total.toLocaleString("es-ES", { style: "currency", currency: "EUR" })}</span>
             <span class="shipping-hint">Añade ${faltan} más a tu pedido y el envío sale gratis.</span>
           `;
@@ -1270,6 +1280,9 @@
 
     function onCodigoPostalInput(input) {
       input.value = input.value.replace(/\D/g, "").slice(0, 5);
+
+      // La tarifa depende de la zona (Península / Baleares): se recalcula al cambiar el prefijo.
+      if (input.value.length >= 2) renderCart();
 
       if (input.value.length === 5) {
         autocompletarPorCodigoPostal(input.value);
@@ -1416,6 +1429,7 @@
 
       if (!cliente.codigoPostal) { marcarErrorCliente("cp", "Introduce el código postal."); valido = false; }
       else if (!validarCodigoPostal(cliente.codigoPostal)) { marcarErrorCliente("cp", "Código postal no válido."); valido = false; }
+      else if (!zonaEnvioCarrito()) { marcarErrorCliente("cp", "De momento solo enviamos a Península y Baleares."); valido = false; }
 
       if (!cliente.localidad) { marcarErrorCliente("localidad", "Introduce la localidad."); valido = false; }
       if (!cliente.provincia) { marcarErrorCliente("provincia", "Introduce la provincia."); valido = false; }

@@ -571,7 +571,8 @@
     <!-- ===================== ENVÍO ===================== -->
     <div id="tab-envio" hidden>
       <p class="subtitle">
-        Umbral y tarifa de envío a Península. El envío se cobra aparte en el checkout (con 21% de IVA)
+        Umbral y tarifas de envío a Península y Baleares (CP 07xxx). Canarias, Ceuta y Melilla no tienen envío.
+        El envío se cobra aparte en el checkout (con 10% de IVA, el mismo que el café)
         solo cuando el pedido de café no llega al importe mínimo.
       </p>
 
@@ -583,8 +584,13 @@
           </div>
 
           <div class="field">
-            <label>Tarifa de envío (€, sin IVA)</label>
+            <label>Tarifa Península (€, sin IVA)</label>
             <input type="number" id="envio-tarifa" step="0.01" min="0">
+          </div>
+
+          <div class="field">
+            <label>Tarifa Baleares (€, sin IVA)</label>
+            <input type="number" id="envio-tarifa-baleares" step="0.01" min="0">
           </div>
         </div>
 
@@ -1190,6 +1196,7 @@
         const config = await response.json();
         document.getElementById("envio-umbral").value = config.umbralGratis;
         document.getElementById("envio-tarifa").value = config.tarifaBase;
+        document.getElementById("envio-tarifa-baleares").value = config.tarifaBaleares;
 
       } catch (error) {
         feedback.className = "error-msg";
@@ -1203,6 +1210,7 @@
 
       const umbralGratis = Number(document.getElementById("envio-umbral").value);
       const tarifaBase = Number(document.getElementById("envio-tarifa").value);
+      const tarifaBaleares = Number(document.getElementById("envio-tarifa-baleares").value);
 
       btn.disabled = true;
       feedback.className = "";
@@ -1215,7 +1223,7 @@
             "Content-Type": "application/json",
             "x-admin-token": getToken()
           },
-          body: JSON.stringify({ umbralGratis, tarifaBase })
+          body: JSON.stringify({ umbralGratis, tarifaBase, tarifaBaleares })
         });
 
         if (response.status === 401) {
