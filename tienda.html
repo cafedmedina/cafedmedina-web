@@ -329,9 +329,55 @@
       line-height: 1.38;
     }
 
-    /* En la columna izquierda el espacio ya lo pone la columna */
-    .product-left .molienda-box {
-      margin-top: 0;
+    /* Enlace a la guía de preparación (columna izquierda, bajo origen/variedad/productor) */
+    .preparacion-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+
+      background: var(--card);
+      border: 1px solid rgba(200,169,106,.30);
+      border-left: 4px solid var(--gold);
+
+      color: #4f3729;
+      font-size: 13.5px;
+      line-height: 1.45;
+      text-align: left;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .preparacion-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(58,36,24,.12);
+    }
+
+    .preparacion-link strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #2f1b12;
+      font-weight: 900;
+    }
+
+    .preparacion-link-icono {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,169,106,.18);
+      font-size: 20px;
+    }
+
+    .preparacion-link-flecha {
+      flex: 0 0 auto;
+      color: #9a6f24;
+      font-size: 20px;
+      font-weight: 900;
     }
 
     .molienda-titulo {
@@ -1237,32 +1283,15 @@
           <p><strong>Productor:</strong> Ramón Medina</p>
         </div>
 
-        <!-- Solo vendemos en grano: en vez de elegir molienda, recomendamos cómo molerlo (mismos datos que la bolsa) -->
-        <div class="molienda-box">
-          <p class="molienda-titulo"><strong>En grano, para que lo muelas justo antes de prepararlo.</strong> Cómo molerlo según tu método:</p>
-          <div class="molienda-grid">
-            <div class="molienda-item">
-              <strong>Espresso</strong>
-              <span class="molienda-grado">Fina</span>
-              <span>18 g → 36 g · 90–94 °C</span>
-            </div>
-            <div class="molienda-item">
-              <strong>Moka</strong>
-              <span class="molienda-grado">Media-fina</span>
-              <span>Filtro lleno sin prensar · agua bajo la válvula</span>
-            </div>
-            <div class="molienda-item">
-              <strong>Filtro (V60, Chemex)</strong>
-              <span class="molienda-grado">Media</span>
-              <span>7–10 g por 100 ml · 92–96 °C · 2:30–3 min</span>
-            </div>
-            <div class="molienda-item">
-              <strong>Prensa francesa</strong>
-              <span class="molienda-grado">Gruesa</span>
-              <span>6–8 g por 100 ml · 92–96 °C · 4 min</span>
-            </div>
-          </div>
-        </div>
+        <!-- Solo vendemos en grano: las recetas y la molienda están en su propia página -->
+        <a class="preparacion-link" href="preparacion.html">
+          <span class="preparacion-link-icono" aria-hidden="true">☕</span>
+          <span>
+            <strong>¿Quieres saber cómo preparar tu café?</strong>
+            Recetas paso a paso para espresso, moka, filtro y prensa francesa: cantidades, molienda y el ajuste de tu molinillo.
+          </span>
+          <span class="preparacion-link-flecha" aria-hidden="true">→</span>
+        </a>
       </div>
 
       <div class="product-right">

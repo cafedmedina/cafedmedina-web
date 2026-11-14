@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Cómo preparar tu café | AURINEGRA</title>
+  <meta name="description" content="Recetas paso a paso para preparar café AURINEGRA en espresso, moka, filtro y prensa francesa: cantidades, molienda y ajuste de tu molinillo." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --gold-light: #e2c47d;
+      --black: #11100f;
+      --black-soft: #151311;
+      --white: #ffffff;
+      --muted: rgba(255,255,255,.82);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.7;
+    }
+
+    img {
+      width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* =====================================================
+       HEADER ORDENADOR
+    ===================================================== */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+
+      height: 92px;
+      padding: 0 7%;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+
+      background: rgba(17,16,15,.97);
+      border-bottom: 1px solid rgba(200,169,106,.25);
+
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .brand span {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--gold-light);
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    #main-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    #main-menu a {
+      color: rgba(255,255,255,.9);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      transition: .25s;
+    }
+
+    #main-menu a:hover {
+      color: var(--gold-light);
+    }
+
+    .cart-link {
+      position: relative;
+      flex-shrink: 0;
+      color: var(--gold-light);
+      font-size: 22px;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -12px;
+      right: -14px;
+
+      min-width: 20px;
+      height: 20px;
+      padding: 2px 6px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--gold-light);
+      color: var(--black);
+
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 50%;
+      line-height: 1;
+    }
+
+    .menu-toggle,
+    .mobile-menu {
+      display: none;
+    }
+
+    /* =======================================================================================================================================================================================================
+                                                                                     BOTÓN VOLVER DENTRO DE LA PÁGINA
+    ========================================================================================================================================================================================================== */
+
+    .historia-back-wrap {
+      background: var(--black);
+      padding: 22px 7% 0;
+    }
+
+    .historia-back-link {
+      display: inline-block;
+      color: var(--gold-light);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      transition: .25s;
+    }
+
+    .historia-back-link:hover {
+      opacity: .8;
+    }
+
+    /* ========================================================================================================================================================================================================
+                                                                                                      HERO HISTORIA
+    =========================================================================================================================================================================================================== */
+
+    .historia-hero {
+      text-align: center;
+      padding: 62px 7% 55px;
+      background: #1a1714;
+    }
+
+    .historia-hero h1 {
+      max-width: 980px;
+      margin: 0 auto 18px;
+
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 1.15;
+      color: var(--gold-light);
+    }
+
+    .historia-hero p {
+      max-width: 850px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    /* ==========================================================================================================================================================================================================
+                                                                                                         BLOQUES HISTORIA
+    ============================================================================================================================================================================================================= */
+
+    .historia-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--black);
+    }
+
+    .historia-img {
+      min-height: 430px;
+      overflow: hidden;
+      background: var(--black);
+    }
+
+    .historia-img img {
+      height: 100%;
+      min-height: 430px;
+      object-fit: cover;
+      filter: grayscale(100%) contrast(1.05);
+    }
+
+    .historia-img.color img {
+      filter: contrast(1.05) saturate(1.05);
+    }
+
+    .historia-text {
+      padding: 70px 7%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--black-soft);
+    }
+
+    .historia-text h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold-light);
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .historia-text p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      width: max-content;
+      margin-top: 14px;
+      padding: 13px 26px;
+
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: var(--black);
+
+      font-weight: 900;
+      text-decoration: none;
+      transition: .25s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .historia-frase {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #1b1510;
+      text-align: center;
+      padding: 48px 9%;
+
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 3vw, 38px);
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 7%;
+      color: rgba(255,255,255,.65);
+      background: #0c0b0a;
+      font-size: 14px;
+    }
+
+    /* =================================================================================================================================================================================================
+                                                                                                    MÓVIL
+                                                                                      Header: ☰ + AURINEGRA + carrito
+                                                                    Historia: imagen 1 + texto 1 / imagen 2 + texto 2 / imagen 3 + texto 3
+    ==================================================================================================================================================================================================== */
+
+    @media (max-width: 850px) {
+
+      header {
+        height: 72px;
+        min-height: 72px;
+        padding: 0 18px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #main-menu {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        position: absolute;
+        left: 18px;
+        top: 14px;
+
+        width: 44px;
+        height: 44px;
+
+        background: transparent;
+        border: 1px solid rgba(226,196,125,.35);
+        border-radius: 50%;
+
+        color: var(--gold-light);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1;
+
+        z-index: 10001;
+        cursor: pointer;
+      }
+
+      header .brand {
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      header .brand span {
+        font-size: 25px;
+        line-height: 1;
+      }
+
+      .cart-link {
+        position: absolute;
+        right: 20px;
+        top: 21px;
+
+        font-size: 21px;
+        z-index: 10001;
+      }
+
+      .cart-count {
+        top: -10px;
+        right: -12px;
+
+        min-width: 18px;
+        height: 18px;
+        padding: 1px 5px;
+
+        font-size: 10px;
+      }
+
+      .mobile-menu {
+        display: none;
+
+        position: fixed;
+        top: 82px;
+        left: 22px;
+
+        width: 230px;
+        max-width: calc(100vw - 44px);
+
+        background: rgba(17,16,15,.98);
+        border: 1px solid rgba(226,196,125,.28);
+        border-radius: 18px;
+
+        padding: 12px 16px;
+        z-index: 10000;
+
+        box-shadow: 0 14px 34px rgba(0,0,0,.35);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .mobile-menu.open {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .mobile-menu a {
+        display: block;
+
+        color: #f5f5f5;
+        text-decoration: none;
+
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+
+        padding: 10px 2px;
+        text-align: left;
+
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .mobile-menu a:last-child {
+        border-bottom: 0;
+      }
+
+      .historia-back-wrap {
+        padding: 18px 22px 0;
+      }
+
+      .historia-back-link {
+        font-size: 15px;
+      }
+
+      .historia-hero {
+        padding: 38px 7% 42px;
+      }
+
+      .historia-hero h1 {
+        font-size: 32px;
+        line-height: 1.14;
+        margin-bottom: 16px;
+      }
+
+      .historia-hero p {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .historia-grid {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Orden correcto solo en móvil */
+      .historia-grid > div:nth-child(1) { order: 1; }
+      .historia-grid > div:nth-child(2) { order: 2; }
+      .historia-grid > div:nth-child(4) { order: 3; }
+      .historia-grid > div:nth-child(3) { order: 4; }
+      .historia-grid > div:nth-child(5) { order: 5; }
+      .historia-grid > div:nth-child(6) { order: 6; }
+
+      .historia-img {
+        width: 100%;
+        min-height: auto;
+        height: auto;
+        padding: 0 6% 18px;
+        background: var(--black);
+      }
+
+      .historia-img img {
+        width: 100%;
+        height: auto;
+        min-height: auto;
+        border-radius: 22px;
+        object-fit: cover;
+        filter: none;
+      }
+
+      .historia-text {
+        width: 100%;
+        padding: 26px 7% 46px;
+        background: var(--black);
+      }
+
+      .historia-text h2 {
+        font-size: 32px;
+        line-height: 1.12;
+        margin-bottom: 16px;
+      }
+
+      .historia-text p {
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .historia-frase {
+        padding: 36px 7%;
+        font-size: 25px;
+      }
+
+      footer {
+        padding: 22px 7%;
+      }
+    }
+
+
+/* =========================================================================================================================================================================================================
+                                                                                         CARRITO + CONTADOR UNIFICADO
+============================================================================================================================================================================================================ */
+
+.cart-link {
+  position: relative !important;
+
+  width: 34px !important;
+  height: 34px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #e2c47d !important;
+  font-size: 22px !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+}
+
+.cart-count {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  background: #e2c47d !important;
+  color: #11100f !important;
+
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  border-radius: 50% !important;
+}
+
+/*======================================================================================================================================================================================================
+                                                                                                    MÓVIL
+========================================================================================================================================================================================================= */
+@media (max-width: 850px) {
+  .cart-link {
+    position: absolute !important;
+    right: 20px !important;
+    top: 19px !important;
+
+    width: 34px !important;
+    height: 34px !important;
+
+    font-size: 21px !important;
+  }
+
+  .cart-count {
+    top: -8px !important;
+    right: -8px !important;
+
+    width: 19px !important;
+    min-width: 19px !important;
+    height: 19px !important;
+
+    font-size: 10px !important;
+  }
+}
+
+
+/* ======================================================================================================================================================================================================
+   EFECTO APARECER / DESAPARECER AL SCROLL
+========================================================================================================================================================================================================= */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .85s ease, transform .85s ease;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+
+.reveal.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+@media (max-width: 850px) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    transform: translateY(22px);
+  }
+
+  .reveal.visible,
+  .reveal-left.visible,
+  .reveal-right.visible {
+    transform: translateY(0);
+  }
+
+  .historia-back-link {
+    white-space: nowrap !important;
+    font-size: 16px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+}
+
+
+/* =========================================================================================================================================================================================================
+                                                                                  WHATSAPP FLOTANTE - ORDENADOR Y MÓVIL
+============================================================================================================================================================================================================= */
+
+.whatsapp-float {
+  position: fixed;
+  width: 55px;
+  height: 55px;
+  bottom: 25px;
+  left: 25px;
+  z-index: 9998;
+}
+
+.whatsapp-float img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+@media (max-width: 850px) {
+  .whatsapp-float {
+    width: 52px;
+    height: 52px;
+    bottom: 18px;
+    left: 18px;
+    right: auto;
+  }
+}
+
+
+
+/* ========================================================================================================================================================================================================
+                                                                                 BOTÓN VOLVER ARRIBA - ORDENADOR Y MÓVIL
+============================================================================================================================================================================================================ */
+
+.scroll-top {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+
+  border-radius: 50%;
+  text-decoration: none;
+
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,.22);
+  z-index: 9998;
+
+  transition: .25s ease;
+}
+
+.scroll-top:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.04);
+}
+
+@media (max-width: 850px) {
+  .scroll-top {
+    right: 18px;
+    bottom: 18px;
+
+    width: 52px;
+    height: 52px;
+
+    font-size: 26px;
+  }
+}
+/* FOOTER LEGAL */
+
+.footer-legal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding: 24px 20px;
+  background: #11100f;
+  color: #f5f1e8;
+  font-size: 14px;
+  text-align: center;
+}
+
+.footer-legal span {
+  color: #f5f1e8;
+}
+
+.footer-legal a {
+  color: #e2c47d;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-legal a:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 850px) {
+  .footer-legal {
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    padding: 22px 18px;
+  }
+}
+/* =====================================================================================================================================================================================
+   BANNER DE COOKIES
+======================================================================================================================================================================================== */
+
+.cookie-banner {
+  position: fixed;
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+  z-index: 100000;
+  max-width: 980px;
+  margin: 0 auto;
+  background: rgba(17,16,15,.98);
+  color: #f5f1e8;
+  border: 1px solid rgba(226,196,125,.35);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 45px rgba(0,0,0,.35);
+  display: none;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cookie-banner.show {
+  display: flex;
+}
+
+.cookie-text {
+  max-width: 620px;
+}
+
+.cookie-text strong {
+  display: block;
+  color: #e2c47d;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.cookie-text p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255,255,255,.82);
+}
+
+.cookie-text a {
+  color: #e2c47d;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cookie-actions button,
+.cookie-actions a {
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  font-family: 'Lato', Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.cookie-accept {
+  background: linear-gradient(135deg, #e2c47d, #c8a96a);
+  color: #11100f;
+}
+
+.cookie-reject {
+  background: #f5f1e8;
+  color: #11100f;
+}
+
+.cookie-config {
+  background: transparent;
+  color: #e2c47d;
+  border: 1px solid rgba(226,196,125,.55) !important;
+}
+
+@media (max-width: 850px) {
+  .cookie-banner {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .cookie-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .cookie-actions button,
+  .cookie-actions a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+  
+    /* =====================================================
+       CÓMO PREPARAR TU CAFÉ
+    ===================================================== */
+
+    .prep-hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 30px 7% 10px;
+      text-align: center;
+    }
+
+    .prep-eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .prep-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1.1;
+      color: var(--gold-light);
+      margin-bottom: 14px;
+    }
+
+    .prep-hero p {
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .prep-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 26px 7% 70px;
+    }
+
+    /* ---- Selector de método ---- */
+    .prep-metodos {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .prep-metodo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(200,169,106,.3);
+      background: var(--black-soft);
+      color: rgba(255,255,255,.88);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .prep-metodo:hover {
+      border-color: var(--gold);
+    }
+
+    .prep-metodo.activo {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border-color: var(--gold-light);
+      color: var(--black);
+    }
+
+    .prep-metodo-icono {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    /* ---- Ficha de receta ---- */
+    .prep-receta {
+      padding: 26px;
+      border-radius: 26px;
+      background: var(--black-soft);
+      border: 1px solid rgba(200,169,106,.28);
+    }
+
+    .prep-receta-cabecera {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .prep-receta h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      line-height: 1.15;
+      color: var(--gold-light);
+    }
+
+    .prep-intro {
+      margin-top: 6px;
+      color: var(--muted);
+      max-width: 620px;
+    }
+
+    .prep-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .prep-tazas {
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .prep-stepper {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(200,169,106,.45);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .prep-stepper button {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      background: transparent;
+      color: var(--gold-light);
+      font-size: 22px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .prep-stepper button:hover {
+      background: rgba(200,169,106,.15);
+    }
+
+    .prep-stepper output {
+      min-width: 38px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .prep-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .prep-card {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(200,169,106,.18);
+    }
+
+    .prep-card h3 {
+      margin-bottom: 12px;
+      color: var(--gold-light);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .prep-ingredientes,
+    .prep-utensilios {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .prep-ingredientes li {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.3;
+    }
+
+    .prep-ingredientes strong {
+      font-size: 21px;
+      color: var(--white);
+    }
+
+    .prep-ingredientes span,
+    .prep-utensilios li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .prep-utensilios li::before {
+      content: "✓ ";
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .prep-grado {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .prep-escala {
+      margin: 12px 0 8px;
+    }
+
+    .prep-escala-barra {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #3a2418, #8a6a3e, #e2c47d);
+    }
+
+    .prep-escala-barra span {
+      position: absolute;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--gold);
+      transform: translate(-50%, -50%);
+      transition: left .35s ease;
+    }
+
+    .prep-escala-textos {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .prep-textura {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .prep-card select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(200,169,106,.45);
+      background: var(--black);
+      color: var(--white);
+      font-family: inherit;
+      font-size: 15px;
+    }
+
+    .prep-ajuste {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(200,169,106,.12);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .prep-ajuste strong {
+      color: var(--gold-light);
+      font-size: 17px;
+    }
+
+    .prep-pasos-card {
+      margin-bottom: 16px;
+    }
+
+    .prep-pasos {
+      list-style: none;
+      counter-reset: paso;
+      display: grid;
+      gap: 12px;
+    }
+
+    .prep-pasos li {
+      counter-increment: paso;
+      position: relative;
+      padding-left: 46px;
+      color: rgba(255,255,255,.9);
+    }
+
+    .prep-pasos li::before {
+      content: counter(paso);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gold);
+      color: var(--black);
+      font-weight: 900;
+    }
+
+    .prep-pasos .prep-tiempo {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 9px;
+      border-radius: 999px;
+      background: rgba(200,169,106,.16);
+      color: var(--gold-light);
+      font-size: 12.5px;
+      font-weight: 900;
+    }
+
+    /* ---- Vídeo ---- */
+    .prep-video iframe,
+    .prep-video video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      border-radius: 18px;
+      display: block;
+      background: #000;
+    }
+
+    .prep-video-pronto {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px dashed rgba(200,169,106,.45);
+      color: var(--muted);
+    }
+
+    .prep-video-pronto span {
+      flex-shrink: 0;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,169,106,.16);
+      color: var(--gold-light);
+      font-size: 22px;
+    }
+
+    /* ---- Consejos y llamada a la tienda ---- */
+    .prep-consejos {
+      margin-top: 50px;
+    }
+
+    .prep-consejos h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .prep-consejos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .prep-consejo {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: var(--black-soft);
+      border: 1px solid rgba(200,169,106,.18);
+    }
+
+    .prep-consejo strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--gold-light);
+    }
+
+    .prep-consejo p {
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    .prep-cta {
+      margin-top: 44px;
+      text-align: center;
+    }
+
+    .prep-cta p {
+      margin-bottom: 4px;
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .prep-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .prep-card-molienda {
+        grid-column: 1 / -1;
+      }
+
+      .prep-consejos-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .prep-wrap {
+        padding: 18px 16px 50px;
+      }
+
+      .prep-hero {
+        padding: 22px 16px 6px;
+      }
+
+      .prep-metodos {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .prep-receta {
+        padding: 18px 16px;
+        border-radius: 20px;
+      }
+
+      .prep-receta-cabecera {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .prep-tazas {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .prep-tazas .prep-label {
+        margin-bottom: 0;
+      }
+
+      .prep-receta h2 {
+        font-size: 27px;
+      }
+
+      .prep-grid,
+      .prep-consejos-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+
+<body id="top">
+
+  <header>
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">
+      ☰
+    </button>
+
+    <a href="index.html#inicio" class="brand">
+      <span>AURINEGRA</span>
+    </a>
+
+    <nav id="main-menu">
+      <a href="index.html#origen">Nuestro café</a>
+      <a href="index.html#proceso">Proceso</a>
+      <a href="index.html#historia">Historia</a>
+      <a href="index.html#cata">Cata</a>
+      <a href="index.html#empaque">Producto</a>
+      <a href="index.html#area-profesional">Profesionales</a>
+      <a href="index.html#contacto">Contacto</a>
+      <a href="tienda.html">Tienda</a>
+    </nav>
+
+<a href="carrito.html" class="cart-link">
+  🛒
+  <span id="cart-count" class="cart-count">0</span>
+</a>
+
+    <nav id="mobile-menu" class="mobile-menu">
+      <a href="index.html#origen" onclick="closeMenu()">Nuestro café</a>
+      <a href="index.html#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="index.html#historia" onclick="closeMenu()">Historia</a>
+      <a href="index.html#cata" onclick="closeMenu()">Cata</a>
+      <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
+      <a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a>
+      <a href="index.html#contacto" onclick="closeMenu()">Contacto</a>
+      <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+    </nav>
+  </header>
+
+  <main>
+
+<div class="historia-back-wrap">
+  <a href="tienda.html" class="historia-back-link">
+    ← Volver a la tienda
+  </a>
+</div>
+
+<section class="prep-hero">
+  <span class="prep-eyebrow">Recetas AURINEGRA</span>
+  <h1>Cómo preparar tu café</h1>
+  <p>
+    Te lo enviamos en grano para que lo muelas justo antes de prepararlo. Elige tu cafetera y cuántas tazas
+    quieres: te decimos cuánto café y agua usar, a qué temperatura y cómo molerlo con tu molinillo.
+  </p>
+</section>
+
+<section class="prep-wrap">
+
+  <!-- 1. Método -->
+  <div class="prep-metodos" role="tablist" aria-label="Método de preparación">
+    <button class="prep-metodo" role="tab" data-metodo="espresso" onclick="elegirMetodo('espresso')">
+      <span class="prep-metodo-icono" aria-hidden="true">☕</span>Espresso
+    </button>
+    <button class="prep-metodo" role="tab" data-metodo="moka" onclick="elegirMetodo('moka')">
+      <span class="prep-metodo-icono" aria-hidden="true">♨️</span>Moka
+    </button>
+    <button class="prep-metodo" role="tab" data-metodo="filtro" onclick="elegirMetodo('filtro')">
+      <span class="prep-metodo-icono" aria-hidden="true">⏳</span>Filtro (V60, Chemex)
+    </button>
+    <button class="prep-metodo" role="tab" data-metodo="prensa" onclick="elegirMetodo('prensa')">
+      <span class="prep-metodo-icono" aria-hidden="true">🥛</span>Prensa francesa
+    </button>
+  </div>
+
+  <article class="prep-receta" aria-live="polite">
+
+    <div class="prep-receta-cabecera">
+      <div>
+        <h2 id="receta-titulo"></h2>
+        <p id="receta-intro" class="prep-intro"></p>
+      </div>
+
+      <div class="prep-tazas">
+        <span class="prep-label" id="tazas-label">Tazas</span>
+        <div class="prep-stepper">
+          <button type="button" onclick="cambiarTazas(-1)" aria-label="Menos tazas">−</button>
+          <output id="tazas-valor">1</output>
+          <button type="button" onclick="cambiarTazas(1)" aria-label="Más tazas">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="prep-grid">
+
+      <!-- Ingredientes -->
+      <div class="prep-card">
+        <h3>Ingredientes</h3>
+        <ul class="prep-ingredientes">
+          <li><strong id="ing-cafe"></strong><span>café AURINEGRA en grano</span></li>
+          <li><strong id="ing-agua"></strong><span id="ing-agua-texto">agua filtrada o de mineralización débil</span></li>
+          <li><strong id="ing-temp"></strong><span>temperatura del agua</span></li>
+          <li><strong id="ing-tiempo"></strong><span>tiempo de preparación</span></li>
+        </ul>
+      </div>
+
+      <!-- Utensilios -->
+      <div class="prep-card">
+        <h3>Utensilios</h3>
+        <ul class="prep-utensilios" id="utensilios"></ul>
+      </div>
+
+      <!-- Molienda -->
+      <div class="prep-card prep-card-molienda">
+        <h3>Molienda</h3>
+        <p class="prep-grado" id="molienda-grado"></p>
+        <div class="prep-escala" aria-hidden="true">
+          <div class="prep-escala-barra"><span id="molienda-marca"></span></div>
+          <div class="prep-escala-textos"><span>Fina</span><span>Media</span><span>Gruesa</span></div>
+        </div>
+        <p class="prep-textura" id="molienda-textura"></p>
+
+        <label class="prep-label" for="molinillo">Tu molinillo</label>
+        <select id="molinillo" onchange="pintarMolinillo()">
+          <option value="comandante">Comandante C40 (manual)</option>
+          <option value="timemore">Timemore C2 / C3 (manual)</option>
+          <option value="encore">Baratza Encore (eléctrico)</option>
+          <option value="cuchillas">Eléctrico de cuchillas</option>
+          <option value="otro">Otro molinillo</option>
+          <option value="ninguno">No tengo molinillo</option>
+        </select>
+        <p class="prep-ajuste" id="molinillo-ajuste"></p>
+      </div>
+
+    </div>
+
+    <!-- Pasos -->
+    <div class="prep-card prep-pasos-card">
+      <h3>Paso a paso</h3>
+      <ol class="prep-pasos" id="pasos"></ol>
+    </div>
+
+    <!-- Vídeo de la receta -->
+    <div class="prep-video" id="video"></div>
+
+  </article>
+
+  <!-- Consejos -->
+  <section class="prep-consejos">
+    <h2>Consejos para que salga perfecto</h2>
+    <div class="prep-consejos-grid">
+      <div class="prep-consejo">
+        <strong>Muele justo antes</strong>
+        <p>El café molido pierde buena parte de su aroma en pocos minutos. Muele solo lo que vayas a preparar.</p>
+      </div>
+      <div class="prep-consejo">
+        <strong>Pesa, no midas a ojo</strong>
+        <p>Una báscula de cocina marca la diferencia. Las cucharadas varían mucho según el grano.</p>
+      </div>
+      <div class="prep-consejo">
+        <strong>Cuida el agua</strong>
+        <p>El café es casi todo agua. Usa agua filtrada o mineral de mineralización débil, nunca hirviendo.</p>
+      </div>
+      <div class="prep-consejo">
+        <strong>Ajusta a tu gusto</strong>
+        <p>¿Amargo o áspero? Muele un poco más grueso. ¿Ácido o aguado? Un poco más fino. Cambia una cosa cada vez.</p>
+      </div>
+      <div class="prep-consejo">
+        <strong>Guárdalo bien</strong>
+        <p>Cierra la bolsa con su zip, expulsando el aire, en un lugar fresco y sin luz. Mejor fuera de la nevera.</p>
+      </div>
+      <div class="prep-consejo">
+        <strong>Deja reposar el café recién tostado</strong>
+        <p>Entre 5 y 10 días después del tueste es cuando mejor se expresa. La válvula de la bolsa deja salir el CO₂.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="prep-cta">
+    <p>¿Aún no tienes tu café?</p>
+    <a href="tienda.html" class="btn">Ir a la tienda</a>
+  </section>
+
+</section>
+
+  </main>
+
+  <script>
+// =====================================================
+// RECETAS: cantidades por taza (las de la bolsa AURINEGRA)
+// =====================================================
+
+// VÍDEOS: cuando tengáis cada vídeo, poned aquí su id de YouTube (lo que va tras "v=" en el enlace)
+// o la ruta de un .mp4 subido a la web (p. ej. "video/espresso.mp4"). Vacío = "Vídeo próximamente".
+const VIDEOS = {
+  espresso: "",
+  moka: "",
+  filtro: "",
+  prensa: ""
+};
+
+const RECETAS = {
+  espresso: {
+    titulo: "Espresso",
+    nombre: "un espresso",
+    intro: "Intenso y con cuerpo, con la crema que lo corona. La receta es para un espresso doble.",
+    tazasLabel: "Espressos dobles",
+    tazasMax: 4,
+    cafePorTaza: 18,          // g
+    aguaPorTaza: 36,          // g de bebida en taza
+    aguaTexto: "de espresso en taza (ratio 1:2)",
+    temp: "90–94 °C",
+    tiempo: "25–30 s",
+    molienda: { grado: "Fina", posicion: 10, textura: "Como sal fina o azúcar glas un poco granulado." },
+    utensilios: ["Cafetera espresso", "Molinillo", "Báscula con décimas", "Tamper (prensador)"],
+    pasos: [
+      ["Enciende la cafetera y deja que caliente bien, con el portafiltro puesto.", "15–20 min"],
+      ["Muele 18 g de café justo antes y échalo en el portafiltro seco.", ""],
+      ["Reparte el café de forma uniforme y presiona con el tamper, recto y firme.", ""],
+      ["Coloca el portafiltro, pon la taza sobre la báscula y empieza la extracción.", ""],
+      ["Para cuando tengas 36 g de café en la taza.", "25–30 s"],
+      ["Si sale en menos de 20 s, muele más fino; si tarda más de 35 s, más grueso.", ""]
+    ]
+  },
+
+  moka: {
+    titulo: "Moka (cafetera italiana)",
+    nombre: "café en moka",
+    intro: "Un café con mucho cuerpo, el de toda la vida, pero sin que se queme. La clave: fuego bajo y retirarla a tiempo.",
+    tazasLabel: "Tazas (tamaño de tu moka)",
+    tazasMax: 12,
+    cafePorTaza: 6,
+    aguaPorTaza: 50,
+    aguaTexto: "de agua, hasta justo debajo de la válvula",
+    temp: "Agua ya caliente",
+    tiempo: "4–5 min",
+    molienda: { grado: "Media-fina", posicion: 28, textura: "Algo más gruesa que para espresso, como sal de mesa." },
+    utensilios: ["Cafetera moka", "Molinillo", "Báscula", "Hervidor o cazo"],
+    pasos: [
+      ["Calienta el agua aparte y llena el depósito inferior hasta justo debajo de la válvula.", ""],
+      ["Llena el filtro con el café molido, sin apretarlo, y nivélalo con el dedo.", ""],
+      ["Enrosca la moka con un paño (estará caliente) y ponla a fuego medio-bajo con la tapa abierta.", ""],
+      ["Cuando empiece a salir el café, baja el fuego al mínimo.", "≈ 3 min"],
+      ["Retírala cuando el chorro se vuelva claro y empiece a borbotear.", ""],
+      ["Enfría la base con un paño húmedo para cortar la extracción y sirve enseguida.", ""]
+    ]
+  },
+
+  filtro: {
+    titulo: "Filtro (V60, Chemex)",
+    nombre: "café de filtro (V60 o Chemex)",
+    intro: "Limpio, aromático y con todos los matices del origen. Ideal para descubrir las notas frutales de AURINEGRA.",
+    tazasLabel: "Tazas (250 ml)",
+    tazasMax: 4,
+    cafePorTaza: 17,
+    aguaPorTaza: 250,
+    aguaTexto: "de agua (≈ 7 g de café por cada 100 ml)",
+    temp: "92–96 °C",
+    tiempo: "2:30–3 min",
+    molienda: { grado: "Media", posicion: 55, textura: "Como arena de playa." },
+    utensilios: ["Gotero V60 o Chemex con su filtro de papel", "Molinillo", "Báscula", "Hervidor (mejor de cuello de cisne)", "Jarra o taza"],
+    pasos: [
+      ["Coloca el filtro y mójalo con agua caliente para quitar el sabor a papel; tira esa agua.", ""],
+      ["Echa el café molido y haz un pequeño hueco en el centro.", ""],
+      ["Prehumectación: vierte el doble de agua que de café para que «florezca» y suelte el gas.", "30–45 s"],
+      ["Vierte el resto del agua en círculos lentos, del centro hacia fuera, sin tocar el papel.", "hasta 1:45"],
+      ["Deja que termine de filtrar.", "2:30–3 min en total"],
+      ["Si pasa muy rápido, muele más fino; si se atasca, más grueso.", ""]
+    ]
+  },
+
+  prensa: {
+    titulo: "Prensa francesa",
+    nombre: "café en prensa francesa",
+    intro: "Con cuerpo y textura sedosa, muy fácil de preparar. Perfecta para varias tazas.",
+    tazasLabel: "Tazas (250 ml)",
+    tazasMax: 4,
+    cafePorTaza: 17,
+    aguaPorTaza: 250,
+    aguaTexto: "de agua (≈ 7 g de café por cada 100 ml)",
+    temp: "92–96 °C",
+    tiempo: "4 min",
+    molienda: { grado: "Gruesa", posicion: 88, textura: "Como sal gorda o pan rallado grueso." },
+    utensilios: ["Prensa francesa", "Molinillo", "Báscula", "Hervidor", "Cuchara"],
+    pasos: [
+      ["Calienta la prensa con agua caliente y tírala.", ""],
+      ["Echa el café molido y vierte toda el agua de una vez.", ""],
+      ["Remueve suavemente y coloca la tapa sin bajar el émbolo.", ""],
+      ["Deja infusionar.", "4 min"],
+      ["Rompe la costra de la superficie con la cuchara y retira la espuma.", ""],
+      ["Baja el émbolo despacio y sirve todo el café para que no siga extrayéndose.", ""]
+    ]
+  }
+};
+
+// =====================================================
+// MOLINILLOS: punto de partida orientativo por método
+// (cada molinillo y cada unidad varía: ajustar a partir de aquí)
+// =====================================================
+const MOLINILLOS = {
+  comandante: {
+    unidad: "clics desde cerrado",
+    ajustes: { espresso: "8–12 clics", moka: "13–16 clics", filtro: "22–28 clics", prensa: "30–35 clics" }
+  },
+  timemore: {
+    unidad: "clics desde cerrado",
+    ajustes: { espresso: "6–9 clics", moka: "9–12 clics", filtro: "15–20 clics", prensa: "22–26 clics" },
+    nota: { espresso: "El C2 no muele bien para espresso; el C3 sí llega." }
+  },
+  encore: {
+    unidad: "posición del selector (0–40)",
+    ajustes: { espresso: null, moka: "8–12", filtro: "14–18", prensa: "28–32" },
+    nota: { espresso: "El Encore no muele lo bastante fino para espresso: necesitas un molinillo específico de espresso." }
+  },
+  cuchillas: {
+    unidad: "segundos moliendo, agitando el molinillo",
+    ajustes: { espresso: null, moka: "15–20 s", filtro: "10–12 s", prensa: "6–8 s" },
+    nota: {
+      espresso: "Un molinillo de cuchillas no consigue la molienda fina y uniforme que pide el espresso.",
+      general: "Muele a golpes cortos para no calentar el café. Si puedes, pásate a uno de muelas: se nota en la taza."
+    }
+  }
+};
+
+let metodoActual = "espresso";
+let tazas = 1;
+
+function elegirMetodo(metodo) {
+  if (!RECETAS[metodo]) return;
+  if (metodo !== metodoActual) tazas = metodo === "moka" ? 3 : 1;
+  metodoActual = metodo;
+
+  document.querySelectorAll(".prep-metodo").forEach(b => {
+    const activo = b.dataset.metodo === metodo;
+    b.classList.toggle("activo", activo);
+    b.setAttribute("aria-selected", activo ? "true" : "false");
+  });
+
+  try { history.replaceState(null, "", `#${metodo}`); } catch (e) {}
+  pintarReceta();
+}
+
+function cambiarTazas(delta) {
+  const r = RECETAS[metodoActual];
+  tazas = Math.min(r.tazasMax, Math.max(1, tazas + delta));
+  pintarReceta();
+}
+
+function gramos(valor) {
+  const redondeado = Math.round(valor * 2) / 2; // a medio gramo
+  return `${String(redondeado).replace(".", ",")} g`;
+}
+
+function pintarReceta() {
+  const r = RECETAS[metodoActual];
+
+  document.getElementById("receta-titulo").textContent = r.titulo;
+  document.getElementById("receta-intro").textContent = r.intro;
+  document.getElementById("tazas-label").textContent = r.tazasLabel;
+  document.getElementById("tazas-valor").textContent = tazas;
+
+  document.getElementById("ing-cafe").textContent = gramos(r.cafePorTaza * tazas);
+  document.getElementById("ing-agua").textContent = metodoActual === "espresso"
+    ? gramos(r.aguaPorTaza * tazas)
+    : `${r.aguaPorTaza * tazas} ml`;
+  document.getElementById("ing-agua-texto").textContent = r.aguaTexto;
+  document.getElementById("ing-temp").textContent = r.temp;
+  document.getElementById("ing-tiempo").textContent = r.tiempo;
+
+  document.getElementById("utensilios").innerHTML = r.utensilios.map(u => `<li>${u}</li>`).join("");
+
+  document.getElementById("molienda-grado").textContent = r.molienda.grado;
+  document.getElementById("molienda-marca").style.left = `${r.molienda.posicion}%`;
+  document.getElementById("molienda-textura").textContent = r.molienda.textura;
+
+  document.getElementById("pasos").innerHTML = r.pasos.map(([texto, tiempo]) =>
+    `<li>${texto}${tiempo ? `<span class="prep-tiempo">${tiempo}</span>` : ""}</li>`
+  ).join("");
+
+  pintarMolinillo();
+  pintarVideo();
+}
+
+function pintarMolinillo() {
+  const id = document.getElementById("molinillo").value;
+  const caja = document.getElementById("molinillo-ajuste");
+  const metodo = metodoActual;
+  const r = RECETAS[metodo];
+
+  try { localStorage.setItem("molinilloAurinegra", id); } catch (e) {}
+
+  if (id === "ninguno") {
+    caja.innerHTML = `Pide en tu cafetería que te lo muelan al momento y dile que es para <strong>${r.nombre}</strong> (molienda ${r.molienda.grado.toLowerCase()}). Guárdalo bien cerrado y gástalo en pocos días.`;
+    return;
+  }
+
+  if (id === "otro") {
+    caja.innerHTML = `Busca una molienda <strong>${r.molienda.grado.toLowerCase()}</strong>: ${r.molienda.textura.toLowerCase()} Empieza ahí y ajusta según el sabor.`;
+    return;
+  }
+
+  const m = MOLINILLOS[id];
+  const ajuste = m.ajustes[metodo];
+  const nota = (m.nota && (m.nota[metodo] || m.nota.general)) || "";
+
+  if (!ajuste) {
+    caja.innerHTML = nota;
+    return;
+  }
+
+  caja.innerHTML = `Empieza en <strong>${ajuste}</strong> <span>(${m.unidad})</span>.<br>` +
+    `Es un punto de partida: cada molinillo varía, así que ajusta según el sabor.` +
+    (nota ? `<br>${nota}` : "");
+}
+
+function pintarVideo() {
+  const caja = document.getElementById("video");
+  const v = VIDEOS[metodoActual];
+  const titulo = RECETAS[metodoActual].titulo;
+
+  if (!v) {
+    caja.innerHTML = `
+      <div class="prep-video-pronto">
+        <span aria-hidden="true">▶</span>
+        <div><strong>Vídeo de la receta: próximamente.</strong><br>Estamos grabando cómo preparar ${RECETAS[metodoActual].nombre} paso a paso con nuestro café.</div>
+      </div>`;
+    return;
+  }
+
+  if (/\.mp4$/i.test(v)) {
+    caja.innerHTML = `<video src="${v}" controls playsinline preload="metadata" title="Cómo preparar ${titulo}"></video>`;
+  } else {
+    caja.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v)}" title="Cómo preparar ${titulo}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+  }
+}
+
+// Al entrar: método del enlace (#moka, #filtro...) y el molinillo que eligió la última vez
+(function iniciarRecetas() {
+  try {
+    const guardado = localStorage.getItem("molinilloAurinegra");
+    if (guardado && document.querySelector(`#molinillo option[value="${guardado}"]`)) {
+      document.getElementById("molinillo").value = guardado;
+    }
+  } catch (e) {}
+
+  const desdeEnlace = location.hash.replace("#", "");
+  elegirMetodo(RECETAS[desdeEnlace] ? desdeEnlace : "espresso");
+  if (desdeEnlace === "moka") tazas = 3;
+  pintarReceta();
+})();
+</script>
+
+  <script>
+function actualizarIconoCarrito() {
+  const cartCount = document.getElementById("cart-count");
+  const carritoGuardado = JSON.parse(localStorage.getItem("carrito")) || [];
+
+  const unidades = carritoGuardado.reduce((sum, item) => {
+    return sum + Number(item.cantidad || 0);
+  }, 0);
+
+  if (cartCount) {
+    cartCount.textContent = unidades;
+  }
+}
+
+actualizarIconoCarrito();
+
+function toggleMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.toggle("open");
+  }
+}
+
+function closeMenu() {
+  const menu = document.getElementById("mobile-menu");
+  if (menu) {
+    menu.classList.remove("open");
+  }
+}
+
+function activarAnimacionesScroll() {
+  const revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+  revealElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+
+    const entraEnPantalla =
+      rect.top < window.innerHeight * 0.82 &&
+      rect.bottom > window.innerHeight * 0.18;
+
+    if (entraEnPantalla) {
+      el.classList.add("visible");
+    } else {
+      el.classList.remove("visible");
+    }
+  });
+}
+
+window.addEventListener("scroll", activarAnimacionesScroll);
+window.addEventListener("resize", activarAnimacionesScroll);
+window.addEventListener("load", activarAnimacionesScroll);
+</script>
+
+
+<a href="#top" class="scroll-top" aria-label="Volver arriba">
+  ↑
+</a>
+
+
+
+<a href="https://wa.me/34660736866"
+   class="whatsapp-float"
+   target="_blank"
+   aria-label="WhatsApp">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+</a>
+
+  <footer>
+  <div class="footer-legal">
+    <span>©2026 AURINEGRA · D’Medina Global Trade, S.L. · CIF: B05653621</span>
+    <a href="aviso-legal.html">Aviso legal</a>
+    <a href="politica-privacidad.html">Política de privacidad</a>
+    <a href="politica-cookies.html">Política de cookies</a>
+    <a href="configuracion-cookies.html">Configuración de cookies</a>
+  </div>
+</footer>
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-text">
+    <strong>Configuración de cookies</strong>
+    <p>
+      Utilizamos cookies técnicas necesarias para el funcionamiento de la web y, con tu consentimiento,
+      cookies de preferencias, análisis y marketing. Puedes aceptar, rechazar o configurar tus preferencias.
+      Consulta nuestra <a href="politica-cookies.html">Política de cookies</a>.
+    </p>
+  </div>
+
+  <div class="cookie-actions">
+    <button type="button" class="cookie-accept" onclick="aceptarCookies()">Aceptar todas</button>
+    <button type="button" class="cookie-reject" onclick="rechazarCookies()">Rechazar</button>
+    <a href="configuracion-cookies.html" class="cookie-config">Configurar</a>
+  </div>
+</div>
+<script>
+  function mostrarBannerCookies() {
+    const banner = document.getElementById("cookie-banner");
+    const config = localStorage.getItem("cookieConfigCafeDMedina");
+
+    if (!config && banner) {
+      banner.classList.add("show");
+    }
+  }
+
+  function aceptarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: true,
+      analiticas: true,
+      marketing: true,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  function rechazarCookies() {
+    const config = {
+      necesarias: true,
+      preferencias: false,
+      analiticas: false,
+      marketing: false,
+      fecha: new Date().toISOString()
+    };
+
+    localStorage.setItem("cookieConfigCafeDMedina", JSON.stringify(config));
+
+    const banner = document.getElementById("cookie-banner");
+    if (banner) {
+      banner.classList.remove("show");
+    }
+  }
+
+  window.addEventListener("load", mostrarBannerCookies);
+</script>
+
+</body>
+</html>
