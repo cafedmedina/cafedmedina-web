@@ -1047,7 +1047,91 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Resend (v6) NO lanza excepción cuando un envío falla: devuelve { data, error }. Sin comprobarlo, un correo
 // rechazado (dominio sin verificar, clave inválida...) desaparece sin dejar rastro. Aquí se comprueba siempre:
 // el error se lanza para que quien llama lo registre en los logs de Render.
+// Además, para que los correos a clientes no caigan en spam:
+//  - siempre llevan versión de texto plano (los filtros desconfían de los correos solo HTML);
+//  - los que van a clientes se envuelven en una plantilla completa con los datos legales de la empresa en el pie;
+//  - "Responder a" apunta al email de la empresa.
+function htmlATexto(html) {
+  return String(html || "")
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
+    .replace(/\s*\n\s*/g, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|ul|h[1-6])>/gi, "\n\n")
+    .replace(/<\/(div|li|tr)>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<a [^>]*href="mailto:[^"]+"[^>]*>([^<]*)<\/a>/gi, "$1")
+    .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/gi, "$2 ($1)")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .split("\n").map(linea => linea.replace(/\s+/g, " ").trim()).join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+// Firma aprobada de AURINEGRA (versión Outlook, de D:\DMedina\Diseño\VARIOS PARA EMPAQUE\firma_AURINEGRA_outlook.html),
+// firmada como equipo porque los correos de la web son automáticos. Las imágenes se sirven desde la web
+// (img/correo/) en vez de ir incrustadas en base64: Gmail no muestra las incrustadas y suben la puntuación de spam.
+const URL_WEB = "https://aurinegracafe.com";
+const FIRMA_CORREO_HTML = `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:13px;line-height:1.4;color:#2B1A12;margin-top:6px;">
+  <tr>
+    <td valign="top" width="96" style="width:96px;padding:0 16px 0 0;"><img src="${URL_WEB}/img/correo/firma-dm.png" width="80" height="80" alt="DM" style="display:block;border:0;"></td>
+    <td valign="top" style="border-left:2px solid #C9A24B;padding:0 0 0 16px;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:bold;color:#2B1A12;">Equipo AURINEGRA</div>
+      <div style="font-size:11px;color:#B8923E;letter-spacing:1.5px;padding-top:2px;">Atención al cliente</div>
+      <div style="font-size:13px;padding-top:7px;"><b>D’Medina Global Trade, S.L.</b> &nbsp;·&nbsp; AURINEGRA</div>
+      <div style="padding-top:6px;line-height:1.6;">
+        <span style="color:#B8923E;font-weight:bold;">T</span>&nbsp; ${EMPRESA.telefono}<br>
+        <span style="color:#B8923E;font-weight:bold;">E</span>&nbsp; <a href="mailto:${EMPRESA.email}" style="color:#2B1A12;text-decoration:none;">${EMPRESA.email}</a><br>
+        <span style="color:#B8923E;font-weight:bold;">W</span>&nbsp; <a href="${URL_WEB}" style="color:#2B1A12;text-decoration:none;">aurinegracafe.com</a><br>
+        Calle San Pedro del Pinatar, 24 · 28939 Arroyomolinos, Madrid
+      </div>
+    </td>
+  </tr>
+  <tr><td colspan="2" style="padding-top:12px;"><a href="${URL_WEB}"><img src="${URL_WEB}/img/correo/firma-banda.png" width="512" alt="AURINEGRA" style="display:block;border:0;width:100%;max-width:512px;height:auto;"></a></td></tr>
+  <tr><td colspan="2" style="padding-top:8px;font-size:10px;line-height:1.45;color:#7A6E60;">
+    D’Medina Global Trade, S.L. · NIF ${EMPRESA.cif} · ${escaparHtml(EMPRESA.direccion)} · Inscrita en el Registro Mercantil de Madrid, Hoja 897274, Inscripción 1.ª<br>
+    Este mensaje y sus archivos adjuntos son confidenciales y están dirigidos exclusivamente a su destinatario. Si lo ha recibido por error, le rogamos que lo comunique al remitente y lo elimine. Sus datos se tratan para gestionar la relación comercial, conforme al RGPD; puede ejercer sus derechos escribiendo a ${EMPRESA.email}.<br>
+    Recibe este correo porque ha realizado un pedido o una solicitud en aurinegracafe.com.
+  </td></tr>
+</table>`;
+
+function plantillaCorreoCliente(contenido) {
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${EMPRESA.nombreComercial}</title></head>
+<body style="margin:0;padding:0;background:#f5efe6;font-family:Arial,Helvetica,sans-serif;color:#2b1a12;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5efe6;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;">
+        <tr><td style="background:#11100f;padding:18px 24px;text-align:center;">
+          <span style="font-family:Georgia,serif;font-size:24px;font-weight:bold;letter-spacing:2px;color:#e2c47d;">${EMPRESA.nombreComercial}</span>
+        </td></tr>
+        <tr><td style="padding:24px;font-size:15px;line-height:1.6;color:#2b1a12;">
+          ${contenido}
+          <p style="margin-top:22px;">Un saludo,</p>
+          ${FIRMA_CORREO_HTML}
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 async function enviarCorreo(opciones) {
+  const destinos = Array.isArray(opciones.to) ? opciones.to : [opciones.to];
+  const esInterno = destinos.every(d => String(d).toLowerCase() === EMPRESA.email || String(d).toLowerCase() === String(process.env.AVISO_PEDIDOS_EMAIL || "").toLowerCase());
+
+  const html = opciones.html && !esInterno ? plantillaCorreoCliente(opciones.html) : opciones.html;
+  opciones = {
+    replyTo: EMPRESA.email,
+    ...opciones,
+    html,
+    text: opciones.text || htmlATexto(html)
+  };
+
   const { data, error } = await resend.emails.send(opciones);
   if (error) {
     const destino = Array.isArray(opciones.to) ? opciones.to.join(", ") : opciones.to;
@@ -1480,12 +1564,22 @@ async function enviarFacturaPorEmail(pedido, pdfBuffer) {
   await enviarCorreo({
     from: REMITENTE_EMAIL,
     to: email,
-    subject: `Factura ${pedido.factura.numero} · ${EMPRESA.nombreComercial}`,
-    html: `
-      <p>Hola ${escaparHtml((pedido.cliente && pedido.cliente.nombre) || "")},</p>
-      <p>Gracias por tu compra en ${EMPRESA.nombreComercial}. Adjuntamos la factura de tu pedido.</p>
-      <p>Te avisaremos en cuanto el pedido salga hacia tu dirección.</p>
-    `,
+    subject: `Tu pedido ${pedido.numeroPedido || ""} en ${EMPRESA.nombreComercial}: factura ${pedido.factura.numero}`.replace("  ", " "),
+    html: (() => {
+      const r = resumenPedidoTexto(pedido);
+      return `
+        <p>Hola ${escaparHtml((pedido.cliente && pedido.cliente.nombre) || "")},</p>
+        <p>Gracias por tu compra en ${EMPRESA.nombreComercial}. Hemos recibido el pago de tu pedido
+           <strong>${escaparHtml(pedido.numeroPedido || "")}</strong> y ya lo estamos preparando.</p>
+        <p><strong>Resumen de tu pedido:</strong></p>
+        <ul style="padding-left:18px;margin:0 0 12px;">${r.lineas.map(l => `<li>${escaparHtml(l)}</li>`).join("")}</ul>
+        <p><strong>Total:</strong> ${escaparHtml(r.total)} (IVA incluido)<br>
+           <strong>Envío a:</strong> ${escaparHtml(r.direccion)}</p>
+        <p>Te adjuntamos la factura <strong>${escaparHtml(pedido.factura.numero)}</strong> en PDF.
+           Te avisaremos en cuanto el pedido salga hacia tu dirección.</p>
+        <p>Si tienes cualquier duda, responde a este correo o escríbenos por WhatsApp al ${EMPRESA.telefono}.</p>
+      `;
+    })(),
     attachments: [{ filename: `${pedido.factura.numero}.pdf`, content: pdfBuffer }]
   });
 }
