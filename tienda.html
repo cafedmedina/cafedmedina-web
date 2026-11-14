@@ -329,6 +329,11 @@
       line-height: 1.38;
     }
 
+    /* En la columna izquierda el espacio ya lo pone la columna */
+    .product-left .molienda-box {
+      margin-top: 0;
+    }
+
     .molienda-titulo {
       margin: 0 0 10px;
     }
@@ -1231,6 +1236,33 @@
           <p><strong>Variedad:</strong> 100% Arábica</p>
           <p><strong>Productor:</strong> Ramón Medina</p>
         </div>
+
+        <!-- Solo vendemos en grano: en vez de elegir molienda, recomendamos cómo molerlo (mismos datos que la bolsa) -->
+        <div class="molienda-box">
+          <p class="molienda-titulo"><strong>En grano, para que lo muelas justo antes de prepararlo.</strong> Cómo molerlo según tu método:</p>
+          <div class="molienda-grid">
+            <div class="molienda-item">
+              <strong>Espresso</strong>
+              <span class="molienda-grado">Fina</span>
+              <span>18 g → 36 g · 90–94 °C</span>
+            </div>
+            <div class="molienda-item">
+              <strong>Moka</strong>
+              <span class="molienda-grado">Media-fina</span>
+              <span>Filtro lleno sin prensar · agua bajo la válvula</span>
+            </div>
+            <div class="molienda-item">
+              <strong>Filtro (V60, Chemex)</strong>
+              <span class="molienda-grado">Media</span>
+              <span>7–10 g por 100 ml · 92–96 °C · 2:30–3 min</span>
+            </div>
+            <div class="molienda-item">
+              <strong>Prensa francesa</strong>
+              <span class="molienda-grado">Gruesa</span>
+              <span>6–8 g por 100 ml · 92–96 °C · 4 min</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="product-right">
@@ -1283,34 +1315,6 @@
               </select>
             </div>
 
-          </div>
-
-          <!-- Solo vendemos en grano: en vez de elegir molienda, recomendamos cómo molerlo (mismos datos que la bolsa) -->
-          <div class="molienda-box">
-            <p class="molienda-titulo"><strong>En grano, para que lo muelas justo antes de prepararlo.</strong> Cómo molerlo según tu método:</p>
-            <div class="molienda-grid">
-              <div class="molienda-item">
-                <strong>Espresso</strong>
-                <span class="molienda-grado">Fina</span>
-                <span>18 g → 36 g · 90–94 °C</span>
-              </div>
-              <div class="molienda-item">
-                <strong>Moka</strong>
-                <span class="molienda-grado">Media-fina</span>
-                <span>Filtro lleno sin prensar · agua bajo la válvula</span>
-              </div>
-              <div class="molienda-item">
-                <strong>Filtro (V60, Chemex)</strong>
-                <span class="molienda-grado">Media</span>
-                <span>7–10 g por 100 ml · 92–96 °C · 2:30–3 min</span>
-              </div>
-              <div class="molienda-item">
-                <strong>Prensa francesa</strong>
-                <span class="molienda-grado">Gruesa</span>
-                <span>6–8 g por 100 ml · 92–96 °C · 4 min</span>
-              </div>
-            </div>
-            <p class="molienda-nota">¿Sin molinillo? En tu cafetería te lo muelen al momento: diles para qué método es.</p>
           </div>
 
           <div class="price" id="precio">Selecciona un lote</div>
