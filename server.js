@@ -815,7 +815,7 @@ app.post("/api/avisos-disponibilidad", async (req, res) => {
     if (!existente && vecesEnVentana("avisos-email", 24 * 60 * 60 * 1000) < 30) {
       registrarVez("avisos-email");
       try {
-        await resend.emails.send({
+        await enviarCorreo({
           from: REMITENTE_EMAIL,
           to: process.env.AVISO_PEDIDOS_EMAIL || EMPRESA.email,
           subject: `🔔 Nuevo interesado: ${proceso} ${peso === "1000" ? "1 kg" : peso + " g"}`,
@@ -1043,6 +1043,19 @@ app.get("/api/pedidos/:id/albaran", requiereAdmin, async (req, res) => {
 //-------------------------------------------------------------------------------------------------CIERRA - STOCK Y PEDIDOS--------------------------------------------------------------------------------------------//
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Resend (v6) NO lanza excepción cuando un envío falla: devuelve { data, error }. Sin comprobarlo, un correo
+// rechazado (dominio sin verificar, clave inválida...) desaparece sin dejar rastro. Aquí se comprueba siempre:
+// el error se lanza para que quien llama lo registre en los logs de Render.
+async function enviarCorreo(opciones) {
+  const { data, error } = await resend.emails.send(opciones);
+  if (error) {
+    const destino = Array.isArray(opciones.to) ? opciones.to.join(", ") : opciones.to;
+    throw new Error(`Resend rechazó el correo "${opciones.subject}" a ${destino}: ${error.name || ""} ${error.message || JSON.stringify(error)}`);
+  }
+  console.log(`Correo enviado: "${opciones.subject}" → ${Array.isArray(opciones.to) ? opciones.to.join(", ") : opciones.to}`);
+  return data;
+}
 
 //-------------------------------------------------------------------------------------------------ABRE - FACTURACIÓN (FACTURAS Y ALBARANES EN PDF)--------------------------------------------------------------------------------------------//
 
@@ -1464,7 +1477,7 @@ async function enviarFacturaPorEmail(pedido, pdfBuffer) {
   const email = pedido.cliente && pedido.cliente.email;
   if (!email) return;
 
-  await resend.emails.send({
+  await enviarCorreo({
     from: REMITENTE_EMAIL,
     to: email,
     subject: `Factura ${pedido.factura.numero} · ${EMPRESA.nombreComercial}`,
@@ -1547,7 +1560,7 @@ async function enviarAvisoTransferenciaCliente(pedido) {
   if (!email) return;
   const num = pedido.numeroPedido || "";
   try {
-    await resend.emails.send({
+    await enviarCorreo({
       from: REMITENTE_EMAIL,
       to: email,
       subject: `Pedido ${num} · pendiente de transferencia · ${EMPRESA.nombreComercial}`,
@@ -1595,7 +1608,7 @@ async function avisarEmpresaPedido(pedido, tipo, pdfFactura) {
   };
 
   try {
-    await resend.emails.send({
+    await enviarCorreo({
       from: REMITENTE_EMAIL,
       to: process.env.AVISO_PEDIDOS_EMAIL || EMPRESA.email,
       subject: titulos[tipo],
@@ -1628,7 +1641,7 @@ async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
   const email = pedido.cliente && pedido.cliente.email;
   if (!email) return;
 
-  await resend.emails.send({
+  await enviarCorreo({
     from: REMITENTE_EMAIL,
     to: email,
     subject: `Tu pedido va en camino · ${EMPRESA.nombreComercial}`,
@@ -2115,10 +2128,18 @@ async function confirmarPagoPedido(session) {
     // Si Stripe reenvía el evento tras un fallo a medias, la clave del pedido evita emitir otra factura.
     pedido.factura = await emitirFactura(datosFacturaPedido(pedido), `pedido-${pedido.id}`);
     pdfFactura = await construirFacturaPDF(pedido);
-    await enviarFacturaPorEmail(pedido, pdfFactura);
     await actualizarFichaCliente(pedido);
   } catch (error) {
-    console.error(`No se pudo generar/enviar la factura del pedido ${pedido.id}:`, error);
+    console.error(`No se pudo generar la factura del pedido ${pedido.id}:`, error);
+  }
+
+  // El correo va aparte: si falla, la factura y la ficha del cliente quedan igualmente guardadas
+  if (pdfFactura) {
+    try {
+      await enviarFacturaPorEmail(pedido, pdfFactura);
+    } catch (error) {
+      console.error(`No se pudo enviar la factura por email del pedido ${pedido.numeroPedido || pedido.id}:`, error.message);
+    }
   }
 
   await redisSet("stock_reservado", reservado);
@@ -2431,7 +2452,7 @@ app.post("/contacto", async (req, res) => {
       mensaje
     } = req.body;
 
-    await resend.emails.send({
+    await enviarCorreo({
 
       from: REMITENTE_EMAIL,
 
