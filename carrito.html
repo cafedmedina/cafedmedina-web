@@ -1611,6 +1611,12 @@
         valido = false;
       }
 
+      // Documento registrado a nombre de otra persona/empresa (comprobado mientras se rellenaba)
+      if (valido && avisoTitular) {
+        marcarErrorCliente("dni", avisoTitular);
+        valido = false;
+      }
+
       if (!cliente.telefono) { marcarErrorCliente("telefono", "Introduce el teléfono."); valido = false; }
       else if (!validarTelefonoMovil(cliente.telefono)) { marcarErrorCliente("telefono", "Debe ser un móvil español (9 dígitos, empieza por 6 o 7)."); valido = false; }
 
@@ -1692,6 +1698,15 @@
 
         // Errores con explicación del servidor (sin stock, código postal sin envío...): se muestran tal cual.
         if (!response.ok) {
+          // Si el error es de una casilla concreta (p. ej. DNI registrado a nombre de otra persona), se marca esa casilla
+          if (session.campo && session.error) {
+            marcarErrorCliente(session.campo, session.error);
+            const casilla = document.getElementById(`cliente-${session.campo}`);
+            if (casilla) {
+              casilla.scrollIntoView({ behavior: "smooth", block: "center" });
+              casilla.focus({ preventScroll: true });
+            }
+          }
           const aviso = new Error(session.error || "El servidor respondió con un error.");
           aviso.paraCliente = Boolean(session.error);
           throw aviso;
@@ -1713,10 +1728,67 @@
       }
     }
 
+    // ---- ¿El DNI/CIF ya es de otra persona o empresa? Se comprueba mientras se rellena el formulario ----
+    let avisoTitular = null;       // mensaje del servidor si el documento es de otro titular
+    let consultaTitular = 0;       // para ignorar respuestas de consultas antiguas
+
+    async function comprobarTitular() {
+      const tipoCliente = document.querySelector('input[name="tipo-cliente"]:checked').value;
+      const esEmpresa = tipoCliente === "empresa";
+      const dni = document.getElementById("cliente-dni").value.trim().toUpperCase();
+      const nombre = document.getElementById("cliente-nombre").value.trim();
+      const apellidos = esEmpresa ? "" : document.getElementById("cliente-apellidos").value.trim();
+      const errorDni = document.getElementById("error-dni");
+      const inputDni = document.getElementById("cliente-dni");
+
+      const quitarAviso = () => {
+        if (avisoTitular && errorDni.textContent === avisoTitular) {
+          errorDni.textContent = "";
+          inputDni.classList.remove("invalid");
+        }
+        avisoTitular = null;
+      };
+
+      // Solo se consulta con un documento válido y el nombre escrito (y los apellidos, si es particular)
+      const documentoValido = esEmpresa ? validarCif(dni) : validarDniNie(dni);
+      if (!documentoValido || !nombre || (!esEmpresa && !apellidos)) {
+        quitarAviso();
+        return;
+      }
+
+      const esta = ++consultaTitular;
+      try {
+        const response = await fetch("https://cafedmedina-web.onrender.com/api/comprobar-titular", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tipoCliente, dni, nombre, apellidos })
+        });
+        const r = await response.json().catch(() => ({ ok: true }));
+        if (esta !== consultaTitular) return; // el cliente siguió escribiendo: vale la consulta más reciente
+
+        if (r.ok === false && r.error) {
+          avisoTitular = r.error;
+          marcarErrorCliente("dni", r.error);
+        } else {
+          quitarAviso();
+        }
+      } catch (e) {
+        // Sin conexión: no se bloquea aquí (el servidor lo vuelve a comprobar al pagar)
+      }
+    }
+
+    ["cliente-dni", "cliente-nombre", "cliente-apellidos"].forEach(id => {
+      document.getElementById(id).addEventListener("change", comprobarTitular);
+    });
+    document.querySelectorAll('input[name="tipo-cliente"]').forEach(radio => {
+      radio.addEventListener("change", comprobarTitular);
+    });
+
     (async function init() {
       await Promise.all([cargarLotes(), cargarConfigEnvio()]);
       renderCart();
       precargarCliente();
+      comprobarTitular(); // por si los datos guardados de una compra anterior ya chocan
     })();
   </script>
 

@@ -742,6 +742,47 @@ app.get("/api/movimientos", requiereAdmin, async (req, res) => {
   }
 });
 
+//-------------------------------------------------------------------------------------------------ABRE - COMPROBAR TITULAR DEL DNI/CIF (mientras se rellena el formulario del carrito)--------------------------------------------------------------------------------------------//
+// Responde solo "ok" o "este documento es de otra persona/empresa": nunca dice a nombre de quién está.
+// "No registrado" y "registrado con este mismo nombre" dan la misma respuesta, para no revelar quién es cliente.
+// Limitado a 30 consultas por hora por IP para que no se pueda ir probando documentos.
+function mensajeTitularDistinto(cliente) {
+  const esEmpresa = cliente.tipoCliente === "empresa";
+  return `Este ${esEmpresa ? "CIF" : "DNI/NIF/NIE"} ya está registrado a nombre de otra ${esEmpresa ? "empresa" : "persona"}. ` +
+         `Revisa el documento o, si es correcto, escríbenos a ${EMPRESA.email} o por WhatsApp al ${EMPRESA.telefono}.`;
+}
+
+app.post("/api/comprobar-titular", async (req, res) => {
+  try {
+    const claveIp = `titular|${ipCliente(req)}`;
+    if (vecesEnVentana(claveIp, 60 * 60 * 1000) >= 30) {
+      return res.json({ ok: true }); // pasado el límite no se comprueba aquí (se vuelve a comprobar al pagar)
+    }
+    registrarVez(claveIp);
+
+    const b = req.body || {};
+    const cliente = {
+      tipoCliente: b.tipoCliente === "empresa" ? "empresa" : "particular",
+      dni: String(b.dni || "").slice(0, 20),
+      nombre: String(b.nombre || "").replace(/[<>]/g, "").slice(0, 100),
+      apellidos: String(b.apellidos || "").replace(/[<>]/g, "").slice(0, 100)
+    };
+    if (!claveCliente(cliente) || !cliente.nombre.trim()) return res.json({ ok: true });
+
+    const clientes = await leerClientes();
+    const ficha = clientes[claveCliente(cliente)];
+    if (ficha && !mismoTitular(ficha, cliente)) {
+      return res.json({ ok: false, campo: "dni", error: mensajeTitularDistinto(cliente) });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("No se pudo comprobar el titular del DNI/CIF:", error);
+    res.json({ ok: true }); // si falla la base de datos no se bloquea al cliente (se vuelve a comprobar al pagar)
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - COMPROBAR TITULAR DEL DNI/CIF--------------------------------------------------------------------------------------------//
+
 //-------------------------------------------------------------------------------------------------ABRE - AVÍSAME CUANDO ESTÉ DISPONIBLE (interesados / clientes potenciales)--------------------------------------------------------------------------------------------//
 // Desde la tienda, en un producto "Próximamente", el visitante deja su contacto para que le avisemos.
 // Se guarda en Redis ("avisos_disponibilidad") con su consentimiento (RGPD):
@@ -1205,6 +1246,38 @@ function etiquetaPeso(peso) {
 // DNI/NIE/CIF normalizado -> clave única de la ficha de cliente (no se duplica aunque cambien mayúsculas/guiones).
 function claveCliente(cliente) {
   return String((cliente && cliente.dni) || "").trim().toUpperCase().replace(/[-\s]/g, "");
+}
+
+// ¿El nombre de este pedido corresponde al titular ya registrado con ese DNI/CIF?
+// Tolerante: ignora tildes, mayúsculas, puntuación y palabras de relleno ("de", "la", "S.L."...), y acepta que
+// un nombre tenga palabras de más (segundo nombre/apellido): "JULIANA MEDINA" = "JULIANA ANDREA MEDINA OROZCO".
+const PALABRAS_RELLENO = new Set(["DE", "DEL", "LA", "LAS", "LOS", "EL", "Y", "SL", "SLU", "SA", "SAU", "SC", "CB", "SCOOP", "SOCIEDAD", "LIMITADA", "ANONIMA"]);
+
+function normalizarNombre(texto) {
+  return String(texto || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")   // quita tildes (Ñ → N en los dos lados por igual)
+    .toUpperCase()
+    .replace(/[.'’`´]/g, "")                             // "S.L." → "SL", "D'MEDINA" → "DMEDINA"
+    .replace(/[^A-Z0-9]+/g, " ")
+    .trim();
+}
+
+function mismoTitular(ficha, cliente) {
+  const nombreFicha = normalizarNombre(`${ficha.nombre || ""} ${ficha.apellidos || ""}`);
+  const nombrePedido = normalizarNombre(`${cliente.nombre || ""} ${cliente.apellidos || ""}`);
+  if (!nombreFicha || !nombrePedido) return true; // sin datos con que comparar: no se bloquea
+
+  const sinEspacios = (s) => s.replace(/ /g, "");
+  if (sinEspacios(nombreFicha).includes(sinEspacios(nombrePedido)) || sinEspacios(nombrePedido).includes(sinEspacios(nombreFicha))) {
+    return true;
+  }
+
+  const palabras = (s) => new Set(s.split(" ").filter(p => p.length > 1 && !PALABRAS_RELLENO.has(p)));
+  const a = palabras(nombreFicha);
+  const b = palabras(nombrePedido);
+  if (a.size === 0 || b.size === 0) return true;
+  const [menor, mayor] = a.size <= b.size ? [a, b] : [b, a];
+  return [...menor].every(p => mayor.has(p));
 }
 
 // Se llama solo tras confirmarse el pago: crea o actualiza la ficha del cliente y añade la factura a su historial.
@@ -2352,6 +2425,19 @@ app.post("/create-checkout-session", async (req, res) => {
     const errorTrasLimpiar = validarClienteServidor(cliente);
     if (errorTrasLimpiar) {
       return res.status(400).json({ error: errorTrasLimpiar });
+    }
+
+    // Un DNI/CIF ya registrado a nombre de otra persona o empresa no se puede usar con otro nombre.
+    // No se dice a nombre de quién está (sería revelar datos de otro cliente).
+    try {
+      const clientes = await leerClientes();
+      const ficha = clientes[claveCliente(cliente)];
+      if (ficha && !mismoTitular(ficha, cliente)) {
+        // Seguro por si alguien se salta el aviso del formulario (que ya lo comprueba mientras se rellena)
+        return res.status(409).json({ campo: "dni", error: mensajeTitularDistinto(cliente) });
+      }
+    } catch (error) {
+      console.error("No se pudo comprobar el titular del DNI/CIF (se continúa con el pago):", error);
     }
 
     const catalogo = await leerCatalogo();
