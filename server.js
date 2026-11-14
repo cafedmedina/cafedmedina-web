@@ -167,6 +167,77 @@ app.put("/api/catalogo", requiereAdmin, (req, res) => {
 
 //-------------------------------------------------------------------------------------------------CIERRA - CATÁLOGO--------------------------------------------------------------------------------------------//
 
+//-------------------------------------------------------------------------------------------------ABRE - PUBLICACIÓN EN TIENDA (QUÉ PROCESOS Y FORMATOS SE VEN)--------------------------------------------------------------------------------------------//
+
+// Qué procesos y formatos se ofrecen en la tienda, en el orden en que aparecen. Vive en Redis (permanente),
+// no en lotes.json: se cambia desde el panel admin sin pasar por GitHub. Un proceso/formato publicado sin
+// lote activo con stock se muestra como "Próximamente". El nombre del proceso debe coincidir con el del lote.
+const PUBLICACION_DEFECTO = {
+  procesos: [
+    { nombre: "Lavado doble fermentación", pesos: ["250"] },
+    { nombre: "Natural", pesos: ["250"] },
+    { nombre: "Honey", pesos: ["250"] }
+  ]
+};
+
+// Solo vendemos café en grano: la molienda la hace el cliente (la tienda le recomienda cómo según su método).
+const MOLIENDA_UNICA = "En grano";
+
+async function leerPublicacion() {
+  const guardada = await redisGet("tienda_publicacion", null);
+  return guardada && Array.isArray(guardada.procesos) ? guardada : PUBLICACION_DEFECTO;
+}
+
+function pesoPublicado(publicacion, proceso, peso) {
+  const fila = publicacion.procesos.find(p => p.nombre === proceso);
+  return Boolean(fila && fila.pesos.includes(String(peso)));
+}
+
+app.get("/api/tienda-publicacion", async (req, res) => {
+  try {
+    res.json(await leerPublicacion());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer la configuración de la tienda" });
+  }
+});
+
+app.put("/api/tienda-publicacion", requiereAdmin, async (req, res) => {
+  try {
+    const entrada = req.body && Array.isArray(req.body.procesos) ? req.body.procesos : null;
+    if (!entrada || entrada.length > 20) {
+      return res.status(400).json({ error: "Lista de procesos no válida" });
+    }
+
+    const vistos = new Set();
+    const procesos = [];
+
+    for (const fila of entrada) {
+      const nombre = String((fila && fila.nombre) || "").trim();
+      if (!nombre || nombre.length > 60) {
+        return res.status(400).json({ error: "Cada proceso necesita un nombre (máx. 60 caracteres)" });
+      }
+      if (vistos.has(nombre.toLowerCase())) {
+        return res.status(400).json({ error: `El proceso "${nombre}" está repetido` });
+      }
+      vistos.add(nombre.toLowerCase());
+
+      const pesos = PESOS_VALIDOS.filter(p => Array.isArray(fila.pesos) && fila.pesos.map(String).includes(p));
+      procesos.push({ nombre, pesos });
+    }
+
+    const publicacion = { procesos };
+    await redisSet("tienda_publicacion", publicacion);
+    res.json({ success: true, publicacion });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo guardar la configuración de la tienda" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - PUBLICACIÓN EN TIENDA--------------------------------------------------------------------------------------------//
+
 //-------------------------------------------------------------------------------------------------ABRE - ENVÍO (GASTOS DE ENVÍO: PENÍNSULA Y BALEARES)--------------------------------------------------------------------------------------------//
 
 // Los portes que cobramos junto con el café son una prestación accesoria de la venta (art. 78.Dos.2º
@@ -1718,6 +1789,17 @@ app.post("/create-checkout-session", async (req, res) => {
     const catalogo = leerCatalogo();
     const stockReal = await leerStockReal();
     const reservado = await leerReservado();
+    const publicacion = await leerPublicacion();
+
+    // Formatos que ya no se publican (p. ej. un 500 g que quedó en un carrito antiguo): no se venden.
+    for (const item of carrito) {
+      const lote = catalogo[item && item.lote];
+      if (lote && !pesoPublicado(publicacion, lote.proceso, item.peso)) {
+        return res.status(400).json({
+          error: `El formato de ${etiquetaPeso(item.peso)} de ${lote.proceso} ya no está a la venta. Quítalo del carrito para continuar.`
+        });
+      }
+    }
 
     // unidades necesarias por lote + formato en este pedido (varias líneas pueden compartir el mismo lote/formato)
     const unidadesNecesarias = {}; // "CODIGO|peso" -> unidades
@@ -1728,6 +1810,9 @@ app.post("/create-checkout-session", async (req, res) => {
       if (!lote || lote.estado !== "activo") {
         throw new Error(`El lote "${item.lote}" ya no está disponible`);
       }
+
+      // Lo que diga el navegador da igual: solo vendemos en grano.
+      item.molienda = MOLIENDA_UNICA;
 
       const precioUnitario = Number(lote.precios[item.peso]);
 

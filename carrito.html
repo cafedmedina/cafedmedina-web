@@ -60,90 +60,138 @@
 
     .page-content {
       width: 100%;
-      padding: 48px 7% 80px;
+      padding: 32px 7% 80px;
     }
 
-    .cart-box {
-      width: 100%;
-      max-width: 780px;
-
+    /* Dos columnas: datos (izquierda) y carrito (derecha, fijo al bajar) */
+    .checkout {
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 36px;
 
-      border-radius: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .checkout.vacio {
+      grid-template-columns: minmax(0, 520px);
+      justify-content: center;
+    }
+
+    .checkout.vacio .cliente-form,
+    .checkout.vacio .btn-pagar,
+    .checkout.vacio .cart-nota,
+    .checkout.vacio .cart-total {
+      display: none;
+    }
+
+    .checkout-box {
+      min-width: 0;
+      padding: 28px 30px;
+
+      border-radius: 24px;
       background: var(--black-soft);
       border: 1px solid rgba(200,169,106,.28);
       box-shadow: 0 22px 50px rgba(0,0,0,.28);
     }
 
+    .cart-box {
+      position: sticky;
+      top: 100px;
+    }
+
     .cart-box h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 38px;
-      line-height: 1.1;
-      margin-bottom: 24px;
+      font-size: 24px;
+      line-height: 1.2;
+      margin-bottom: 6px;
       color: var(--white);
     }
 
     #cart-items {
-      font-size: 16px;
-      line-height: 1.55;
+      font-size: 14px;
+      line-height: 1.45;
       color: var(--muted);
     }
 
     .cart-item {
-      padding: 18px 0;
+      padding: 14px 0;
       border-bottom: 1px solid rgba(255,255,255,.13);
     }
 
+    .cart-item:last-child {
+      border-bottom: 0;
+    }
+
+    .cart-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
     .cart-item strong {
+      display: block;
       color: var(--white);
-      font-size: 17px;
+      font-size: 15px;
+    }
+
+    .cart-item-meta {
+      display: block;
+      font-size: 12.5px;
     }
 
     .cart-item-price {
-      display: inline-block;
-      margin-top: 6px;
+      flex-shrink: 0;
       color: var(--gold-light);
       font-weight: 900;
+      font-size: 15px;
+    }
+
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
     }
 
     .empty-cart {
       color: var(--muted);
-      font-size: 17px;
-      padding: 4px 0 18px;
+      font-size: 15px;
+      padding: 10px 0 4px;
+    }
+
+    .empty-cart a {
+      color: var(--gold-light);
+      font-weight: 900;
     }
 
     .remove-btn {
-      margin-top: 12px;
-
       background: transparent;
-      color: var(--gold-light);
-
-      border: 1px solid rgba(200,169,106,.55);
-      padding: 9px 16px;
-      border-radius: 999px;
+      color: var(--muted);
+      border: 0;
+      padding: 4px 0;
 
       cursor: pointer;
-      font-weight: 900;
-      font-size: 14px;
+      font-size: 12.5px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
     .remove-btn:hover {
-      background: var(--gold);
-      color: var(--black);
+      color: var(--gold-light);
     }
 
     .qty-control {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-
-      margin-top: 8px;
     }
 
     .qty-btn {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
 
       background: transparent;
       color: var(--gold-light);
@@ -209,12 +257,12 @@
       justify-content: space-between;
       align-items: center;
 
-      margin-top: 18px;
-      padding-top: 18px;
+      margin-top: 14px;
+      padding-top: 14px;
 
       border-top: 1px solid rgba(255,255,255,.16);
 
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 900;
       color: var(--gold-light);
     }
@@ -223,15 +271,22 @@
       color: var(--gold-light);
     }
 
-    .cliente-form {
-      margin-top: 28px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255,255,255,.16);
+    .cart-nota {
+      margin-top: 2px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .cart-seguro {
+      margin-top: 10px;
+      text-align: center;
     }
 
     .cliente-form h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 22px;
+      font-size: 24px;
+      line-height: 1.2;
       margin-bottom: 4px;
       color: var(--white);
     }
@@ -239,24 +294,31 @@
     .cliente-form .form-subtitle {
       color: var(--muted);
       font-size: 13.5px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
+    .form-ayuda {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* Rejilla de 6 columnas: c3 = media fila, c6 = fila entera, c2 = un tercio */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px 14px;
     }
 
-    .form-field.full {
-      grid-column: 1 / -1;
-    }
+    .form-field.c2 { grid-column: span 2; }
+    .form-field.c3 { grid-column: span 3; }
+    .form-field.c6 { grid-column: 1 / -1; }
 
     .form-field label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       color: var(--muted);
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 900;
       letter-spacing: .6px;
       text-transform: uppercase;
@@ -264,7 +326,7 @@
 
     .form-field input {
       width: 100%;
-      height: 44px;
+      height: 42px;
       padding: 10px 14px;
       background: #0f0d0c;
       color: var(--white);
@@ -284,54 +346,69 @@
       border-color: #d64525;
     }
 
+    /* Particular / Empresa como interruptor de dos botones */
     .tipo-toggle {
-      display: flex;
-      gap: 22px;
+      display: inline-flex;
+      margin-bottom: 16px;
+      padding: 3px;
+
+      border: 1px solid rgba(200,169,106,.4);
+      border-radius: 999px;
+      background: #0f0d0c;
     }
 
     .tipo-opcion {
-      display: flex !important;
-      align-items: center;
-      gap: 7px;
-
-      color: var(--white) !important;
-      font-size: 14px !important;
-      font-weight: 400 !important;
-      letter-spacing: 0 !important;
-      text-transform: none !important;
-
+      position: relative;
       cursor: pointer;
     }
 
     .tipo-opcion input {
-      width: auto;
-      height: auto;
-      cursor: pointer;
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
     }
 
+    .tipo-opcion span {
+      display: block;
+      padding: 7px 18px;
+      border-radius: 999px;
+
+      color: var(--muted);
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .tipo-opcion input:checked + span {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .tipo-opcion input:focus-visible + span {
+      outline: 2px solid var(--gold-light);
+      outline-offset: 2px;
+    }
+
+    /* El hueco del error solo aparece cuando hay un error */
     .form-error {
       margin-top: 4px;
-      min-height: 14px;
       color: #ff8a8a;
       font-size: 11.5px;
     }
 
-    @media (max-width: 850px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
+    .form-error:empty {
+      display: none;
     }
 
-    .btn {
-      margin-top: 32px;
-
+    .btn,
+    .btn-pagar {
       background: linear-gradient(135deg, var(--gold-light), var(--gold));
       color: var(--black);
 
       border: none;
-      padding: 16px 32px;
+      padding: 15px 28px;
       border-radius: 999px;
 
+      font-family: inherit;
       font-weight: 900;
       font-size: 15px;
 
@@ -339,9 +416,43 @@
       box-shadow: 0 14px 30px rgba(200,169,106,.18);
     }
 
-    .btn:hover {
+    .cart-box .btn-pagar {
+      width: 100%;
+      margin-top: 18px;
+    }
+
+    .btn:hover,
+    .btn-pagar:hover {
       transform: translateY(-1px);
       background: var(--gold-light);
+    }
+
+    .btn-pagar:disabled {
+      opacity: .6;
+      cursor: wait;
+      transform: none;
+    }
+
+    /* Barra de pago fija: solo en móvil (ver @media 850px) */
+    .mobile-paybar {
+      display: none;
+    }
+
+    .mobile-paybar[hidden] {
+      display: none !important;
+    }
+
+    /* Tablet: el carrito pasa arriba y deja de ir fijo */
+    @media (max-width: 960px) {
+      .checkout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .cart-box {
+        position: static;
+        order: -1;
+      }
     }
 
     /* MÓVIL */
@@ -379,69 +490,77 @@
       }
 
       .page-content {
-        padding: 24px 16px 50px;
+        padding: 20px 16px 110px;
       }
 
-      .cart-box {
-        width: 100%;
-        max-width: 100%;
-
-        padding: 28px 22px;
-        border-radius: 24px;
-
-        background: var(--black-soft);
-        border: 1px solid rgba(200,169,106,.32);
+      .checkout-box {
+        padding: 22px 18px;
+        border-radius: 20px;
       }
 
-      .cart-box h1 {
-        font-size: 32px;
-        margin-bottom: 20px;
+      .cart-box h1,
+      .cliente-form h2 {
+        font-size: 22px;
       }
 
-      #cart-items {
-        font-size: 17px;
-        line-height: 1.55;
+      /* En móvil, 2 columnas: nombre/apellidos, DNI/móvil y CP/localidad en pareja */
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
       }
 
-      .empty-cart {
-        font-size: 17px;
+      .form-field.c2,
+      .form-field.c3 { grid-column: span 1; }
+      .form-field.campo-provincia { grid-column: 1 / -1; }
+
+      .form-field input {
+        font-size: 16px; /* evita el zoom automático de iOS al escribir */
       }
 
-      .cart-item {
-        padding: 18px 0;
+      /* El botón del carrito se sustituye por la barra fija de abajo */
+      .cart-box .btn-pagar,
+      .cart-seguro {
+        display: none;
       }
 
-      .cart-item strong {
-        font-size: 17px;
-      }
-
-      .cart-total {
-        font-size: 25px;
-        margin-top: 24px;
-        padding-top: 20px;
-      }
-
-      #cart-total {
-        font-size: 27px;
-      }
-
-      .btn {
-        width: 100%;
-        min-height: 52px;
+      .mobile-paybar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9000;
 
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
+        gap: 14px;
 
-        margin-top: 28px;
-        padding: 14px 22px;
-
-        font-size: 16px;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        background: rgba(17,16,15,.97);
+        border-top: 1px solid rgba(200,169,106,.35);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
 
-      .remove-btn {
-        font-size: 14px;
-        padding: 9px 16px;
+      .paybar-total span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+      }
+
+      .paybar-total strong {
+        color: var(--gold-light);
+        font-size: 22px;
+        font-weight: 900;
+      }
+
+      .paybar-btn {
+        flex: 1;
+        max-width: 220px;
+        padding: 14px 18px;
       }
     }
 
@@ -981,100 +1100,111 @@
 </div>
 
 <div class="page-content">
-  <div class="cart-box">
+  <div class="checkout" id="checkout">
 
-    <h1>Carrito</h1>
+    <!-- IZQUIERDA: datos del cliente -->
+    <section class="checkout-box cliente-form" aria-labelledby="titulo-datos">
+      <h2 id="titulo-datos">Datos de envío y facturación</h2>
+      <p class="form-subtitle">Para enviarte el café y emitir tu factura. Los recordamos para tu próxima compra.</p>
+
+      <div class="tipo-toggle" role="radiogroup" aria-label="Tipo de cliente">
+        <label class="tipo-opcion">
+          <input type="radio" name="tipo-cliente" value="particular" checked onchange="onTipoClienteChange()">
+          <span>Particular</span>
+        </label>
+        <label class="tipo-opcion">
+          <input type="radio" name="tipo-cliente" value="empresa" onchange="onTipoClienteChange()">
+          <span>Empresa</span>
+        </label>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field c3" id="campo-nombre">
+          <label for="cliente-nombre" id="label-nombre">Nombre</label>
+          <input id="cliente-nombre" type="text" autocomplete="given-name" oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-nombre"></div>
+        </div>
+
+        <div class="form-field c3" id="campo-apellidos">
+          <label for="cliente-apellidos">Apellidos</label>
+          <input id="cliente-apellidos" type="text" autocomplete="family-name" oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-apellidos"></div>
+        </div>
+
+        <div class="form-field c3">
+          <label for="cliente-dni" id="label-dni">DNI / NIF / NIE</label>
+          <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A" oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-dni"></div>
+        </div>
+
+        <div class="form-field c3">
+          <label for="cliente-telefono">Móvil</label>
+          <input id="cliente-telefono" type="tel" autocomplete="tel" inputmode="tel" placeholder="612345678">
+          <div class="form-error" id="error-telefono"></div>
+        </div>
+
+        <div class="form-field c6">
+          <label for="cliente-email">Email</label>
+          <input id="cliente-email" type="email" autocomplete="email" inputmode="email" placeholder="tu@email.com">
+          <div class="form-error" id="error-email"></div>
+        </div>
+
+        <div class="form-field c6">
+          <label for="cliente-direccion">Dirección de envío</label>
+          <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso..." oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-direccion"></div>
+        </div>
+
+        <div class="form-field c2">
+          <label for="cliente-cp">Código postal</label>
+          <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001" maxlength="5" inputmode="numeric" oninput="onCodigoPostalInput(this)">
+          <div class="form-error" id="error-cp"></div>
+        </div>
+
+        <div class="form-field c2">
+          <label for="cliente-localidad">Localidad</label>
+          <input id="cliente-localidad" type="text" autocomplete="address-level2" oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-localidad"></div>
+        </div>
+
+        <div class="form-field c2 campo-provincia">
+          <label for="cliente-provincia">Provincia</label>
+          <input id="cliente-provincia" type="text" autocomplete="address-level1" oninput="this.value = this.value.toUpperCase()">
+          <div class="form-error" id="error-provincia"></div>
+        </div>
+      </div>
+      <p class="form-ayuda">Al escribir el código postal rellenamos la localidad y la provincia.</p>
+    </section>
+
+    <!-- DERECHA: carrito (se queda fijo al bajar en ordenador) -->
+    <aside class="checkout-box cart-box" aria-labelledby="titulo-carrito">
+      <h1 id="titulo-carrito">Tu carrito</h1>
 
       <div id="cart-items"></div>
 
       <div class="cart-shipping" id="cart-shipping"></div>
 
       <div class="cart-total">
-        <span>Total:</span>
+        <span>Total</span>
         <span id="cart-total">0,00 €</span>
       </div>
+      <p class="cart-nota">IVA incluido</p>
 
-      <div class="cliente-form">
-        <h2>Datos de envío y facturación</h2>
-        <p class="form-subtitle">Los necesitamos para preparar tu envío y emitir la factura.</p>
+      <button class="btn btn-pagar" onclick="pagar()">Pagar ahora</button>
+      <p class="cart-nota cart-seguro">Pago seguro con tarjeta a través de Stripe</p>
+    </aside>
 
-        <div class="form-grid">
-          <div class="form-field full">
-            <label>Tipo de cliente</label>
-            <div class="tipo-toggle">
-              <label class="tipo-opcion">
-                <input type="radio" name="tipo-cliente" value="particular" checked onchange="onTipoClienteChange()">
-                Particular
-              </label>
-              <label class="tipo-opcion">
-                <input type="radio" name="tipo-cliente" value="empresa" onchange="onTipoClienteChange()">
-                Empresa
-              </label>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label id="label-nombre">Nombre</label>
-            <input id="cliente-nombre" type="text" autocomplete="given-name" oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-nombre"></div>
-          </div>
-
-          <div class="form-field" id="campo-apellidos">
-            <label>Apellidos</label>
-            <input id="cliente-apellidos" type="text" autocomplete="family-name" oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-apellidos"></div>
-          </div>
-
-          <div class="form-field">
-            <label id="label-dni">DNI / NIF / NIE</label>
-            <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A" oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-dni"></div>
-          </div>
-
-          <div class="form-field">
-            <label>Teléfono móvil</label>
-            <input id="cliente-telefono" type="tel" autocomplete="tel" placeholder="612345678">
-            <div class="form-error" id="error-telefono"></div>
-          </div>
-
-          <div class="form-field full">
-            <label>Email</label>
-            <input id="cliente-email" type="email" autocomplete="email">
-            <div class="form-error" id="error-email"></div>
-          </div>
-
-          <div class="form-field full">
-            <label>Dirección de envío</label>
-            <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso..." oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-direccion"></div>
-          </div>
-
-          <div class="form-field">
-            <label>Código postal</label>
-            <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001" maxlength="5" inputmode="numeric" oninput="onCodigoPostalInput(this)">
-            <div class="form-error" id="error-cp"></div>
-          </div>
-
-          <div class="form-field">
-            <label>Localidad</label>
-            <input id="cliente-localidad" type="text" autocomplete="address-level2" oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-localidad"></div>
-          </div>
-
-          <div class="form-field full">
-            <label>Provincia</label>
-            <input id="cliente-provincia" type="text" autocomplete="address-level1" oninput="this.value = this.value.toUpperCase()">
-            <div class="form-error" id="error-provincia"></div>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn" onclick="pagar()">
-        Pagar ahora
-      </button>
-
-    </div>
   </div>
+</div>
+
+<!-- MÓVIL: total y botón de pago siempre visibles mientras se rellena el formulario -->
+<div class="mobile-paybar" id="mobile-paybar" hidden>
+  <div class="paybar-total">
+    <span>Total</span>
+    <strong id="paybar-total">0,00 €</strong>
+  </div>
+  <button class="btn-pagar paybar-btn" onclick="pagar()">Pagar ahora</button>
+</div>
 
   <script src="https://js.stripe.com/v3/"></script>
 
@@ -1144,11 +1274,20 @@
       const cartTotal = document.getElementById("cart-total");
       const cartShipping = document.getElementById("cart-shipping");
 
+      const checkout = document.getElementById("checkout");
+      const paybar = document.getElementById("mobile-paybar");
+      const paybarTotal = document.getElementById("paybar-total");
+
       actualizarContador();
 
+      // Carrito vacío: se oculta el formulario y la barra de pago (no hay nada que pagar).
+      checkout.classList.toggle("vacio", carrito.length === 0);
+      paybar.hidden = carrito.length === 0;
+
       if (carrito.length === 0) {
-        cartItems.innerHTML = `<div class="empty-cart">Tu carrito está vacío.</div>`;
+        cartItems.innerHTML = `<div class="empty-cart">Tu carrito está vacío. <a href="tienda.html">Ver la tienda</a></div>`;
         cartTotal.textContent = "0,00 €";
+        paybarTotal.textContent = "0,00 €";
         if (cartShipping) cartShipping.innerHTML = "";
         localStorage.setItem("carrito", JSON.stringify(carrito));
         return;
@@ -1157,31 +1296,35 @@
       cartItems.innerHTML = carrito.map((item, index) => {
         const subtotal = Number(item.precio) * Number(item.cantidad);
         const pesoLabel = item.peso === "1000" || Number(item.peso) === 1000 ? "1 kg" : `${item.peso} g`;
+        const detalles = [
+          item.proceso,
+          `Lote ${item.lote || "—"}`,
+          item.cosecha,
+          pesoLabel,
+          item.molienda,
+          item.tueste || item.tostion
+        ].filter(Boolean).join(" · ");
 
         return `
           <div class="cart-item">
-            <strong>${item.nombre}</strong><br>
-            ${item.proceso} · Lote ${item.lote || "—"}${item.cosecha ? " · " + item.cosecha : ""}<br>
-            ${pesoLabel} · ${item.molienda || ""} · ${item.tueste || item.tostion || ""}<br>
-
-            <div class="qty-control">
-              <button class="qty-btn" onclick="changeQuantity(${index}, -1)" aria-label="Quitar unidad">−</button>
-              <span class="qty-value">${item.cantidad}</span>
-              <button class="qty-btn" onclick="changeQuantity(${index}, 1)" aria-label="Añadir unidad">+</button>
+            <div class="cart-item-top">
+              <div>
+                <strong>${item.nombre}</strong>
+                <span class="cart-item-meta">${detalles}</span>
+              </div>
+              <span class="cart-item-price">
+                ${subtotal.toLocaleString("es-ES", { style: "currency", currency: "EUR" })}
+              </span>
             </div>
 
-            <span class="cart-item-price">
-              ${subtotal.toLocaleString("es-ES", {
-                style: "currency",
-                currency: "EUR"
-              })}
-            </span>
-
-            <br>
-
-            <button class="remove-btn" onclick="removeItem(${index})">
-              Eliminar
-            </button>
+            <div class="cart-item-actions">
+              <div class="qty-control">
+                <button class="qty-btn" onclick="changeQuantity(${index}, -1)" aria-label="Quitar unidad">−</button>
+                <span class="qty-value">${item.cantidad}</span>
+                <button class="qty-btn" onclick="changeQuantity(${index}, 1)" aria-label="Añadir unidad">+</button>
+              </div>
+              <button class="remove-btn" onclick="removeItem(${index})">Eliminar</button>
+            </div>
           </div>
         `;
       }).join("");
@@ -1209,11 +1352,10 @@
       }
 
       const totalFinal = totalCafe + envio.total;
+      const totalTexto = totalFinal.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
 
-      cartTotal.textContent = totalFinal.toLocaleString("es-ES", {
-        style: "currency",
-        currency: "EUR"
-      });
+      cartTotal.textContent = totalTexto;
+      paybarTotal.textContent = totalTexto;
     }
 
     function changeQuantity(index, delta) {
@@ -1355,6 +1497,9 @@
       document.getElementById("cliente-dni").placeholder = esEmpresa ? "B12345678" : "12345678A";
 
       document.getElementById("campo-apellidos").style.display = esEmpresa ? "none" : "";
+      // Sin apellidos, la razón social ocupa la fila entera.
+      document.getElementById("campo-nombre").classList.toggle("c6", esEmpresa);
+      document.getElementById("campo-nombre").classList.toggle("c3", !esEmpresa);
       if (esEmpresa) document.getElementById("cliente-apellidos").value = "";
     }
 
@@ -1465,17 +1610,22 @@
       const cliente = leerClienteFormulario();
 
       if (!validarFormularioCliente(cliente)) {
-        document.querySelector(".cliente-form").scrollIntoView({ behavior: "smooth", block: "start" });
+        // Lleva al primer campo con error (el header fijo tapa la parte de arriba: "center").
+        const primero = document.querySelector(".form-field input.invalid");
+        if (primero) {
+          primero.scrollIntoView({ behavior: "smooth", block: "center" });
+          primero.focus({ preventScroll: true });
+        }
         return;
       }
 
       localStorage.setItem("clienteCafeDMedina", JSON.stringify(cliente));
 
-      const btn = document.querySelector(".btn");
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Procesando...";
-      }
+      const botones = document.querySelectorAll(".btn-pagar");
+      botones.forEach(b => {
+        b.disabled = true;
+        b.textContent = "Procesando...";
+      });
 
       try {
         const response = await fetch("https://cafedmedina-web.onrender.com/create-checkout-session", {
@@ -1486,11 +1636,14 @@
           body: JSON.stringify({ carrito, cliente })
         });
 
-        if (!response.ok) {
-          throw new Error("El servidor respondió con un error.");
-        }
+        const session = await response.json().catch(() => ({}));
 
-        const session = await response.json();
+        // Errores con explicación del servidor (sin stock, código postal sin envío...): se muestran tal cual.
+        if (!response.ok) {
+          const aviso = new Error(session.error || "El servidor respondió con un error.");
+          aviso.paraCliente = Boolean(session.error);
+          throw aviso;
+        }
 
         if (!session.id) {
           throw new Error("No se recibió una sesión de pago válida.");
@@ -1499,12 +1652,12 @@
         await stripe.redirectToCheckout({ sessionId: session.id });
       } catch (error) {
         console.error("Error al iniciar el pago:", error);
-        alert("No se pudo iniciar el pago. Inténtalo de nuevo en unos minutos.");
+        alert(error.paraCliente ? error.message : "No se pudo iniciar el pago. Inténtalo de nuevo en unos minutos.");
       } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = "Pagar ahora";
-        }
+        botones.forEach(b => {
+          b.disabled = false;
+          b.textContent = "Pagar ahora";
+        });
       }
     }
 

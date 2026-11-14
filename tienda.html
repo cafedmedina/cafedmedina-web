@@ -291,12 +291,121 @@
       font-size: 13px;
     }
 
+    /* Proceso en su propia fila (nombres largos como "Lavado doble fermentación"); lote, peso y tipo debajo */
     .option-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-top: 14px;
       align-items: end;
+    }
+
+    .option-proceso {
+      grid-column: 1 / -1;
+    }
+
+    /* Tipo fijo "En grano": se ve como los demás, pero no se puede cambiar */
+    #tipo:disabled {
+      opacity: 1;
+      color: #2f1b12;
+      cursor: default;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: none;
+    }
+
+    /* Recomendación de molienda (no se elige: solo vendemos en grano) */
+    .molienda-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 18px;
+
+      background: var(--card);
+      border: 1px solid rgba(200,169,106,.30);
+      border-left: 4px solid var(--gold);
+
+      color: #4f3729;
+      font-size: 12.8px;
+      line-height: 1.38;
+    }
+
+    .molienda-titulo {
+      margin: 0 0 10px;
+    }
+
+    .molienda-titulo strong,
+    .molienda-item strong {
+      color: #2f1b12;
+      font-weight: 900;
+    }
+
+    .molienda-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .molienda-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 9px 11px;
+      border-radius: 12px;
+      background: rgba(200,169,106,.10);
+    }
+
+    .molienda-grado {
+      color: #9a6f24;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .molienda-nota {
+      margin: 10px 0 0;
+      font-size: 12px;
+    }
+
+    .alternativa {
+      margin: 0 0 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+
+      background: rgba(200,169,106,.14);
+      border: 1px solid rgba(200,169,106,.5);
+
+      color: #4f3729;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+
+    .alternativa p {
+      margin: 0 0 10px;
+    }
+
+    .alternativa strong {
+      color: #2f1b12;
+    }
+
+    .alternativa .btn {
+      min-height: 40px;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    .proximamente {
+      display: inline-block;
+      margin: -4px 0 14px;
+      padding: 5px 12px;
+      border-radius: 999px;
+
+      background: rgba(200,169,106,.16);
+      color: #7b4c15;
+      border: 1px solid rgba(200,169,106,.5);
+
+      font-size: 12.5px;
+      font-weight: 900;
     }
 
     .option-field {
@@ -373,7 +482,10 @@
       display: none !important;
     }
 
-    #molienda-field[hidden],
+    .alternativa[hidden],
+    .proximamente[hidden],
+    .lote-box[hidden],
+    .cata-box[hidden],
     #ficha-cata[hidden],
     .tostion-info[hidden] {
       display: none !important;
@@ -420,6 +532,13 @@
     .cantidad-row .btn {
       width: 210px;
       margin: 0;
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     /* ====================================================================================================================================================================================================
@@ -599,9 +718,17 @@
       }
 
       .option-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
         margin-top: 12px;
+      }
+
+      .option-tipo {
+        grid-column: 1 / -1;
+      }
+
+      .molienda-grid {
+        grid-template-columns: 1fr;
       }
 
       select,
@@ -936,6 +1063,13 @@
   }
 }
 
+/* Móvil estrecho: un desplegable por fila para que "250 g · Próximamente" no se corte */
+@media (max-width: 480px) {
+  .option-row {
+    grid-template-columns: 1fr;
+  }
+}
+
   </style>
 </head>
 
@@ -985,7 +1119,7 @@
   </div>
 
   <h1>Tienda</h1>
-  <p class="intro">Selecciona el proceso, el lote, el peso y la molienda de tu café.</p>
+  <p class="intro">Elige el proceso y el lote. Te lo enviamos en grano para que conserve todo su aroma.</p>
 
   <div class="container">
 
@@ -993,11 +1127,10 @@
 
       <div class="product-left">
         <div class="product-image">
-          <img src="empaque.png" alt="Empaque AURINEGRA">
+          <img src="img/empaque-aurinegra-250.jpg" alt="Bolsa de café AURINEGRA 250 g en grano">
         </div>
 
         <div class="static-info">
-          <p><strong>Recomendado:</strong> Espresso / Filtro (V60, Chemex) / Prensa francesa</p>
           <p><strong>Origen:</strong> Mistrató, Risaralda, Colombia</p>
           <p><strong>Variedad:</strong> 100% Arábica</p>
           <p><strong>Productor:</strong> Ramón Medina</p>
@@ -1032,44 +1165,67 @@
 
           <div class="option-row">
 
-            <div class="option-field">
-              <label>Proceso</label>
+            <div class="option-field option-proceso">
+              <label for="proceso">Proceso</label>
               <select id="proceso" onchange="onProcesoChange()"></select>
             </div>
 
-            <div class="option-field">
-              <label>Lote</label>
+            <div class="option-field" id="lote-field">
+              <label for="lote">Lote</label>
               <select id="lote" onchange="onLoteChange()"></select>
             </div>
 
             <div class="option-field">
-              <label>Peso</label>
+              <label for="peso">Peso</label>
               <select id="peso" onchange="actualizarPrecioYStock()"></select>
             </div>
 
-            <div class="option-field">
-              <label>Tipo</label>
-              <select id="tipo" onchange="onTipoChange()">
+            <div class="option-field option-tipo">
+              <label for="tipo">Tipo</label>
+              <select id="tipo" disabled title="De momento solo vendemos café en grano">
                 <option value="grano">En grano</option>
-                <option value="molido">Molido</option>
-              </select>
-            </div>
-
-            <div class="option-field" id="molienda-field">
-              <label>Molienda</label>
-              <select id="molienda">
-                <option value="Molido espresso">Espresso</option>
-                <option value="Molido moka">Moka</option>
-                <option value="Molido filtro">Filtro</option>
-                <option value="Molido prensa francesa">Prensa francesa</option>
               </select>
             </div>
 
           </div>
 
+          <!-- Solo vendemos en grano: en vez de elegir molienda, recomendamos cómo molerlo (mismos datos que la bolsa) -->
+          <div class="molienda-box">
+            <p class="molienda-titulo"><strong>En grano, para que lo muelas justo antes de prepararlo.</strong> Cómo molerlo según tu método:</p>
+            <div class="molienda-grid">
+              <div class="molienda-item">
+                <strong>Espresso</strong>
+                <span class="molienda-grado">Fina</span>
+                <span>18 g → 36 g · 90–94 °C</span>
+              </div>
+              <div class="molienda-item">
+                <strong>Moka</strong>
+                <span class="molienda-grado">Media-fina</span>
+                <span>Filtro lleno sin prensar · agua bajo la válvula</span>
+              </div>
+              <div class="molienda-item">
+                <strong>Filtro (V60, Chemex)</strong>
+                <span class="molienda-grado">Media</span>
+                <span>7–10 g por 100 ml · 92–96 °C · 2:30–3 min</span>
+              </div>
+              <div class="molienda-item">
+                <strong>Prensa francesa</strong>
+                <span class="molienda-grado">Gruesa</span>
+                <span>6–8 g por 100 ml · 92–96 °C · 4 min</span>
+              </div>
+            </div>
+            <p class="molienda-nota">¿Sin molinillo? En tu cafetería te lo muelen al momento: diles para qué método es.</p>
+          </div>
+
           <div class="price" id="precio">Selecciona un lote</div>
           <p class="tax" id="stock-info">Impuestos incluidos</p>
           <p class="stock-warning" id="stock-warning" hidden></p>
+
+          <!-- Sin 500 g / 1 kg pero con 250 g del mismo lote: se ofrece el mismo café en bolsas de 250 g -->
+          <div class="alternativa" id="alternativa" hidden>
+            <p id="alternativa-texto"></p>
+            <button class="btn" id="alternativa-btn" onclick="añadirAlternativa()"></button>
+          </div>
 
           <label>Cantidad</label>
           <div class="cantidad-row">
@@ -1119,6 +1275,9 @@
 
     let lotes = {};
 
+    // Qué procesos y formatos se ofrecen (panel admin → pestaña Tienda). Si no se puede leer, 250 g de todo.
+    let publicacion = { procesos: [] };
+
     function formatEUR(valor) {
       return Number(valor).toLocaleString("es-ES", { style: "currency", currency: "EUR" });
     }
@@ -1138,39 +1297,69 @@
       }
     }
 
-    function procesosDisponibles() {
-      const procesos = new Set();
-      Object.values(lotes).forEach(lote => {
-        if (lote.estado !== "archivado") {
-          procesos.add(lote.proceso);
-        }
-      });
-      return Array.from(procesos);
+    async function cargarPublicacion() {
+      try {
+        const response = await fetch("/api/tienda-publicacion");
+        if (!response.ok) throw new Error("Respuesta no válida");
+        publicacion = await response.json();
+      } catch (error) {
+        console.error("No se pudo cargar la configuración de la tienda:", error);
+        const procesos = new Set(Object.values(lotes).filter(l => l.estado === "activo").map(l => l.proceso));
+        publicacion = { procesos: Array.from(procesos).map(nombre => ({ nombre, pesos: ["250"] })) };
+      }
+    }
+
+    function pesosPublicados(proceso) {
+      const fila = publicacion.procesos.find(p => p.nombre === proceso);
+      return fila ? PESOS_ORDEN.filter(p => fila.pesos.includes(p)) : [];
     }
 
     function lotesDeProceso(proceso) {
       return Object.values(lotes)
-        .filter(lote => lote.proceso === proceso && lote.estado !== "archivado")
+        .filter(lote => lote.proceso === proceso && lote.estado === "activo")
         .sort((a, b) => a.codigo < b.codigo ? 1 : -1);
     }
 
+    function hayStock(lote, peso) {
+      return Boolean(lote && lote.precios && lote.precios[peso] !== undefined && Number((lote.stock || {})[peso] || 0) > 0);
+    }
+
+    // Se vende si el peso está marcado en el panel (pestaña Tienda) para ese proceso y el lote tiene stock.
+    // Todo lo demás se enseña igual, como "Próximamente".
+    function vendible(lote, peso) {
+      return Boolean(lote) && pesosPublicados(lote.proceso).includes(peso) && hayStock(lote, peso);
+    }
+
+    function procesoEnVenta(proceso) {
+      return PESOS_ORDEN.some(peso => lotesDeProceso(proceso).some(lote => vendible(lote, peso)));
+    }
+
+    // Todos los procesos de la lista del panel aparecen siempre (los que no se venden, como "Próximamente").
     function poblarProcesos() {
       const select = document.getElementById("proceso");
-      const procesos = procesosDisponibles();
+      const procesos = publicacion.procesos.map(p => p.nombre);
 
-      select.innerHTML = procesos.map(proceso => `<option value="${proceso}">${proceso}</option>`).join("");
+      select.innerHTML = procesos.map(proceso => `
+        <option value="${proceso}">${proceso}${procesoEnVenta(proceso) ? "" : " · Próximamente"}</option>
+      `).join("");
+
+      // Se abre con el primer proceso que esté a la venta.
+      const primeroEnVenta = procesos.find(procesoEnVenta);
+      if (primeroEnVenta) select.value = primeroEnVenta;
     }
 
     function onProcesoChange() {
       const proceso = document.getElementById("proceso").value;
       const select = document.getElementById("lote");
       const candidatos = lotesDeProceso(proceso);
+      const seVende = lote => PESOS_ORDEN.some(p => vendible(lote, p));
 
-      select.innerHTML = candidatos.map(lote => `
-        <option value="${lote.codigo}" ${lote.estado === "agotado" ? "disabled" : ""}>
-          ${lote.codigo}${lote.estado === "agotado" ? " (agotado)" : ""}
-        </option>
-      `).join("");
+      // Lotes del inventario de este proceso; el que se puede comprar va primero.
+      candidatos.sort((a, b) => Number(seVende(b)) - Number(seVende(a)));
+
+      select.innerHTML = candidatos.length
+        ? candidatos.map(lote => `<option value="${lote.codigo}">${lote.codigo}</option>`).join("")
+        : `<option value="">Próximamente</option>`;
 
       document.getElementById("process-info").textContent =
         descripcionesProceso[proceso] || `Café de especialidad AURINEGRA, proceso ${proceso}.`;
@@ -1187,17 +1376,20 @@
       const lote = loteSeleccionado();
       const peso = document.getElementById("peso");
 
+      // Siempre los tres pesos; los que no se venden en este lote, como "Próximamente".
+      peso.innerHTML = PESOS_ORDEN.map(p => `
+        <option value="${p}">${etiquetaPeso(p)}${vendible(lote, p) ? "" : " · Próximamente"}</option>
+      `).join("");
+      const primeroVendible = PESOS_ORDEN.find(p => vendible(lote, p));
+      if (primeroVendible) peso.value = primeroVendible;
+
+      // Sin lote (proceso anunciado pero aún sin café): fuera los datos de lote y cata.
+      document.querySelector(".lote-box").hidden = !lote;
+      document.querySelector(".cata-box").hidden = !lote;
+
       if (!lote) {
-        document.getElementById("info-lote-codigo").textContent = "—";
-        document.getElementById("info-cosecha").textContent = "—";
-        document.getElementById("fecha-tueste").textContent = "—";
-        document.getElementById("fecha-cata").textContent = "—";
-        document.getElementById("puntaje").textContent = "—";
-        document.getElementById("perfil").textContent = "—";
-        peso.innerHTML = "";
         actualizarTuesteInfo();
-        document.getElementById("precio").textContent = "No hay lotes disponibles";
-        document.getElementById("add-to-cart-btn").disabled = true;
+        actualizarPrecioYStock();
         return;
       }
 
@@ -1220,16 +1412,8 @@
       enlaceCata.hidden = !lote.fichaCata;
       enlaceCata.href = "ficha-cata.html?lote=" + encodeURIComponent(lote.codigo);
 
-      const formatos = PESOS_ORDEN.filter(p => lote.precios && lote.precios[p] !== undefined);
-      peso.innerHTML = formatos.map(p => `<option value="${p}">${etiquetaPeso(p)}</option>`).join("");
-
       actualizarTuesteInfo();
       actualizarPrecioYStock();
-    }
-
-    function onTipoChange() {
-      const tipo = document.getElementById("tipo").value;
-      document.getElementById("molienda-field").hidden = (tipo === "grano");
     }
 
     function actualizarTuesteInfo() {
@@ -1269,11 +1453,20 @@
       const addBtn = document.getElementById("add-to-cart-btn");
       const warning = document.getElementById("stock-warning");
 
-      if (!lote || !peso) {
-        document.getElementById("precio").textContent = "Selecciona un lote";
-        document.getElementById("stock-info").textContent = "Impuestos incluidos";
+      warning.className = "stock-warning";
+      addBtn.textContent = "Añadir al carrito";
+
+      const alternativa = document.getElementById("alternativa");
+      alternativa.hidden = true;
+
+      // No se vende (sin lote, peso no marcado en el panel o sin stock): "Próximamente", sin precio.
+      if (!vendible(lote, peso)) {
+        document.getElementById("precio").textContent = "Próximamente";
+        document.getElementById("stock-info").textContent = "Muy pronto a la venta";
         warning.hidden = true;
+        addBtn.textContent = "Próximamente";
         addBtn.disabled = true;
+        mostrarAlternativa(lote, peso, cantidad);
         return;
       }
 
@@ -1286,7 +1479,7 @@
       const unidadesDisponibles = Math.max(0, unidadesEnStock - unidadesYaReservadas);
 
       if (unidadesDisponibles <= 0) {
-        warning.textContent = `Agotado temporalmente en formato ${etiquetaPeso(peso)}.`;
+        warning.textContent = "Ya tienes en el carrito todas las unidades disponibles.";
         warning.hidden = false;
         addBtn.disabled = true;
         return;
@@ -1309,18 +1502,44 @@
       addBtn.disabled = false;
     }
 
-    function addToCart() {
+    // Si piden 500 g o 1 kg y no hay, pero sí 250 g del mismo lote: el mismo café en 2 o 4 bolsas de 250 g.
+    let alternativaActual = null; // { peso: "250", cantidad }
+
+    function mostrarAlternativa(lote, pesoPedido, cantidad) {
+      const alternativa = document.getElementById("alternativa");
+      alternativaActual = null;
+      alternativa.hidden = true;
+
+      const factor = Number(pesoPedido) / 250;
+      if (!lote || !Number.isInteger(factor) || factor < 2 || !vendible(lote, "250")) return;
+
+      const bolsas = factor * cantidad;
+      const disponibles = Number(lote.stock["250"] || 0) - unidadesEnCarritoDeLoteFormato(lote.codigo, "250");
+      if (bolsas > disponibles) return;
+
+      alternativaActual = { peso: "250", cantidad: bolsas };
+      document.getElementById("alternativa-texto").innerHTML =
+        `Ahora mismo no tenemos el formato de <strong>${etiquetaPeso(pesoPedido)}</strong>, pero puedes llevarte ` +
+        `el mismo café en <strong>${bolsas} bolsas de 250 g</strong> por ${formatEUR(lote.precios["250"] * bolsas)}.`;
+      document.getElementById("alternativa-btn").textContent = `Añadir ${bolsas} × 250 g al carrito`;
+      alternativa.hidden = false;
+    }
+
+    function añadirAlternativa() {
+      if (!alternativaActual) return;
+      addToCart(alternativaActual.peso, alternativaActual.cantidad, document.getElementById("alternativa-btn"));
+    }
+
+    function addToCart(pesoElegido, cantidadElegida, botonPulsado) {
       const lote = loteSeleccionado();
-      const peso = document.getElementById("peso").value;
-      const tipo = document.getElementById("tipo").value;
+      const peso = typeof pesoElegido === "string" ? pesoElegido : document.getElementById("peso").value;
       const tueste = (lote && tuestes[lote.tueste]) ? tuestes[lote.tueste].nombre : "";
-      const cantidad = Number(document.getElementById("cantidad").value);
+      const cantidad = Number(cantidadElegida || document.getElementById("cantidad").value);
 
-      const molienda = tipo === "grano"
-        ? "En grano"
-        : document.getElementById("molienda").value;
+      // Solo vendemos en grano (el servidor también lo fuerza).
+      const molienda = "En grano";
 
-      if (!lote || !peso) {
+      if (!vendible(lote, peso)) {
         alert("Selecciona un lote y un peso.");
         return;
       }
@@ -1368,7 +1587,8 @@
       actualizarIconoCarrito();
       actualizarPrecioYStock();
 
-      const addBtn = document.getElementById("add-to-cart-btn");
+      // El aviso de la alternativa puede cambiar (quedan menos bolsas): se avisa en el botón principal.
+      const addBtn = botonPulsado && !botonPulsado.closest("[hidden]") ? botonPulsado : document.getElementById("add-to-cart-btn");
       const textoOriginal = addBtn.textContent;
       addBtn.textContent = "Añadido ✓";
       setTimeout(() => { addBtn.textContent = textoOriginal; }, 1200);
@@ -1403,9 +1623,9 @@
 
     (async function init() {
       await cargarLotes();
+      await cargarPublicacion();
       poblarProcesos();
       onProcesoChange();
-      onTipoChange();
       actualizarIconoCarrito();
     })();
   </script>

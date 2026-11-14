@@ -260,6 +260,72 @@
       border-radius: 18px;
     }
 
+    /* Pestaña Tienda: qué procesos y formatos se publican */
+    .tienda-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    .tienda-tabla th {
+      padding: 8px 6px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(200,169,106,.28);
+    }
+
+    .tienda-tabla td {
+      padding: 8px 6px;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .tienda-tabla .col-peso {
+      width: 64px;
+      text-align: center;
+    }
+
+    .tienda-tabla .col-peso input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .tienda-tabla .col-acciones {
+      width: 110px;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .tienda-tabla .col-acciones button {
+      width: 30px;
+      height: 30px;
+      margin-left: 2px;
+      border-radius: 8px;
+      border: 1px solid rgba(200,169,106,.4);
+      background: transparent;
+      color: var(--gold-light, #e2c47d);
+      cursor: pointer;
+    }
+
+    .tienda-tabla .col-acciones button:disabled {
+      opacity: .3;
+      cursor: default;
+    }
+
+    .tienda-estado {
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tienda-estado.venta { color: var(--green); }
+    .tienda-estado.pronto { color: var(--gold-light, #e2c47d); }
+    .tienda-estado.oculto { color: var(--muted); }
+
     .git-hint {
       padding: 14px 16px;
       margin-top: 14px;
@@ -505,6 +571,7 @@
       <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
       <button class="tab-btn" id="tab-btn-clientes" onclick="cambiarTab('clientes')">Clientes</button>
+      <button class="tab-btn" id="tab-btn-tienda" onclick="cambiarTab('tienda')">Tienda</button>
       <button class="tab-btn" id="tab-btn-envio" onclick="cambiarTab('envio')">Envío</button>
       <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
     </div>
@@ -568,6 +635,43 @@
       <div id="clientes-container"></div>
     </div>
 
+    <!-- ===================== TIENDA ===================== -->
+    <div id="tab-tienda" hidden>
+      <p class="subtitle">
+        Los procesos de esta lista aparecen siempre en el desplegable de la tienda, en este orden, y los tres pesos también.
+        Marca qué pesos están <strong>a la venta</strong> en cada proceso: se venden si además hay un lote activo con stock.
+        Todo lo demás se ve como «Próximamente». Para que un proceso no salga en la tienda, quítalo con ✕.
+        El nombre del proceso tiene que ser igual que el del lote en «Catálogo y precios».
+        Se guarda al instante y no hace falta subir nada a GitHub.
+      </p>
+
+      <div class="box" style="margin:0;max-width:860px">
+        <table class="tienda-tabla">
+          <thead>
+            <tr>
+              <th>Proceso</th>
+              <th class="col-peso" title="A la venta">250 g</th>
+              <th class="col-peso">500 g</th>
+              <th class="col-peso">1 kg</th>
+              <th>Cómo sale en la tienda</th>
+              <th class="col-acciones"></th>
+            </tr>
+          </thead>
+          <tbody id="tienda-filas"></tbody>
+        </table>
+        <datalist id="procesos-catalogo"></datalist>
+
+        <div class="toolbar" style="margin:16px 0 0">
+          <button class="btn-secondary btn" onclick="añadirProcesoTienda()">+ Añadir proceso</button>
+        </div>
+
+        <div class="save-bar" style="margin-top:20px;padding:0;border:none;background:transparent">
+          <button class="btn" id="save-tienda-btn" onclick="guardarTienda()">Guardar</button>
+          <span id="tienda-feedback"></span>
+        </div>
+      </div>
+    </div>
+
     <!-- ===================== ENVÍO ===================== -->
     <div id="tab-envio" hidden>
       <p class="subtitle">
@@ -625,13 +729,14 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos", "clientes", "envio", "movimientos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "clientes", "tienda", "envio", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
 
       if (nombre === "pedidos") cargarPedidos();
       if (nombre === "clientes") cargarClientes();
+      if (nombre === "tienda") cargarTienda();
       if (nombre === "envio") cargarConfigEnvio();
       if (nombre === "movimientos") cargarMovimientos();
     }
@@ -1179,6 +1284,151 @@
 
       } catch (error) {
         alert(error.message || `No se pudo descargar el ${tipo}.`);
+      }
+    }
+
+    // ---------------------------------------------------------------- TIENDA ----------------------------------------------------------------
+
+    let filasTienda = []; // [{ nombre, pesos: ["250", ...] }] en el orden de la tienda
+
+    function escaparHtml(texto) {
+      return String(texto ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function etiquetaPesoAdmin(peso) {
+      return peso === "1000" ? "1 kg" : `${peso} g`;
+    }
+
+    // Formatos marcados que tienen un lote activo de ese proceso con precio y stock disponible.
+    function estadoFilaTienda(fila) {
+      if (fila.pesos.length === 0) return { clase: "pronto", texto: "Próximamente (ningún peso a la venta)" };
+      const enVenta = fila.pesos.filter(peso => Object.values(lotes).some(lote =>
+        lote.proceso === fila.nombre && lote.estado === "activo" &&
+        lote.precios && Number(lote.precios[peso]) > 0 &&
+        Number(lote.stock && lote.stock[peso] && lote.stock[peso].disponible) > 0
+      ));
+      if (enVenta.length === 0) return { clase: "pronto", texto: "Próximamente" };
+      const pronto = fila.pesos.filter(p => !enVenta.includes(p));
+      return {
+        clase: "venta",
+        texto: `En venta: ${enVenta.map(etiquetaPesoAdmin).join(", ")}` + (pronto.length ? ` · Próximamente: ${pronto.map(etiquetaPesoAdmin).join(", ")}` : "")
+      };
+    }
+
+    function renderTienda() {
+      const procesosLotes = [...new Set(Object.values(lotes).map(l => l.proceso).filter(Boolean))];
+      document.getElementById("procesos-catalogo").innerHTML =
+        procesosLotes.map(p => `<option value="${escaparHtml(p)}">`).join("");
+
+      document.getElementById("tienda-filas").innerHTML = filasTienda.map((fila, i) => {
+        const estado = estadoFilaTienda(fila);
+        return `
+          <tr>
+            <td>
+              <input type="text" list="procesos-catalogo" value="${escaparHtml(fila.nombre)}" maxlength="60"
+                     placeholder="Nombre del proceso" onchange="filasTienda[${i}].nombre = this.value.trim(); renderTienda()">
+            </td>
+            ${PESOS.map(peso => `
+              <td class="col-peso">
+                <input type="checkbox" ${fila.pesos.includes(peso) ? "checked" : ""}
+                       aria-label="${escaparHtml(fila.nombre)} ${etiquetaPesoAdmin(peso)}"
+                       onchange="cambiarPesoTienda(${i}, '${peso}', this.checked)">
+              </td>`).join("")}
+            <td><span class="tienda-estado ${estado.clase}">${escaparHtml(estado.texto)}</span></td>
+            <td class="col-acciones">
+              <button onclick="moverProcesoTienda(${i}, -1)" ${i === 0 ? "disabled" : ""} aria-label="Subir">↑</button>
+              <button onclick="moverProcesoTienda(${i}, 1)" ${i === filasTienda.length - 1 ? "disabled" : ""} aria-label="Bajar">↓</button>
+              <button onclick="quitarProcesoTienda(${i})" aria-label="Quitar">✕</button>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    function cambiarPesoTienda(i, peso, marcado) {
+      const pesos = new Set(filasTienda[i].pesos);
+      if (marcado) pesos.add(peso); else pesos.delete(peso);
+      filasTienda[i].pesos = PESOS.filter(p => pesos.has(p));
+      renderTienda();
+    }
+
+    function moverProcesoTienda(i, delta) {
+      const j = i + delta;
+      if (j < 0 || j >= filasTienda.length) return;
+      [filasTienda[i], filasTienda[j]] = [filasTienda[j], filasTienda[i]];
+      renderTienda();
+    }
+
+    function quitarProcesoTienda(i) {
+      filasTienda.splice(i, 1);
+      renderTienda();
+    }
+
+    function añadirProcesoTienda() {
+      filasTienda.push({ nombre: "", pesos: ["250"] });
+      renderTienda();
+      const inputs = document.querySelectorAll("#tienda-filas input[type=text]");
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+
+    async function cargarTienda() {
+      const feedback = document.getElementById("tienda-feedback");
+      feedback.className = "";
+      feedback.textContent = "";
+
+      try {
+        if (Object.keys(lotes).length === 0) await cargarLotes();
+        const response = await fetch("/api/tienda-publicacion");
+        if (!response.ok) throw new Error("No se pudo cargar la configuración de la tienda");
+        const publicacion = await response.json();
+        filasTienda = (publicacion.procesos || []).map(p => ({ nombre: p.nombre, pesos: [...p.pesos] }));
+        renderTienda();
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudo cargar la configuración de la tienda.";
+      }
+    }
+
+    async function guardarTienda() {
+      const feedback = document.getElementById("tienda-feedback");
+      const btn = document.getElementById("save-tienda-btn");
+
+      if (filasTienda.some(f => !f.nombre)) {
+        feedback.className = "error-msg";
+        feedback.textContent = "Hay un proceso sin nombre: escríbelo o quítalo con ✕.";
+        return;
+      }
+
+      btn.disabled = true;
+      feedback.className = "";
+      feedback.textContent = "Guardando...";
+
+      try {
+        const response = await fetch("/api/tienda-publicacion", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-admin-token": getToken() },
+          body: JSON.stringify({ procesos: filasTienda })
+        });
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "Error al guardar");
+
+        feedback.className = "success-msg";
+        feedback.textContent = "Guardado. La tienda ya aplica estos procesos y pesos a la venta.";
+
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudo guardar la configuración de la tienda.";
+      } finally {
+        btn.disabled = false;
       }
     }
 
