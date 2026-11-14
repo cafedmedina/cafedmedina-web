@@ -925,9 +925,31 @@
       color: var(--black);
     }
 
+    /* Iconos de línea de la marca (img/metodos): se usan como máscara y se pintan con el color del botón */
     .prep-metodo-icono {
-      font-size: 26px;
-      line-height: 1;
+      display: block;
+      width: 64px;
+      height: 64px;
+      background-color: var(--gold-light);
+      -webkit-mask: var(--icono) center / contain no-repeat;
+      mask: var(--icono) center / contain no-repeat;
+      transition: background-color .2s;
+    }
+
+    .prep-metodo.activo .prep-metodo-icono {
+      background-color: var(--black);
+    }
+
+    .icono-espresso { --icono: url("img/metodos/espresso.png"); }
+    .icono-moka     { --icono: url("img/metodos/moka.png"); }
+    .icono-filtro   { --icono: url("img/metodos/filtro.png"); }
+    .icono-prensa   { --icono: url("img/metodos/prensa.png"); }
+
+    @media (max-width: 640px) {
+      .prep-metodo-icono {
+        width: 52px;
+        height: 52px;
+      }
     }
 
     /* ---- Ficha de receta ---- */
@@ -998,7 +1020,7 @@
     }
 
     .prep-stepper output {
-      min-width: 38px;
+      min-width: 84px;
       text-align: center;
       font-size: 20px;
       font-weight: 900;
@@ -1049,6 +1071,15 @@
     .prep-utensilios li {
       color: var(--muted);
       font-size: 14px;
+    }
+
+    .prep-proporcion {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(200,169,106,.2);
+      color: var(--gold-light);
+      font-size: 13.5px;
+      font-weight: 700;
     }
 
     .prep-utensilios li::before {
@@ -1312,6 +1343,20 @@
     }
 
   </style>
+
+<style>
+  /* MENU-MEDIANO */
+  /* Menú de ordenador en pantallas medianas (851–1250 px): ningún enlace partido en dos líneas;
+     si no caben todos, pasan ordenados a una segunda fila */
+  @media (min-width: 851px) and (max-width: 1250px) {
+    #main-menu { gap: 4px 14px !important; flex-wrap: wrap !important; justify-content: center !important; flex: 1 1 auto; min-width: 0; }
+    #main-menu a { font-size: 12px !important; letter-spacing: .6px !important; white-space: nowrap; }
+    .brand span { font-size: 28px !important; }
+  }
+  @media (min-width: 851px) and (max-width: 1050px) {
+    header { padding-left: 3% !important; padding-right: 3% !important; gap: 14px !important; }
+  }
+</style>
 </head>
 
 <body id="top">
@@ -1327,7 +1372,7 @@
 
     <nav id="main-menu">
       <a href="index.html#origen">Nuestro café</a>
-      <a href="index.html#proceso">Proceso</a>
+      <a href="preparacion.html">Preparación</a>
       <a href="index.html#historia">Historia</a>
       <a href="index.html#cata">Cata</a>
       <a href="index.html#empaque">Producto</a>
@@ -1343,7 +1388,7 @@
 
     <nav id="mobile-menu" class="mobile-menu">
       <a href="index.html#origen" onclick="closeMenu()">Nuestro café</a>
-      <a href="index.html#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="preparacion.html" onclick="closeMenu()">Preparación</a>
       <a href="index.html#historia" onclick="closeMenu()">Historia</a>
       <a href="index.html#cata" onclick="closeMenu()">Cata</a>
       <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
@@ -1365,8 +1410,8 @@
   <span class="prep-eyebrow">Recetas AURINEGRA</span>
   <h1>Cómo preparar tu café</h1>
   <p>
-    Te lo enviamos en grano para que lo muelas justo antes de prepararlo. Elige tu cafetera y cuántas tazas
-    quieres: te decimos cuánto café y agua usar, a qué temperatura y cómo molerlo con tu molinillo.
+    Te lo enviamos en grano para que lo muelas justo antes de prepararlo. Elige tu cafetera y cuánta agua
+    vas a usar: te decimos cuánto café poner, a qué temperatura y cómo molerlo con tu molinillo.
   </p>
 </section>
 
@@ -1375,16 +1420,16 @@
   <!-- 1. Método -->
   <div class="prep-metodos" role="tablist" aria-label="Método de preparación">
     <button class="prep-metodo" role="tab" data-metodo="espresso" onclick="elegirMetodo('espresso')">
-      <span class="prep-metodo-icono" aria-hidden="true">☕</span>Espresso
+      <span class="prep-metodo-icono icono-espresso" aria-hidden="true"></span>Espresso
     </button>
     <button class="prep-metodo" role="tab" data-metodo="moka" onclick="elegirMetodo('moka')">
-      <span class="prep-metodo-icono" aria-hidden="true">♨️</span>Moka
+      <span class="prep-metodo-icono icono-moka" aria-hidden="true"></span>Moka
     </button>
     <button class="prep-metodo" role="tab" data-metodo="filtro" onclick="elegirMetodo('filtro')">
-      <span class="prep-metodo-icono" aria-hidden="true">⏳</span>Filtro (V60, Chemex)
+      <span class="prep-metodo-icono icono-filtro" aria-hidden="true"></span>Filtro (V60, Chemex)
     </button>
     <button class="prep-metodo" role="tab" data-metodo="prensa" onclick="elegirMetodo('prensa')">
-      <span class="prep-metodo-icono" aria-hidden="true">🥛</span>Prensa francesa
+      <span class="prep-metodo-icono icono-prensa" aria-hidden="true"></span>Prensa francesa
     </button>
   </div>
 
@@ -1399,9 +1444,9 @@
       <div class="prep-tazas">
         <span class="prep-label" id="tazas-label">Tazas</span>
         <div class="prep-stepper">
-          <button type="button" onclick="cambiarTazas(-1)" aria-label="Menos tazas">−</button>
+          <button type="button" onclick="cambiarTazas(-1)" aria-label="Menos">−</button>
           <output id="tazas-valor">1</output>
-          <button type="button" onclick="cambiarTazas(1)" aria-label="Más tazas">+</button>
+          <button type="button" onclick="cambiarTazas(1)" aria-label="Más">+</button>
         </div>
       </div>
     </div>
@@ -1417,6 +1462,7 @@
           <li><strong id="ing-temp"></strong><span>temperatura del agua</span></li>
           <li><strong id="ing-tiempo"></strong><span>tiempo de preparación</span></li>
         </ul>
+        <p class="prep-proporcion" id="ing-proporcion"></p>
       </div>
 
       <!-- Utensilios -->
@@ -1519,11 +1565,12 @@ const RECETAS = {
     titulo: "Espresso",
     nombre: "un espresso",
     intro: "Intenso y con cuerpo, con la crema que lo corona. La receta es para un espresso doble.",
-    tazasLabel: "Espressos dobles",
-    tazasMax: 4,
-    cafePorTaza: 18,          // g
-    aguaPorTaza: 36,          // g de bebida en taza
+    // El espresso se mide por dosis (gramos), no en ml
+    cantidad: { tipo: "dosis", label: "Espressos dobles", inicio: 1, paso: 1, max: 4 },
+    cafePor: 18,              // g de café por dosis
+    bebidaPor: 36,            // g de espresso en taza por dosis
     aguaTexto: "de espresso en taza (ratio 1:2)",
+    proporcion: "18 g de café por cada espresso doble",
     temp: "90–94 °C",
     tiempo: "25–30 s",
     molienda: { grado: "Fina", posicion: 10, textura: "Como sal fina o azúcar glas un poco granulado." },
@@ -1542,11 +1589,10 @@ const RECETAS = {
     titulo: "Moka (cafetera italiana)",
     nombre: "café en moka",
     intro: "Un café con mucho cuerpo, el de toda la vida, pero sin que se queme. La clave: fuego bajo y retirarla a tiempo.",
-    tazasLabel: "Tazas (tamaño de tu moka)",
-    tazasMax: 12,
-    cafePorTaza: 6,
-    aguaPorTaza: 50,
+    cantidad: { tipo: "ml", label: "Agua (según tu moka)", inicio: 100, paso: 50, max: 600 },
+    cafePor: 12,              // g de café por cada 100 ml
     aguaTexto: "de agua, hasta justo debajo de la válvula",
+    proporcion: "12 g de café por cada 100 ml de agua",
     temp: "Agua ya caliente",
     tiempo: "4–5 min",
     molienda: { grado: "Media-fina", posicion: 28, textura: "Algo más gruesa que para espresso, como sal de mesa." },
@@ -1565,11 +1611,10 @@ const RECETAS = {
     titulo: "Filtro (V60, Chemex)",
     nombre: "café de filtro (V60 o Chemex)",
     intro: "Limpio, aromático y con todos los matices del origen. Ideal para descubrir las notas frutales de AURINEGRA.",
-    tazasLabel: "Tazas (250 ml)",
-    tazasMax: 4,
-    cafePorTaza: 17,
-    aguaPorTaza: 250,
-    aguaTexto: "de agua (≈ 7 g de café por cada 100 ml)",
+    cantidad: { tipo: "ml", label: "Agua", inicio: 100, paso: 50, max: 1000 },
+    cafePor: 7,
+    aguaTexto: "de agua",
+    proporcion: "7 g de café por cada 100 ml de agua",
     temp: "92–96 °C",
     tiempo: "2:30–3 min",
     molienda: { grado: "Media", posicion: 55, textura: "Como arena de playa." },
@@ -1588,11 +1633,10 @@ const RECETAS = {
     titulo: "Prensa francesa",
     nombre: "café en prensa francesa",
     intro: "Con cuerpo y textura sedosa, muy fácil de preparar. Perfecta para varias tazas.",
-    tazasLabel: "Tazas (250 ml)",
-    tazasMax: 4,
-    cafePorTaza: 17,
-    aguaPorTaza: 250,
-    aguaTexto: "de agua (≈ 7 g de café por cada 100 ml)",
+    cantidad: { tipo: "ml", label: "Agua", inicio: 100, paso: 50, max: 1000 },
+    cafePor: 7,
+    aguaTexto: "de agua",
+    proporcion: "7 g de café por cada 100 ml de agua",
     temp: "92–96 °C",
     tiempo: "4 min",
     molienda: { grado: "Gruesa", posicion: 88, textura: "Como sal gorda o pan rallado grueso." },
@@ -1638,11 +1682,11 @@ const MOLINILLOS = {
 };
 
 let metodoActual = "espresso";
-let tazas = 1;
+let cantidad = RECETAS.espresso.cantidad.inicio; // ml de agua, o dosis en espresso
 
 function elegirMetodo(metodo) {
   if (!RECETAS[metodo]) return;
-  if (metodo !== metodoActual) tazas = metodo === "moka" ? 3 : 1;
+  if (metodo !== metodoActual) cantidad = RECETAS[metodo].cantidad.inicio;
   metodoActual = metodo;
 
   document.querySelectorAll(".prep-metodo").forEach(b => {
@@ -1655,9 +1699,9 @@ function elegirMetodo(metodo) {
   pintarReceta();
 }
 
-function cambiarTazas(delta) {
-  const r = RECETAS[metodoActual];
-  tazas = Math.min(r.tazasMax, Math.max(1, tazas + delta));
+function cambiarTazas(direccion) {
+  const c = RECETAS[metodoActual].cantidad;
+  cantidad = Math.min(c.max, Math.max(c.inicio, cantidad + direccion * c.paso));
   pintarReceta();
 }
 
@@ -1671,14 +1715,16 @@ function pintarReceta() {
 
   document.getElementById("receta-titulo").textContent = r.titulo;
   document.getElementById("receta-intro").textContent = r.intro;
-  document.getElementById("tazas-label").textContent = r.tazasLabel;
-  document.getElementById("tazas-valor").textContent = tazas;
+  const esDosis = r.cantidad.tipo === "dosis";
+  document.getElementById("tazas-label").textContent = r.cantidad.label;
+  document.getElementById("tazas-valor").textContent = esDosis ? cantidad : `${cantidad} ml`;
 
-  document.getElementById("ing-cafe").textContent = gramos(r.cafePorTaza * tazas);
-  document.getElementById("ing-agua").textContent = metodoActual === "espresso"
-    ? gramos(r.aguaPorTaza * tazas)
-    : `${r.aguaPorTaza * tazas} ml`;
+  // Dosis: 18 g por espresso doble. Agua: X g de café por cada 100 ml.
+  const cafe = esDosis ? r.cafePor * cantidad : r.cafePor * cantidad / 100;
+  document.getElementById("ing-cafe").textContent = gramos(cafe);
+  document.getElementById("ing-agua").textContent = esDosis ? gramos(r.bebidaPor * cantidad) : `${cantidad} ml`;
   document.getElementById("ing-agua-texto").textContent = r.aguaTexto;
+  document.getElementById("ing-proporcion").textContent = r.proporcion;
   document.getElementById("ing-temp").textContent = r.temp;
   document.getElementById("ing-tiempo").textContent = r.tiempo;
 
@@ -1759,9 +1805,9 @@ function pintarVideo() {
   } catch (e) {}
 
   const desdeEnlace = location.hash.replace("#", "");
-  elegirMetodo(RECETAS[desdeEnlace] ? desdeEnlace : "espresso");
-  if (desdeEnlace === "moka") tazas = 3;
-  pintarReceta();
+  const metodoInicial = RECETAS[desdeEnlace] ? desdeEnlace : "espresso";
+  cantidad = RECETAS[metodoInicial].cantidad.inicio;
+  elegirMetodo(metodoInicial);
 })();
 </script>
 

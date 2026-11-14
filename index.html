@@ -42,7 +42,7 @@
 
     img{max-width:100%;display:block} a{color:inherit} h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.12}
 
-    section,#inicio,#origen,#proceso,#historia,#cata,#empaque,#area-profesional,#contacto{scroll-margin-top:78px}
+    section,#inicio,#origen,#historia,#cata,#empaque,#area-profesional,#contacto{scroll-margin-top:78px}
 
 
     /* HEADER */
@@ -655,111 +655,6 @@
 }
 
 
-.proceso-video video{
-
-  width:100%;
-
-  height:100%;
-
-  object-fit:cover;
-
-  display:block;
-
-}
-
-
-@media (max-width: 768px){
-
-
-  .proceso-video{
-
-    height:auto;
-
-  }
-
-
-  .proceso-video video{
-
-    width:100%;
-
-    height:auto;
-
-    object-fit:contain;
-
-  }
-
-
-}
-
-
-@media (max-width: 768px){
-
-
-  .split .image-card.proceso-video{
-
-    height:auto !important;
-
-    aspect-ratio:auto !important;
-
-    max-height:none !important;
-
-  }
-
-
-  .split .image-card.proceso-video video{
-
-    width:100% !important;
-
-    height:auto !important;
-
-    aspect-ratio:16/9 !important;
-
-    object-fit:contain !important;
-
-    object-position:center center !important;
-
-    display:block !important;
-
-  }
-
-
-}
-
-
-@media (max-width: 768px){
-
-
-  #proceso .image-card{
-
-    height:auto !important;
-
-    min-height:0 !important;
-
-    max-height:none !important;
-
-    overflow:hidden !important;
-
-  }
-
-
-  #proceso .image-card video{
-
-    width:100% !important;
-
-    height:auto !important;
-
-    object-fit:contain !important;
-
-    object-position:center center !important;
-
-    display:block !important;
-
-  }
-
-
-}
-
-
 .video-toggle{
 
   position:absolute;
@@ -1168,6 +1063,20 @@
 
 </style>
 
+
+<style>
+  /* MENU-MEDIANO */
+  /* Menú de ordenador en pantallas medianas (851–1250 px): ningún enlace partido en dos líneas;
+     si no caben todos, pasan ordenados a una segunda fila */
+  @media (min-width: 851px) and (max-width: 1250px) {
+    #main-menu { gap: 4px 14px !important; flex-wrap: wrap !important; justify-content: center !important; flex: 1 1 auto; min-width: 0; }
+    #main-menu a { font-size: 12px !important; letter-spacing: .6px !important; white-space: nowrap; }
+    .brand span { font-size: 28px !important; }
+  }
+  @media (min-width: 851px) and (max-width: 1050px) {
+    header { padding-left: 3% !important; padding-right: 3% !important; gap: 14px !important; }
+  }
+</style>
 </head>
 
 <body id="top">
@@ -1182,7 +1091,7 @@
 
       <a href="#origen">Nuestro café</a>
 
-      <a href="#proceso">Proceso</a>
+      <a href="preparacion.html">Preparación</a>
 
       <a href="#historia">Historia</a>
 
@@ -1210,7 +1119,7 @@
 
       <a href="#origen" onclick="closeMenu()">Nuestro café</a>
 
-      <a href="#proceso" onclick="closeMenu()">Proceso</a>
+      <a href="preparacion.html" onclick="closeMenu()">Preparación</a>
 
       <a href="#historia" onclick="closeMenu()">Historia</a>
 
@@ -1331,61 +1240,9 @@
      <!-- -------------------------------------------------------------------------------CIERRA - CAJA ORIGEN------------------------------------------------------------------------------------------------>
 
 
- <!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO------------------------------------------------------------------------------------------------>
-
-
-    <section class="cream split" id="proceso">
-
-
-      <div class="image-card proceso-video reveal-left">
-
-        <video id="procesoVideo" autoplay muted loop playsinline preload="metadata">
-
-          <source src="videos/pajaro-cafe.mp4" type="video/mp4">
-
-        </video>
-
-
-      <button class="video-toggle" onclick="toggleVideo('procesoVideo', this)">⏸</button>
-
-      </div>
-
-
-      <div class="text-block reveal-right">
-
-        <div class="eyebrow">Proceso artesanal</div>
-
-        <h2>Seleccionado a mano, grano a grano</h2>
-
-        <p>Nuestro café es cosechado manualmente por comunidades locales e indígenas en Mistrató.&#x20;
-
-          Aplicamos una selección rigurosa y técnicas de fermentación controlada para resaltar los atributos más finos del grano.</p>
-
-        <p>Comprometidos con el medio ambiente, utilizamos métodos de mínimo consumo de agua, preservando la esencia natural del café y trabajando cada lote de manera única.</p>
-
-        <div class="badge-row">
-
-          <span class="badge">Selección manual</span>
-
-          <span class="badge">Fermentación controlada</span>
-
-          <span class="badge">Mínimo consumo de agua</span>
-
-        </div>
-
-        <a href="proceso.html" class="btn btn-primary section-btn">Más información</a>
-
-      </div>
-
-    </section>
-
-
-<!-- -------------------------------------------------------------------------------CIERRA - CAJA PROCESO------------------------------------------------------------------------------------------------>
-
-
 <!-- -------------------------------------------------------------------------------ABRE - CAJA PROCESO ESPECIALES------------------------------------------------------------------------------------------------>
 
-    <section class="white">
+    <section class="cream">
 
       <div class="section-head reveal">
 

@@ -450,6 +450,20 @@
 
 
 
+
+<style>
+  /* MENU-MEDIANO */
+  /* Menú de ordenador en pantallas medianas (851–1250 px): ningún enlace partido en dos líneas;
+     si no caben todos, pasan ordenados a una segunda fila */
+  @media (min-width: 851px) and (max-width: 1250px) {
+    #main-menu { gap: 4px 14px !important; flex-wrap: wrap !important; justify-content: center !important; flex: 1 1 auto; min-width: 0; }
+    #main-menu a { font-size: 12px !important; letter-spacing: .6px !important; white-space: nowrap; }
+    .brand span { font-size: 28px !important; }
+  }
+  @media (min-width: 851px) and (max-width: 1050px) {
+    header { padding-left: 3% !important; padding-right: 3% !important; gap: 14px !important; }
+  }
+</style>
 </head>
 
 
@@ -458,9 +472,9 @@
   <header>
     <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
     <a href="index.html#inicio" class="brand"><span>AURINEGRA</span></a>
-    <nav id="main-menu"><a href="index.html#origen">Nuestro café</a><a href="index.html#proceso">Proceso</a><a href="index.html#historia">Historia</a><a href="index.html#cata">Cata</a><a href="index.html#empaque">Producto</a><a href="index.html#area-profesional">Profesionales</a><a href="index.html#contacto">Contacto</a><a href="tienda.html">Tienda</a></nav>
+    <nav id="main-menu"><a href="index.html#origen">Nuestro café</a><a href="preparacion.html">Preparación</a><a href="index.html#historia">Historia</a><a href="index.html#cata">Cata</a><a href="index.html#empaque">Producto</a><a href="index.html#area-profesional">Profesionales</a><a href="index.html#contacto">Contacto</a><a href="tienda.html">Tienda</a></nav>
     <a href="carrito.html" class="cart-link">🛒<span id="cart-count" class="cart-count">0</span></a>
-    <nav id="mobile-menu" class="mobile-menu"><a href="index.html#origen" onclick="closeMenu()">Nuestro café</a><a href="index.html#proceso" onclick="closeMenu()">Proceso</a><a href="index.html#historia" onclick="closeMenu()">Historia</a><a href="index.html#cata" onclick="closeMenu()">Cata</a><a href="index.html#empaque" onclick="closeMenu()">Producto</a><a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a><a href="index.html#contacto" onclick="closeMenu()">Contacto</a><a href="tienda.html" onclick="closeMenu()">Tienda</a></nav>
+    <nav id="mobile-menu" class="mobile-menu"><a href="index.html#origen" onclick="closeMenu()">Nuestro café</a><a href="preparacion.html" onclick="closeMenu()">Preparación</a><a href="index.html#historia" onclick="closeMenu()">Historia</a><a href="index.html#cata" onclick="closeMenu()">Cata</a><a href="index.html#empaque" onclick="closeMenu()">Producto</a><a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a><a href="index.html#contacto" onclick="closeMenu()">Contacto</a><a href="tienda.html" onclick="closeMenu()">Tienda</a></nav>
   </header>
 
   <div class="page-back-wrap"><a href="index.html#inicio" class="page-back-link">← Volver al inicio</a></div>
