@@ -38,11 +38,21 @@
     <h1>Pedido confirmado</h1>
     <p>Gracias por tu compra en AURINEGRA.</p>
     <p>Hemos recibido tu pedido correctamente.</p>
+    <p id="numero-pedido" hidden>Tu número de pedido: <strong></strong></p>
+    <p>Si has elegido pagar por transferencia, escribe tu número de pedido en el concepto. Te hemos enviado por email los datos bancarios, y prepararemos tu pedido en cuanto recibamos el pago.</p>
     <a href="index.html">Volver al inicio</a>
   </div>
 
   <script>
-    localStorage.removeItem("carrito");
+    try { localStorage.removeItem("carrito"); } catch (e) {}
+
+    // Número de pedido que pasa el servidor en la URL (?pedido=PED-2026-0001)
+    const numero = new URLSearchParams(location.search).get("pedido");
+    if (numero && /^PED-\d{4}-\d{4,}$/.test(numero)) {
+      const p = document.getElementById("numero-pedido");
+      p.querySelector("strong").textContent = numero;
+      p.hidden = false;
+    }
   </script>
 </body>
 </html>

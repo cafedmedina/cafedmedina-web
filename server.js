@@ -60,10 +60,22 @@ app.post("/webhook/stripe", express.raw({ type: "application/json" }), async (re
   }
 
   try {
+    const session = event.data.object;
+
     if (event.type === "checkout.session.completed") {
-      await confirmarPagoPedido(event.data.object);
+      // Tarjeta, Bizum o PayPal llegan ya cobrados ("paid"). La transferencia termina el
+      // checkout SIN dinero ("unpaid"): se espera a checkout.session.async_payment_succeeded.
+      if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
+        await confirmarPagoPedido(session);
+      } else {
+        await marcarEsperandoTransferencia(session);
+      }
+    } else if (event.type === "checkout.session.async_payment_succeeded") {
+      await confirmarPagoPedido(session);
+    } else if (event.type === "checkout.session.async_payment_failed") {
+      await cancelarPedidoPagoFallido(session);
     } else if (event.type === "checkout.session.expired") {
-      await cancelarPedidoExpirado(event.data.object);
+      await cancelarPedidoExpirado(session);
     }
 
     res.json({ received: true });
@@ -668,6 +680,136 @@ app.get("/api/movimientos", requiereAdmin, async (req, res) => {
   }
 });
 
+//-------------------------------------------------------------------------------------------------ABRE - AVÍSAME CUANDO ESTÉ DISPONIBLE (interesados / clientes potenciales)--------------------------------------------------------------------------------------------//
+// Desde la tienda, en un producto "Próximamente", el visitante deja su contacto para que le avisemos.
+// Se guarda en Redis ("avisos_disponibilidad") con su consentimiento (RGPD):
+//   - aceptaAviso (obligatorio): solo para avisarle de ese producto.
+//   - aceptaNovedades (opcional): además, recibir novedades y ofertas → base de clientes potenciales.
+
+const MAX_AVISOS = 5000;
+
+async function leerAvisos() { return redisGet("avisos_disponibilidad", []); }
+
+function textoCorto(valor, max) {
+  return String(valor == null ? "" : valor).trim().slice(0, max);
+}
+
+app.post("/api/avisos-disponibilidad", async (req, res) => {
+  try {
+    const b = req.body || {};
+
+    // Campo trampa invisible: si viene relleno es un bot. Respondemos OK sin guardar nada.
+    if (b.web) return res.json({ success: true });
+
+    const preferencia = ["email", "whatsapp", "sms"].includes(b.preferencia) ? b.preferencia : "email";
+    const email = textoCorto(b.email, 120).toLowerCase();
+    const telefono = textoCorto(b.telefono, 20).replace(/[\s-]/g, "");
+    const nombre = textoCorto(b.nombre, 80);
+    const proceso = textoCorto(b.proceso, 60);
+    const lote = textoCorto(b.lote, 40);
+    const peso = ["250", "500", "1000"].includes(String(b.peso)) ? String(b.peso) : "";
+
+    if (b.aceptaAviso !== true) return res.status(400).json({ error: "Tienes que aceptar que guardemos tus datos para avisarte." });
+    if (!proceso || !peso) return res.status(400).json({ error: "Falta el producto." });
+    if (preferencia === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "El email no es válido." });
+    if (preferencia !== "email" && !/^[67]\d{8}$/.test(telefono)) return res.status(400).json({ error: "El móvil no es válido (9 dígitos, empieza por 6 o 7)." });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "El email no es válido." });
+    if (telefono && !/^[67]\d{8}$/.test(telefono)) return res.status(400).json({ error: "El móvil no es válido." });
+
+    const avisos = await leerAvisos();
+
+    // Misma persona y mismo producto: se actualiza en vez de duplicar
+    const contacto = email || telefono;
+    const existente = avisos.find(a =>
+      (a.email || a.telefono) === contacto && a.proceso === proceso && a.peso === peso && (a.lote || "") === lote && !a.avisado
+    );
+
+    const ahora = new Date().toISOString();
+    if (existente) {
+      Object.assign(existente, { nombre: nombre || existente.nombre, email, telefono, preferencia, aceptaNovedades: b.aceptaNovedades === true, actualizado: ahora });
+    } else {
+      if (avisos.length >= MAX_AVISOS) return res.status(503).json({ error: "Ahora mismo no podemos guardar más avisos. Escríbenos por WhatsApp." });
+      avisos.push({
+        id: crypto.randomUUID(),
+        fecha: ahora,
+        nombre, email, telefono, preferencia,
+        proceso, lote, peso,
+        aceptaAviso: true,
+        aceptaNovedades: b.aceptaNovedades === true,
+        avisado: false
+      });
+    }
+
+    await redisSet("avisos_disponibilidad", avisos);
+
+    if (!existente) {
+      try {
+        await resend.emails.send({
+          from: REMITENTE_EMAIL,
+          to: process.env.AVISO_PEDIDOS_EMAIL || EMPRESA.email,
+          subject: `🔔 Nuevo interesado: ${proceso} ${peso === "1000" ? "1 kg" : peso + " g"}`,
+          html: `
+            <p><strong>${escaparHtml(nombre || "Sin nombre")}</strong> quiere que le avisemos cuando esté disponible
+               <strong>${escaparHtml(proceso)}${lote ? " · Lote " + escaparHtml(lote) : ""} · ${peso === "1000" ? "1 kg" : peso + " g"}</strong>.</p>
+            <p>Avisar por: ${escaparHtml(ETIQUETA_PREFERENCIA[preferencia])} · ${escaparHtml([email, telefono].filter(Boolean).join(" · "))}</p>
+            <p>Acepta recibir novedades: ${b.aceptaNovedades === true ? "Sí" : "No"}</p>
+            <p>Lo tienes en el panel, pestaña «Interesados».</p>
+          `
+        });
+      } catch (error) {
+        console.error("No se pudo enviar el aviso de nuevo interesado:", error);
+      }
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo guardar el aviso. Inténtalo de nuevo." });
+  }
+});
+
+app.get("/api/avisos-disponibilidad", requiereAdmin, async (req, res) => {
+  try {
+    const avisos = await leerAvisos();
+    res.json(avisos.slice().reverse()); // más recientes primero
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer los interesados" });
+  }
+});
+
+app.post("/api/avisos-disponibilidad/:id/avisado", requiereAdmin, async (req, res) => {
+  try {
+    const avisos = await leerAvisos();
+    const aviso = avisos.find(a => a.id === req.params.id);
+    if (!aviso) return res.status(404).json({ error: "No encontrado" });
+    aviso.avisado = !aviso.avisado;
+    aviso.fechaAvisado = aviso.avisado ? new Date().toISOString() : null;
+    await redisSet("avisos_disponibilidad", avisos);
+    res.json({ success: true, avisado: aviso.avisado });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo actualizar" });
+  }
+});
+
+// Borrar (p. ej. si la persona pide que eliminemos sus datos)
+app.delete("/api/avisos-disponibilidad/:id", requiereAdmin, async (req, res) => {
+  try {
+    const avisos = await leerAvisos();
+    const restantes = avisos.filter(a => a.id !== req.params.id);
+    if (restantes.length === avisos.length) return res.status(404).json({ error: "No encontrado" });
+    await redisSet("avisos_disponibilidad", restantes);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo eliminar" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - AVÍSAME CUANDO ESTÉ DISPONIBLE--------------------------------------------------------------------------------------------//
+
 app.get("/api/pedidos", requiereAdmin, async (req, res) => {
   try {
     const pedidos = await leerPedidos();
@@ -691,6 +833,10 @@ app.delete("/api/pedidos/:id", requiereAdmin, async (req, res) => {
 
     if (pedidos[index].estadoPago === "pagado" || pedidos[index].estadoPago === "pagado_sin_stock") {
       return res.status(400).json({ error: "No se puede eliminar un pedido ya pagado." });
+    }
+
+    if (pedidos[index].estadoPago === "esperando_transferencia") {
+      return res.status(400).json({ error: "Este pedido está esperando una transferencia: no se puede eliminar hasta que llegue o se cancele." });
     }
 
     pedidos.splice(index, 1);
@@ -1260,6 +1406,153 @@ async function enviarFacturaPorEmail(pedido, pdfBuffer) {
   });
 }
 
+// ---- Avisos internos a la empresa (email siempre; WhatsApp solo si está configurado) ----
+// AVISO_PEDIDOS_EMAIL: a quién avisar (por defecto, el email de la empresa).
+// WhatsApp vía CallMeBot (gratuito, solo para tu propio número): WHATSAPP_AVISO_TELEFONO (+34...) y WHATSAPP_AVISO_APIKEY.
+// Un fallo al avisar nunca debe romper la confirmación del pago, por eso todo va en try/catch.
+
+function escaparHtml(texto) {
+  return String(texto == null ? "" : texto)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function resumenPedidoTexto(pedido) {
+  const c = pedido.cliente || {};
+  const lineas = (pedido.items || []).map(i =>
+    `${i.cantidad} × ${i.nombre} · ${i.proceso} · Lote ${i.lote} · ${i.peso === "1000" ? "1 kg" : i.peso + " g"}`
+  );
+  const totalCafe = (pedido.items || []).reduce((s, i) => s + Number(i.precioUnitario || 0) * Number(i.cantidad || 0), 0);
+  const envio = pedido.envio && !pedido.envio.gratuito ? Number(pedido.envio.total || 0) : 0;
+  return {
+    cliente: `${c.nombre || ""} ${c.apellidos || ""}`.trim(),
+    contacto: [c.email, c.telefono].filter(Boolean).join(" · "),
+    direccion: [c.direccion, c.codigoPostal, c.localidad, c.provincia].filter(Boolean).join(", "),
+    lineas,
+    total: (totalCafe + envio).toFixed(2).replace(".", ",") + " €"
+  };
+}
+
+async function avisarWhatsApp(texto) {
+  const telefono = process.env.WHATSAPP_AVISO_TELEFONO;
+  const apikey = process.env.WHATSAPP_AVISO_APIKEY;
+  if (!telefono || !apikey) return;
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}&apikey=${encodeURIComponent(apikey)}`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`CallMeBot respondió ${resp.status}`);
+}
+
+const ETIQUETA_PREFERENCIA = { email: "Email", whatsapp: "WhatsApp", sms: "SMS" };
+
+// Mensaje listo para mandar al cliente por WhatsApp/SMS desde el móvil con un toque.
+// (El envío automático a clientes por WhatsApp/SMS necesita un proveedor de pago: Twilio o WhatsApp Business.)
+function mensajeParaCliente(pedido, tipo) {
+  const nombre = (pedido.cliente && pedido.cliente.nombre) || "";
+  const num = pedido.numeroPedido || "";
+  if (tipo === "transferencia") {
+    return `Hola ${nombre}, somos ${EMPRESA.nombreComercial}. Hemos recibido tu pedido ${num}. Lo enviaremos en cuanto llegue tu transferencia (pon ${num} en el concepto). ¡Gracias!`;
+  }
+  return `Hola ${nombre}, somos ${EMPRESA.nombreComercial}. Hemos recibido el pago de tu pedido ${num}; tienes la factura en tu email. Te avisaremos cuando salga hacia tu dirección. ¡Gracias!`;
+}
+
+function bloquePreferenciaContacto(pedido, tipo) {
+  if (tipo === "sin_stock") return "";
+  const c = pedido.cliente || {};
+  const pref = c.preferenciaContacto || "email";
+  const movil = String(c.telefono || "").replace(/[\s-]/g, "");
+  const texto = encodeURIComponent(mensajeParaCliente(pedido, tipo));
+  let enlace = "";
+  if (pref === "whatsapp" && movil) {
+    enlace = `<a href="https://wa.me/34${movil}?text=${texto}">Escribirle por WhatsApp (mensaje ya redactado)</a>`;
+  } else if (pref === "sms" && movil) {
+    enlace = `<a href="sms:+34${movil}?body=${texto}">Enviarle un SMS (mensaje ya redactado)</a>`;
+  }
+  return `<p><strong>Prefiere que le avisemos por:</strong> ${escaparHtml(ETIQUETA_PREFERENCIA[pref] || "Email")}${enlace ? `<br>${enlace}` : ""}</p>`;
+}
+
+// Al cliente que eligió transferencia: confirmación del pedido y qué poner en el concepto.
+async function enviarAvisoTransferenciaCliente(pedido) {
+  const email = pedido.cliente && pedido.cliente.email;
+  if (!email) return;
+  const num = pedido.numeroPedido || "";
+  try {
+    await resend.emails.send({
+      from: REMITENTE_EMAIL,
+      to: email,
+      subject: `Pedido ${num} · pendiente de transferencia · ${EMPRESA.nombreComercial}`,
+      html: `
+        <p>Hola ${escaparHtml((pedido.cliente && pedido.cliente.nombre) || "")},</p>
+        <p>Hemos recibido tu pedido <strong>${escaparHtml(num)}</strong>.</p>
+        ${(() => {
+          const t = pedido.instruccionesTransferencia;
+          if (!t || !t.iban) {
+            return `<p>Para la transferencia usa los datos bancarios que te mostró Stripe al confirmar el pedido y escribe
+              <strong>${escaparHtml(num)}</strong> en el concepto, junto con la referencia que te indicó Stripe.</p>`;
+          }
+          const concepto = [t.referencia, num].filter(Boolean).join(" ");
+          return `
+            <p>Datos para la transferencia:</p>
+            <p><strong>Titular:</strong> ${escaparHtml(t.titular || "")}<br>
+               <strong>IBAN:</strong> ${escaparHtml(t.iban)}<br>
+               ${t.bic ? `<strong>BIC:</strong> ${escaparHtml(t.bic)}<br>` : ""}
+               ${t.importe != null ? `<strong>Importe:</strong> ${escaparHtml(t.importe.toFixed(2).replace(".", ","))} €<br>` : ""}
+               <strong>Concepto:</strong> ${escaparHtml(concepto)}</p>
+            <p>Copia el concepto tal cual: así el pago se asocia a tu pedido automáticamente.</p>
+            ${t.url ? `<p><a href="${escaparHtml(t.url)}">Ver las instrucciones de pago</a></p>` : ""}`;
+        })()}
+        <p>En cuanto recibamos el pago te enviaremos la factura y prepararemos tu café.</p>
+      `
+    });
+  } catch (error) {
+    console.error(`No se pudo enviar el aviso de transferencia al cliente del pedido ${num}:`, error);
+  }
+}
+
+// tipo: "pagado" | "transferencia" | "sin_stock"
+async function avisarEmpresaPedido(pedido, tipo, pdfFactura) {
+  const r = resumenPedidoTexto(pedido);
+  const num = pedido.numeroPedido || "";
+  const titulos = {
+    pagado: `💰 Pedido pagado ${num} · ${r.total}`,
+    transferencia: `⏳ Pedido ${num} pendiente de transferencia · ${r.total}`,
+    sin_stock: `⚠️ Pedido ${num} PAGADO SIN STOCK · revisar`
+  };
+  const explicacion = {
+    pagado: "El cliente ha pagado. Ya tiene su factura por email; el pedido está listo para preparar y enviar.",
+    transferencia: "El cliente ha elegido transferencia bancaria. Stripe avisará cuando llegue el dinero y entonces se facturará automáticamente. No envíes todavía.",
+    sin_stock: `El pago se ha cobrado pero no hay stock suficiente. ${pedido.avisoStock || ""}`
+  };
+
+  try {
+    await resend.emails.send({
+      from: REMITENTE_EMAIL,
+      to: process.env.AVISO_PEDIDOS_EMAIL || EMPRESA.email,
+      subject: titulos[tipo],
+      html: `
+        <h2>${escaparHtml(titulos[tipo])}</h2>
+        <p>${escaparHtml(explicacion[tipo])}</p>
+        <p><strong>Cliente:</strong> ${escaparHtml(r.cliente)}<br>
+           <strong>Contacto:</strong> ${escaparHtml(r.contacto)}<br>
+           <strong>Dirección:</strong> ${escaparHtml(r.direccion)}</p>
+        <ul>${r.lineas.map(l => `<li>${escaparHtml(l)}</li>`).join("")}</ul>
+        <p><strong>Total:</strong> ${escaparHtml(r.total)}${pedido.factura ? ` · Factura ${escaparHtml(pedido.factura.numero)}` : ""}</p>
+        ${bloquePreferenciaContacto(pedido, tipo)}
+      `,
+      attachments: pdfFactura && pedido.factura
+        ? [{ filename: `${pedido.factura.numero}.pdf`, content: pdfFactura }]
+        : undefined
+    });
+  } catch (error) {
+    console.error(`No se pudo enviar el aviso por email del pedido ${num}:`, error);
+  }
+
+  try {
+    await avisarWhatsApp(`${titulos[tipo]}\n${r.cliente}\n${r.lineas.join("\n")}`);
+  } catch (error) {
+    console.error(`No se pudo enviar el aviso por WhatsApp del pedido ${num}:`, error);
+  }
+}
+
 async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
   const email = pedido.cliente && pedido.cliente.email;
   if (!email) return;
@@ -1715,6 +2008,7 @@ async function confirmarPagoPedido(session) {
     pedido.avisoStock = `Pago confirmado pero sin stock suficiente: ${faltantes.join("; ")}. Revisar manualmente.`;
     await redisSet("pedidos", pedidos);
     console.error(`ATENCIÓN: el pedido ${pedido.id} se ha pagado pero no hay stock suficiente. Revisar a mano.`);
+    await avisarEmpresaPedido(pedido, "sin_stock");
     return;
   }
 
@@ -1745,10 +2039,11 @@ async function confirmarPagoPedido(session) {
     paymentIntentId: session.payment_intent || null
   };
 
+  let pdfFactura = null;
   try {
     // Si Stripe reenvía el evento tras un fallo a medias, la clave del pedido evita emitir otra factura.
     pedido.factura = await emitirFactura(datosFacturaPedido(pedido), `pedido-${pedido.id}`);
-    const pdfFactura = await construirFacturaPDF(pedido);
+    pdfFactura = await construirFacturaPDF(pedido);
     await enviarFacturaPorEmail(pedido, pdfFactura);
     await actualizarFichaCliente(pedido);
   } catch (error) {
@@ -1758,6 +2053,9 @@ async function confirmarPagoPedido(session) {
   await redisSet("stock_reservado", reservado);
   await redisSet("movimientos", movimientos);
   await redisSet("pedidos", pedidos);
+
+  // Aviso a la empresa (con la factura adjunta) cuando ya está todo guardado
+  await avisarEmpresaPedido(pedido, "pagado", pdfFactura);
 }
 
 // La sesión de pago caducó sin que el cliente pagara: como ya no se reserva nada al crearla, solo hay que marcar el pedido.
@@ -1768,6 +2066,55 @@ async function cancelarPedidoExpirado(session) {
   if (!pedido || pedido.estadoPago !== "pendiente_pago") return;
 
   pedido.estadoPago = "cancelado";
+  await redisSet("pedidos", pedidos);
+}
+
+// El cliente eligió transferencia: el checkout ha terminado pero el dinero aún no ha llegado.
+// No se reserva stock ni se factura hasta checkout.session.async_payment_succeeded.
+async function marcarEsperandoTransferencia(session) {
+  const pedidos = await leerPedidos();
+  const pedido = pedidos.find(p => p.id === session.id);
+
+  if (!pedido || pedido.estadoPago !== "pendiente_pago") return;
+
+  pedido.estadoPago = "esperando_transferencia";
+
+  // Datos de la transferencia que genera Stripe (IBAN propio del pedido, referencia y página con las instrucciones)
+  try {
+    if (session.payment_intent) {
+      const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
+      const ins = pi.next_action && pi.next_action.display_bank_transfer_instructions;
+      if (ins) {
+        const iban = (ins.financial_addresses || []).find(f => f.iban);
+        pedido.instruccionesTransferencia = {
+          url: ins.hosted_instructions_url || null,
+          referencia: ins.reference || null,
+          importe: typeof ins.amount_remaining === "number" ? ins.amount_remaining / 100 : null,
+          iban: iban ? iban.iban.iban : null,
+          bic: iban ? iban.iban.bic : null,
+          titular: iban ? iban.iban.account_holder_name : null
+        };
+      }
+    }
+  } catch (error) {
+    console.error(`No se pudieron leer los datos de transferencia del pedido ${pedido.numeroPedido}:`, error);
+  }
+
+  await redisSet("pedidos", pedidos);
+
+  await avisarEmpresaPedido(pedido, "transferencia");
+  await enviarAvisoTransferenciaCliente(pedido);
+}
+
+// La transferencia no llegó (o el pago diferido falló): el pedido se cancela.
+async function cancelarPedidoPagoFallido(session) {
+  const pedidos = await leerPedidos();
+  const pedido = pedidos.find(p => p.id === session.id);
+
+  if (!pedido || (pedido.estadoPago !== "pendiente_pago" && pedido.estadoPago !== "esperando_transferencia")) return;
+
+  pedido.estadoPago = "cancelado";
+  pedido.avisoPago = "El pago diferido (transferencia) no se completó.";
   await redisSet("pedidos", pedidos);
 }
 
@@ -1784,6 +2131,11 @@ app.post("/create-checkout-session", async (req, res) => {
     const errorCliente = validarClienteServidor(cliente);
     if (errorCliente) {
       return res.status(400).json({ error: errorCliente });
+    }
+
+    // Cómo quiere el cliente que le avisemos (la factura va siempre por email)
+    if (!["email", "whatsapp", "sms"].includes(cliente.preferenciaContacto)) {
+      cliente.preferenciaContacto = "email";
     }
 
     const catalogo = leerCatalogo();
@@ -1883,14 +2235,40 @@ app.post("/create-checkout-session", async (req, res) => {
       });
     }
 
+    // El número de pedido se genera ANTES de crear el pago para que viaje a Stripe: aparece en
+    // el Dashboard, en el recibo, en la página de pago (texto para el concepto de la transferencia)
+    // y en la página de éxito.
+    const numeroPedido = await generarNumeroDocumento("PED");
+
+    // Sin payment_method_types: Stripe enseña los métodos activados en el Dashboard
+    // (Configuración → Métodos de pago): tarjeta, Bizum, PayPal y transferencia bancaria.
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
+      client_reference_id: numeroPedido,
+      payment_intent_data: {
+        description: `Pedido ${numeroPedido} · ${EMPRESA.nombreComercial}`,
+        metadata: { numeroPedido }
+      },
+      custom_text: {
+        submit: {
+          message: `Pedido ${numeroPedido}. Si pagas por transferencia, escribe ${numeroPedido} en el concepto junto con la referencia que te indique Stripe. Te enviaremos el café en cuanto recibamos el pago.`
+        }
+      },
       line_items: stripeLineItems,
       mode: "payment",
       customer_email: cliente.email,
-      success_url: "https://cafedmedina-web.onrender.com/success.html",
+      // La transferencia bancaria necesita un cliente de Stripe al que asignar el IBAN de pago
+      customer_creation: "always",
+      payment_method_options: {
+        customer_balance: {
+          funding_type: "bank_transfer",
+          bank_transfer: { type: "eu_bank_transfer", eu_bank_transfer: { country: "ES" } }
+        }
+      },
+      success_url: `https://cafedmedina-web.onrender.com/success.html?pedido=${encodeURIComponent(numeroPedido)}`,
       cancel_url: "https://cafedmedina-web.onrender.com/cancel.html",
       metadata: {
+        numeroPedido,
+        preferenciaContacto: cliente.preferenciaContacto,
         nombre: cliente.nombre,
         apellidos: cliente.apellidos,
         dni: cliente.dni,
@@ -1912,7 +2290,7 @@ app.post("/create-checkout-session", async (req, res) => {
     const pedidos = await leerPedidos();
     pedidos.push({
       id: session.id,
-      numeroPedido: await generarNumeroDocumento("PED"),
+      numeroPedido,
       fecha: new Date().toISOString(),
       estadoPago: "pendiente_pago",
       estadoPreparacion: "pendiente",

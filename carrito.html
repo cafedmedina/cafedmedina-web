@@ -388,6 +388,19 @@
       outline-offset: 2px;
     }
 
+    /* Preferencia de aviso: mismo interruptor que Particular/Empresa, dentro de un campo */
+    .preferencia-toggle {
+      margin-bottom: 0;
+      align-self: flex-start;
+      width: fit-content;
+    }
+
+    .form-nota {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11.5px;
+    }
+
     /* El hueco del error solo aparece cuando hay un error */
     .form-error {
       margin-top: 4px;
@@ -1150,6 +1163,25 @@
         </div>
 
         <div class="form-field c6">
+          <label id="label-preferencia">¿Cómo prefieres que te avisemos del pedido?</label>
+          <div class="tipo-toggle preferencia-toggle" role="radiogroup" aria-labelledby="label-preferencia">
+            <label class="tipo-opcion">
+              <input type="radio" name="preferencia-contacto" value="email" checked>
+              <span>Email</span>
+            </label>
+            <label class="tipo-opcion">
+              <input type="radio" name="preferencia-contacto" value="whatsapp">
+              <span>WhatsApp</span>
+            </label>
+            <label class="tipo-opcion">
+              <input type="radio" name="preferencia-contacto" value="sms">
+              <span>SMS</span>
+            </label>
+          </div>
+          <div class="form-nota">La factura te llega siempre por email.</div>
+        </div>
+
+        <div class="form-field c6">
           <label for="cliente-direccion">Dirección de envío</label>
           <input id="cliente-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso..." oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-direccion"></div>
@@ -1529,7 +1561,8 @@
         direccion: document.getElementById("cliente-direccion").value.trim(),
         codigoPostal: document.getElementById("cliente-cp").value.trim(),
         localidad: document.getElementById("cliente-localidad").value.trim(),
-        provincia: document.getElementById("cliente-provincia").value.trim()
+        provincia: document.getElementById("cliente-provincia").value.trim(),
+        preferenciaContacto: (document.querySelector('input[name="preferencia-contacto"]:checked') || {}).value || "email"
       };
     }
 
@@ -1594,8 +1627,13 @@
       }
       onTipoClienteChange();
 
+      if (guardado.preferenciaContacto) {
+        const radioPref = document.querySelector(`input[name="preferencia-contacto"][value="${guardado.preferenciaContacto}"]`);
+        if (radioPref) radioPref.checked = true;
+      }
+
       Object.keys(guardado).forEach(campo => {
-        if (campo === "tipoCliente") return;
+        if (campo === "tipoCliente" || campo === "preferenciaContacto") return;
         const input = document.getElementById(`cliente-${mapaId[campo] || campo}`);
         if (input) input.value = guardado[campo];
       });

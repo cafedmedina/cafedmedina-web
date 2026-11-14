@@ -501,6 +501,52 @@
       border: 1px solid rgba(200,169,106,.25);
     }
 
+    .interesado-row {
+      display: grid;
+      grid-template-columns: .9fr 1.3fr 1fr 1.6fr .7fr .6fr 1.3fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(200,169,106,.14);
+      font-size: 13px;
+    }
+
+    .interesado-row.head {
+      background: transparent;
+      border: none;
+      font-weight: 700;
+      color: var(--gold, #c8a96a);
+    }
+
+    .interesado-row.avisado {
+      opacity: .55;
+    }
+
+    .interesado-row a {
+      color: var(--gold, #c8a96a);
+      word-break: break-all;
+    }
+
+    .interesado-acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .interesado-acciones .btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      min-height: 0;
+    }
+
+    @media (max-width: 900px) {
+      .interesado-row { grid-template-columns: 1fr 1fr; }
+      .interesado-row.head { display: none; }
+    }
+
     .movimiento-row {
       display: grid;
       grid-template-columns: 1.1fr .9fr .6fr 1fr .6fr .8fr .8fr .8fr;
@@ -571,6 +617,7 @@
       <button class="tab-btn" id="tab-btn-stock" onclick="cambiarTab('stock')">Stock</button>
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
       <button class="tab-btn" id="tab-btn-clientes" onclick="cambiarTab('clientes')">Clientes</button>
+      <button class="tab-btn" id="tab-btn-interesados" onclick="cambiarTab('interesados')">Interesados</button>
       <button class="tab-btn" id="tab-btn-tienda" onclick="cambiarTab('tienda')">Tienda</button>
       <button class="tab-btn" id="tab-btn-envio" onclick="cambiarTab('envio')">Envío</button>
       <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
@@ -633,6 +680,18 @@
         <button class="btn-secondary btn" onclick="cargarClientes()">Actualizar lista</button>
       </div>
       <div id="clientes-container"></div>
+    </div>
+
+    <!-- ===================== INTERESADOS ===================== -->
+    <div id="tab-interesados" hidden>
+      <p class="subtitle">Personas que pidieron que les avisemos cuando un producto «Próximamente» esté disponible. «Novedades: Sí» = aceptan recibir ofertas (clientes potenciales).</p>
+      <div class="toolbar">
+        <select id="interesados-producto" onchange="renderInteresados()" style="max-width:280px"></select>
+        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="interesados-pendientes" checked onchange="renderInteresados()"> Solo pendientes de avisar</label>
+        <button class="btn-secondary btn" onclick="cargarInteresados()">Actualizar lista</button>
+        <button class="btn-secondary btn" onclick="exportarInteresados()">Exportar a Excel</button>
+      </div>
+      <div id="interesados-container"></div>
     </div>
 
     <!-- ===================== TIENDA ===================== -->
@@ -729,13 +788,14 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos", "clientes", "tienda", "envio", "movimientos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "clientes", "interesados", "tienda", "envio", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
 
       if (nombre === "pedidos") cargarPedidos();
       if (nombre === "clientes") cargarClientes();
+      if (nombre === "interesados") cargarInteresados();
       if (nombre === "tienda") cargarTienda();
       if (nombre === "envio") cargarConfigEnvio();
       if (nombre === "movimientos") cargarMovimientos();
@@ -1221,13 +1281,14 @@
 
         const estadoInfo = {
           pendiente_pago: { clase: "pendiente", texto: "Pendiente de pago" },
+          esperando_transferencia: { clase: "pendiente", texto: "Esperando transferencia" },
           pagado: { clase: pedido.estadoPreparacion === "enviado" ? "enviado" : "pendiente", texto: pedido.estadoPreparacion === "enviado" ? "Enviado" : "Pagado · Pendiente de envío" },
           pagado_sin_stock: { clase: "sin-stock", texto: "¡Revisar! Pagado sin stock" },
           cancelado: { clase: "cancelado", texto: "Cancelado" }
         }[pedido.estadoPago] || { clase: "pendiente", texto: pedido.estadoPago || "—" };
 
         const puedeEnviar = pedido.estadoPago === "pagado" && pedido.estadoPreparacion !== "enviado";
-        const puedeEliminar = pedido.estadoPago !== "pagado" && pedido.estadoPago !== "pagado_sin_stock";
+        const puedeEliminar = pedido.estadoPago !== "pagado" && pedido.estadoPago !== "pagado_sin_stock" && pedido.estadoPago !== "esperando_transferencia";
 
       return `
           <div class="pedido-card">
@@ -1247,7 +1308,7 @@
               <div class="pedido-items">
                 <strong>${c.nombre} ${c.apellidos || ""}</strong> · DNI/NIE ${c.dni || "—"} · Tel. ${c.telefono || "—"}<br>
                 ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
-                ${c.email || ""}
+                ${c.email || ""}${c.preferenciaContacto ? ` · Avisar por: <strong>${{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[c.preferenciaContacto] || "Email"}</strong>` : ""}
               </div>
             ` : ""}
 
@@ -1779,6 +1840,141 @@
       const movimientos = await response.json();
       if (!response.ok) throw new Error(movimientos.error || "Error al cargar movimientos");
       return movimientos;
+    }
+
+    // ===================== INTERESADOS (avísame cuando esté disponible) =====================
+    let interesadosCache = [];
+
+    function productoInteresado(a) {
+      return `${a.proceso}${a.lote ? " · Lote " + a.lote : ""} · ${etiquetaPesoAdmin(a.peso)}`;
+    }
+
+    async function cargarInteresados() {
+      const container = document.getElementById("interesados-container");
+      container.innerHTML = `<p class="subtitle">Cargando...</p>`;
+
+      try {
+        const response = await fetch("/api/avisos-disponibilidad", { headers: { "x-admin-token": getToken() } });
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          return;
+        }
+        const datos = await response.json();
+        if (!response.ok) throw new Error(datos.error || "No se pudieron cargar los interesados");
+        interesadosCache = datos;
+
+        // Filtro por producto, con cuántos pendientes hay de cada uno
+        const select = document.getElementById("interesados-producto");
+        const actual = select.value;
+        const conteo = {};
+        datos.filter(a => !a.avisado).forEach(a => { const p = productoInteresado(a); conteo[p] = (conteo[p] || 0) + 1; });
+        const productos = [...new Set(datos.map(productoInteresado))].sort();
+        select.innerHTML = `<option value="">Todos los productos</option>` +
+          productos.map(p => `<option value="${escaparHtml(p)}">${escaparHtml(p)} (${conteo[p] || 0} pendientes)</option>`).join("");
+        if (productos.includes(actual)) select.value = actual;
+
+        renderInteresados();
+      } catch (error) {
+        container.innerHTML = `<p class="error-msg">${escaparHtml(error.message)}</p>`;
+      }
+    }
+
+    function enlaceAvisarInteresado(a) {
+      const producto = productoInteresado(a);
+      const texto = `Hola${a.nombre ? " " + a.nombre : ""}, somos AURINEGRA. Ya está disponible ${producto}. Puedes pedirlo aquí: https://aurinegracafe.com/tienda.html`;
+      if (a.preferencia === "whatsapp" && a.telefono) {
+        return `<a href="https://wa.me/34${encodeURIComponent(a.telefono)}?text=${encodeURIComponent(texto)}" target="_blank">WhatsApp ${escaparHtml(a.telefono)}</a>`;
+      }
+      if (a.preferencia === "sms" && a.telefono) {
+        return `<a href="sms:+34${encodeURIComponent(a.telefono)}?body=${encodeURIComponent(texto)}">SMS ${escaparHtml(a.telefono)}</a>`;
+      }
+      if (a.email) {
+        return `<a href="mailto:${encodeURIComponent(a.email)}?subject=${encodeURIComponent("Ya está disponible: " + producto)}&body=${encodeURIComponent(texto)}">${escaparHtml(a.email)}</a>`;
+      }
+      return escaparHtml(a.telefono || a.email || "—");
+    }
+
+    function renderInteresados() {
+      const container = document.getElementById("interesados-container");
+      const producto = document.getElementById("interesados-producto").value;
+      const soloPendientes = document.getElementById("interesados-pendientes").checked;
+
+      const lista = interesadosCache.filter(a =>
+        (!producto || productoInteresado(a) === producto) && (!soloPendientes || !a.avisado)
+      );
+
+      if (lista.length === 0) {
+        container.innerHTML = `<p class="subtitle">${interesadosCache.length === 0 ? "Todavía nadie ha pedido aviso." : "No hay interesados con este filtro."}</p>`;
+        return;
+      }
+
+      const cabecera = `
+        <div class="interesado-row head">
+          <div>Fecha</div><div>Producto</div><div>Nombre</div><div>Avisar por (clic = mensaje redactado)</div><div>Canal</div><div>Novedades</div><div></div>
+        </div>`;
+
+      container.innerHTML = cabecera + lista.map(a => `
+        <div class="interesado-row ${a.avisado ? "avisado" : ""}">
+          <div>${new Date(a.fecha).toLocaleDateString("es-ES")}</div>
+          <div>${escaparHtml(productoInteresado(a))}</div>
+          <div>${escaparHtml(a.nombre || "—")}</div>
+          <div>${enlaceAvisarInteresado(a)}</div>
+          <div>${{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[a.preferencia] || "Email"}</div>
+          <div>${a.aceptaNovedades ? "Sí" : "No"}</div>
+          <div class="interesado-acciones">
+            <button class="btn btn-secondary" onclick="marcarInteresadoAvisado('${a.id}')">${a.avisado ? "Desmarcar" : "Marcar avisado"}</button>
+            <button class="btn btn-secondary" onclick="eliminarInteresado('${a.id}')" title="Borrar sus datos">✕</button>
+          </div>
+        </div>`).join("");
+    }
+
+    async function marcarInteresadoAvisado(id) {
+      try {
+        const response = await fetch(`/api/avisos-disponibilidad/${encodeURIComponent(id)}/avisado`, {
+          method: "POST",
+          headers: { "x-admin-token": getToken() }
+        });
+        const r = await response.json();
+        if (!response.ok) throw new Error(r.error || "No se pudo actualizar");
+        await cargarInteresados();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function eliminarInteresado(id) {
+      if (!confirm("¿Borrar a esta persona de la lista? (por ejemplo, si ha pedido que eliminemos sus datos)")) return;
+      try {
+        const response = await fetch(`/api/avisos-disponibilidad/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: { "x-admin-token": getToken() }
+        });
+        const r = await response.json();
+        if (!response.ok) throw new Error(r.error || "No se pudo eliminar");
+        await cargarInteresados();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    const HEADERS_INTERESADOS = ["fecha", "producto", "nombre", "email", "telefono", "preferencia", "aceptaNovedades", "avisado", "fechaAvisado"];
+
+    async function exportarInteresados() {
+      if (interesadosCache.length === 0) await cargarInteresados();
+      const filas = interesadosCache.map(a => ({
+        fecha: new Date(a.fecha).toLocaleString("es-ES"),
+        producto: productoInteresado(a),
+        nombre: a.nombre || "",
+        email: a.email || "",
+        telefono: a.telefono || "",
+        preferencia: a.preferencia || "email",
+        aceptaNovedades: a.aceptaNovedades ? "Sí" : "No",
+        avisado: a.avisado ? "Sí" : "No",
+        fechaAvisado: a.fechaAvisado ? new Date(a.fechaAvisado).toLocaleString("es-ES") : ""
+      }));
+      await descargarXLSX(`interesados-aurinegra-${fechaParaArchivo()}.xlsx`, "Interesados", HEADERS_INTERESADOS, filas);
     }
 
     async function cargarMovimientos() {

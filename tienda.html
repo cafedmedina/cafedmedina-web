@@ -394,6 +394,102 @@
       font-size: 14px;
     }
 
+    /* Avísame cuando esté disponible */
+    .avisame form {
+      display: grid;
+      gap: 9px;
+    }
+
+    .avisame input[type="text"],
+    .avisame input[type="email"],
+    .avisame input[type="tel"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(200,169,106,.55);
+      background: #fffaf2;
+      color: #2f1b12;
+      font-size: 14px;
+    }
+
+    .avisame input[hidden] {
+      display: none;
+    }
+
+    .avisame-canal {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      font-weight: 700;
+    }
+
+    .avisame-canal label,
+    .avisame-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      /* Anula el estilo general de <label> de la tienda (mayúsculas doradas) */
+      margin: 0;
+      color: #4f3729;
+      letter-spacing: normal;
+      text-transform: none;
+    }
+
+    .avisame-canal label {
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .avisame-check {
+      font-weight: 400;
+    }
+
+    /* Casillas y botones de opción a su tamaño normal (el estilo general de <input> los estira) */
+    .avisame-check input,
+    .avisame-canal input {
+      width: 16px;
+      height: 16px;
+      min-width: 0;
+      min-height: 0;
+      margin: 2px 0 0;
+      padding: 0;
+      flex: 0 0 16px;
+      box-shadow: none;
+      accent-color: #9a6f24;
+    }
+
+    .avisame-canal input {
+      margin-top: 0;
+    }
+
+    .avisame-check span {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .avisame-check a {
+      color: #7b4c15;
+    }
+
+    .avisame-trampa {
+      position: absolute !important;
+      left: -9999px !important;
+      width: 1px !important;
+      height: 1px !important;
+      opacity: 0;
+    }
+
+    .avisame-msg {
+      margin: 0 !important;
+      font-weight: 700;
+    }
+
+    .avisame-msg.ok { color: #2e6b32; }
+    .avisame-msg.error { color: #a12a2a; }
+
     .proximamente {
       display: inline-block;
       margin: -4px 0 14px;
@@ -1227,6 +1323,39 @@
             <button class="btn" id="alternativa-btn" onclick="añadirAlternativa()"></button>
           </div>
 
+          <!-- Producto "Próximamente": el visitante deja su contacto para que le avisemos -->
+          <div class="alternativa avisame" id="avisame" hidden>
+            <p><strong>¿Te avisamos cuando esté disponible?</strong><br><span id="avisame-producto"></span></p>
+
+            <form id="avisame-form" onsubmit="enviarAvisame(event)" novalidate>
+              <input type="text" id="avisame-nombre" placeholder="Tu nombre (opcional)" autocomplete="given-name" maxlength="80">
+
+              <div class="avisame-canal" role="radiogroup" aria-label="Cómo prefieres que te avisemos">
+                <label><input type="radio" name="avisame-pref" value="email" checked onchange="onAvisamePref()"> Email</label>
+                <label><input type="radio" name="avisame-pref" value="whatsapp" onchange="onAvisamePref()"> WhatsApp</label>
+                <label><input type="radio" name="avisame-pref" value="sms" onchange="onAvisamePref()"> SMS</label>
+              </div>
+
+              <input type="email" id="avisame-email" placeholder="tu@email.com" autocomplete="email" inputmode="email" maxlength="120">
+              <input type="tel" id="avisame-telefono" placeholder="Móvil (612345678)" autocomplete="tel" inputmode="tel" maxlength="12" hidden>
+
+              <!-- Campo trampa para bots: invisible para las personas -->
+              <input type="text" id="avisame-web" name="web" tabindex="-1" autocomplete="off" class="avisame-trampa" aria-hidden="true">
+
+              <label class="avisame-check">
+                <input type="checkbox" id="avisame-acepta">
+                <span>Acepto que AURINEGRA guarde estos datos para avisarme de este producto (<a href="politica-privacidad.html" target="_blank">política de privacidad</a>).</span>
+              </label>
+              <label class="avisame-check">
+                <input type="checkbox" id="avisame-novedades">
+                <span>También quiero recibir novedades y ofertas de AURINEGRA (opcional).</span>
+              </label>
+
+              <button class="btn" type="submit" id="avisame-btn">Avisadme</button>
+              <p class="avisame-msg" id="avisame-msg" hidden></p>
+            </form>
+          </div>
+
           <label>Cantidad</label>
           <div class="cantidad-row">
             <input id="cantidad" type="number" value="1" min="1" onchange="actualizarPrecioYStock()">
@@ -1458,6 +1587,7 @@
 
       const alternativa = document.getElementById("alternativa");
       alternativa.hidden = true;
+      document.getElementById("avisame").hidden = true;
 
       // No se vende (sin lote, peso no marcado en el panel o sin stock): "Próximamente", sin precio.
       if (!vendible(lote, peso)) {
@@ -1467,6 +1597,7 @@
         addBtn.textContent = "Próximamente";
         addBtn.disabled = true;
         mostrarAlternativa(lote, peso, cantidad);
+        mostrarAvisame(lote, peso);
         return;
       }
 
@@ -1523,6 +1654,90 @@
         `el mismo café en <strong>${bolsas} bolsas de 250 g</strong> por ${formatEUR(lote.precios["250"] * bolsas)}.`;
       document.getElementById("alternativa-btn").textContent = `Añadir ${bolsas} × 250 g al carrito`;
       alternativa.hidden = false;
+    }
+
+    // ---- Avísame cuando esté disponible ----
+    let avisameProducto = null; // { proceso, lote, peso }
+
+    function mostrarAvisame(lote, peso) {
+      const proceso = document.getElementById("proceso").value;
+      if (!proceso || !peso) return;
+
+      avisameProducto = { proceso, lote: lote ? lote.codigo : "", peso };
+      document.getElementById("avisame-producto").textContent =
+        `${proceso}${lote ? " · Lote " + lote.codigo : ""} · ${etiquetaPeso(peso)}`;
+
+      // Si ya lo pidió para este mismo producto, se le recuerda en vez de volver a preguntar
+      const msg = document.getElementById("avisame-msg");
+      const yaPedido = avisosPedidos().includes(claveAvisame(avisameProducto));
+      msg.hidden = !yaPedido;
+      msg.className = "avisame-msg ok";
+      msg.textContent = yaPedido ? "Ya te avisaremos de este producto. 👍" : "";
+      document.getElementById("avisame-btn").disabled = false;
+
+      document.getElementById("avisame").hidden = false;
+    }
+
+    function claveAvisame(p) { return `${p.proceso}|${p.lote}|${p.peso}`; }
+
+    function avisosPedidos() {
+      try { return JSON.parse(localStorage.getItem("avisosAurinegra") || "[]"); } catch (e) { return []; }
+    }
+
+    function onAvisamePref() {
+      const pref = document.querySelector('input[name="avisame-pref"]:checked').value;
+      document.getElementById("avisame-email").hidden = pref !== "email";
+      document.getElementById("avisame-telefono").hidden = pref === "email";
+    }
+
+    async function enviarAvisame(event) {
+      event.preventDefault();
+      if (!avisameProducto) return;
+
+      const msg = document.getElementById("avisame-msg");
+      const btn = document.getElementById("avisame-btn");
+      const pref = document.querySelector('input[name="avisame-pref"]:checked').value;
+      const email = document.getElementById("avisame-email").value.trim();
+      const telefono = document.getElementById("avisame-telefono").value.trim().replace(/[\s-]/g, "");
+
+      const error = (texto) => { msg.className = "avisame-msg error"; msg.textContent = texto; msg.hidden = false; };
+
+      if (pref === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return error("Escribe un email válido.");
+      if (pref !== "email" && !/^[67]\d{8}$/.test(telefono)) return error("Escribe un móvil válido (9 dígitos, empieza por 6 o 7).");
+      if (!document.getElementById("avisame-acepta").checked) return error("Marca la casilla para que podamos guardar tus datos y avisarte.");
+
+      btn.disabled = true;
+      try {
+        const response = await fetch("/api/avisos-disponibilidad", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...avisameProducto,
+            nombre: document.getElementById("avisame-nombre").value.trim(),
+            preferencia: pref,
+            email: pref === "email" ? email : "",
+            telefono: pref === "email" ? "" : telefono,
+            aceptaAviso: true,
+            aceptaNovedades: document.getElementById("avisame-novedades").checked,
+            web: document.getElementById("avisame-web").value
+          })
+        });
+        const resultado = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(resultado.error || "No se pudo guardar. Inténtalo de nuevo.");
+
+        try {
+          const lista = avisosPedidos();
+          lista.push(claveAvisame(avisameProducto));
+          localStorage.setItem("avisosAurinegra", JSON.stringify(lista));
+        } catch (e) {}
+
+        msg.className = "avisame-msg ok";
+        msg.textContent = "¡Hecho! Te avisaremos en cuanto esté disponible.";
+        msg.hidden = false;
+      } catch (e) {
+        btn.disabled = false;
+        error(e.message);
+      }
     }
 
     function añadirAlternativa() {
