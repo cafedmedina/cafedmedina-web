@@ -452,6 +452,82 @@
 
 
 <style>
+  /* ÚLTIMA CATA (dentro de la tarjeta oscura "Perfil sensorial") */
+  .ultima-cata {
+    margin-top: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-radius: 18px;
+    background: rgba(226,196,125,.10);
+    border: 1px solid rgba(226,196,125,.38);
+  }
+
+  .ultima-cata[hidden] { display: none; }
+
+  .ultima-cata-nota {
+    flex: 0 0 auto;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--gold-light);
+    color: var(--dark);
+    text-align: center;
+  }
+
+  .ultima-cata-puntaje {
+    font-family: 'Playfair Display', serif;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .ultima-cata-sca {
+    margin-top: 3px;
+    font-size: 9.5px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .ultima-cata-eyebrow {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--gold-light);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .ultima-cata h3 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .ultima-cata p {
+    margin: 0;
+    color: rgba(255,255,255,.82);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 520px) {
+    .ultima-cata {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>
+<style>
   /* MENU-MEDIANO */
   /* Menú de ordenador en pantallas medianas (851–1250 px): ningún enlace partido en dos líneas;
      si no caben todos, pasan ordenados a una segunda fila */
@@ -554,6 +630,19 @@
                         <div><strong>Identidad:</strong> cada cosecha expresa un perfil propio.</div>
                         <div><strong>Perfil:</strong> dulzor, complejidad, equilibrio y expresión del origen.</div>
                         <div><strong>Resultado:</strong> cafés con puntuaciones de cata a partir de 86 puntos.</div>
+                    </div>
+
+                    <!-- Última cata: se rellena con la ficha del lote catado más recientemente (/api/lotes) -->
+                    <div class="ultima-cata" id="ultima-cata" hidden>
+                        <div class="ultima-cata-nota">
+                            <span class="ultima-cata-puntaje" id="uc-puntaje"></span>
+                            <span class="ultima-cata-sca">puntos SCA</span>
+                        </div>
+                        <div class="ultima-cata-texto">
+                            <span class="ultima-cata-eyebrow">Nuestra última cata · <span id="uc-fecha"></span></span>
+                            <h3 id="uc-titulo"></h3>
+                            <p id="uc-perfil"></p>
+                        </div>
                     </div>
                 </article>
             </div>
@@ -785,6 +874,42 @@
   }
 
   actualizarIconoCarrito();
+
+  // ---- Última cata: ficha del lote con la fecha de cata más reciente ----
+  (async function mostrarUltimaCata() {
+    const caja = document.getElementById("ultima-cata");
+    if (!caja) return;
+
+    // "22/10/2026" → Date
+    const aFecha = (texto) => {
+      const m = String(texto || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null;
+    };
+
+    try {
+      const response = await fetch("/api/lotes");
+      if (!response.ok) return;
+      const lotes = Object.values(await response.json());
+
+      const lote = lotes
+        .filter(l => l.estado !== "archivado" && aFecha(l.fechaCata) && Number(l.puntaje) > 0)
+        .sort((a, b) => aFecha(b.fechaCata) - aFecha(a.fechaCata))[0];
+      if (!lote) return;
+
+      // Primera frase del perfil sensorial
+      const perfil = String(lote.perfil || "").trim();
+      const primeraFrase = (perfil.match(/^.*?[.!?](\s|$)/) || [perfil])[0].trim();
+
+      document.getElementById("uc-puntaje").textContent = Number(lote.puntaje).toLocaleString("es-ES", { maximumFractionDigits: 2 });
+      document.getElementById("uc-fecha").textContent = lote.fechaCata;
+      document.getElementById("uc-titulo").textContent = `Lote ${lote.codigo}${lote.proceso ? " · " + lote.proceso : ""}`;
+      document.getElementById("uc-perfil").textContent = primeraFrase;
+
+      caja.hidden = false;
+    } catch (e) {
+      // Sin conexión con el servidor: la tarjeta se queda oculta
+    }
+  })();
 
   const paginasLote = {
     "DM-2026-001": "lotes/dm-2026-001.html"

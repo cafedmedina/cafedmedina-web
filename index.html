@@ -1065,94 +1065,6 @@
 
 
 <style>
-  /* ÚLTIMA CATA (sección Perfil sensorial) */
-  .ultima-cata {
-    max-width: 820px;
-    margin: 26px auto 0;
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    border-radius: 24px;
-    background: #fffaf2;
-    border: 1px solid rgba(200,169,106,.35);
-    border-left: 5px solid var(--gold);
-    box-shadow: 0 14px 32px rgba(58,36,24,.08);
-  }
-
-  .ultima-cata[hidden] { display: none; }
-
-  .ultima-cata-nota {
-    flex: 0 0 auto;
-    width: 112px;
-    height: 112px;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--coffee, #3a2418);
-    color: var(--gold-light, #e2c47d);
-    text-align: center;
-  }
-
-  .ultima-cata-puntaje {
-    font-family: 'Playfair Display', serif;
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1;
-  }
-
-  .ultima-cata-sca {
-    margin-top: 4px;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-  }
-
-  .ultima-cata-eyebrow {
-    display: block;
-    margin-bottom: 4px;
-    color: #9a6f24;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-  }
-
-  .ultima-cata h3 {
-    margin: 0 0 6px;
-    color: var(--coffee, #3a2418);
-    font-size: 21px;
-    line-height: 1.25;
-  }
-
-  .ultima-cata p {
-    margin: 0;
-    color: #4f3729;
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  @media (max-width: 640px) {
-    .ultima-cata {
-      flex-direction: column;
-      text-align: center;
-      gap: 14px;
-      padding: 18px;
-      border-left-width: 1px;
-      border-top: 5px solid var(--gold);
-    }
-
-    .ultima-cata-nota {
-      width: 96px;
-      height: 96px;
-    }
-
-    .ultima-cata-puntaje { font-size: 28px; }
-  }
-
   /* CONTACTO COMPACTO: una sola tarjeta, datos sin cajas, separados por líneas finas */
   #contacto .contact-compacto {
     max-width: 820px;
@@ -1519,22 +1431,9 @@
       </div>
 
 
-        <!-- Última cata: se rellena con la ficha del lote catado más recientemente (/api/lotes) -->
-        <article class="ultima-cata" id="ultima-cata" hidden>
-          <div class="ultima-cata-nota">
-            <span class="ultima-cata-puntaje" id="uc-puntaje"></span>
-            <span class="ultima-cata-sca">puntos SCA</span>
-          </div>
-          <div class="ultima-cata-texto">
-            <span class="ultima-cata-eyebrow">Nuestra última cata · <span id="uc-fecha"></span></span>
-            <h3 id="uc-titulo"></h3>
-            <p id="uc-perfil"></p>
-          </div>
-        </article>
-
         <div class="cata-btn-wrap reveal">
 
-          <a href="pasaporte.html" class="btn btn-primary section-btn" id="cata-pasaporte-btn">
+          <a href="pasaporte.html" class="btn btn-primary section-btn">
 
              Ver pasaporte del café
 
@@ -1735,48 +1634,6 @@
 
   </script>
 
-<script>
-  // ---- Última cata: ficha del lote con la fecha de cata más reciente ----
-  (async function mostrarUltimaCata() {
-    const caja = document.getElementById("ultima-cata");
-    if (!caja) return;
-
-    // "22/10/2026" → Date
-    const aFecha = (texto) => {
-      const m = String(texto || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null;
-    };
-
-    try {
-      const response = await fetch("/api/lotes");
-      if (!response.ok) return;
-      const lotes = Object.values(await response.json());
-
-      const catados = lotes
-        .filter(l => l.estado !== "archivado" && aFecha(l.fechaCata) && Number(l.puntaje) > 0)
-        .sort((a, b) => aFecha(b.fechaCata) - aFecha(a.fechaCata));
-
-      const lote = catados[0];
-      if (!lote) return;
-
-      // Primera frase del perfil sensorial (la ficha completa está en el pasaporte)
-      const perfil = String(lote.perfil || "").trim();
-      const primeraFrase = (perfil.match(/^.*?[.!?](\s|$)/) || [perfil])[0].trim();
-
-      document.getElementById("uc-puntaje").textContent = Number(lote.puntaje).toLocaleString("es-ES", { maximumFractionDigits: 2 });
-      document.getElementById("uc-fecha").textContent = lote.fechaCata;
-      document.getElementById("uc-titulo").textContent = `Lote ${lote.codigo} · ${lote.proceso || ""}`.replace(/ · $/, "");
-      document.getElementById("uc-perfil").textContent = primeraFrase;
-
-      const boton = document.getElementById("cata-pasaporte-btn");
-      if (boton) boton.href = "pasaporte.html?codigo=" + encodeURIComponent(lote.codigo);
-
-      caja.hidden = false;
-    } catch (e) {
-      // Sin conexión con el servidor: la sección se queda como estaba, sin la tarjeta
-    }
-  })();
-</script>
 
 
 <script>
