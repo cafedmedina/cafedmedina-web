@@ -1072,8 +1072,10 @@ function htmlATexto(html) {
 // Firma aprobada de AURINEGRA (versión Outlook, de D:\DMedina\Diseño\VARIOS PARA EMPAQUE\firma_AURINEGRA_outlook.html),
 // firmada como equipo porque los correos de la web son automáticos. Las imágenes se sirven desde la web
 // (img/correo/) en vez de ir incrustadas en base64: Gmail no muestra las incrustadas y suben la puntuación de spam.
+// OJO: es una función (no una constante) porque usa EMPRESA, que se define más abajo en este archivo.
+// Una constante se evaluaría al arrancar, antes de que EMPRESA exista, y el servidor no arrancaría.
 const URL_WEB = "https://aurinegracafe.com";
-const FIRMA_CORREO_HTML = `
+const firmaCorreoHtml = () => `
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:13px;line-height:1.4;color:#2B1A12;margin-top:6px;">
   <tr>
     <td valign="top" width="96" style="width:96px;padding:0 16px 0 0;"><img src="${URL_WEB}/img/correo/firma-dm.png" width="80" height="80" alt="DM" style="display:block;border:0;"></td>
@@ -1111,7 +1113,7 @@ function plantillaCorreoCliente(contenido) {
         <tr><td style="padding:24px;font-size:15px;line-height:1.6;color:#2b1a12;">
           ${contenido}
           <p style="margin-top:22px;">Un saludo,</p>
-          ${FIRMA_CORREO_HTML}
+          ${firmaCorreoHtml()}
         </td></tr>
       </table>
     </td></tr>
