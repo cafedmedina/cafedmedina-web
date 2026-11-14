@@ -116,29 +116,91 @@ function rutaFichaCata(codigo) {
   return path.join(CATA_DIR, `${String(codigo).toLowerCase()}.pdf`);
 }
 
-function leerCatalogo() {
-  const raw = fs.readFileSync(CATALOGO_FILE, "utf-8");
-  return JSON.parse(raw);
+// La ficha de los lotes (catálogo) vive en Redis ("catalogo"), que es permanente: lo que se cambia en el
+// panel admin se conserva aunque Render reinicie el servicio. data/lotes.json solo se usa como punto de
+// partida mientras Redis todavía no tiene catálogo (la primera vez) o si Redis no está configurado/disponible.
+// OJO: una vez guardado el catálogo en Redis, editar data/lotes.json en GitHub ya NO cambia la web.
+function leerCatalogoArchivo() {
+  return JSON.parse(fs.readFileSync(CATALOGO_FILE, "utf-8"));
 }
 
-function guardarCatalogoLocal(datos) {
-  // Este archivo vive en el disco de Render, que NO es permanente: el cambio se ve
-  // de inmediato en la web, pero se pierde si el servicio se reinicia. Hay que subir
-  // el JSON actualizado a GitHub (carpeta data/lotes.json) para que sea definitivo.
-  fs.writeFileSync(CATALOGO_FILE, JSON.stringify(datos, null, 2));
+async function leerCatalogo() {
+  if (redisConfigurado()) {
+    try {
+      const enRedis = await redisGet("catalogo", null);
+      if (enRedis && typeof enRedis === "object" && Object.keys(enRedis).length > 0) return enRedis;
+    } catch (error) {
+      console.error("No se pudo leer el catálogo de Redis, se usa data/lotes.json:", error);
+    }
+  }
+  return leerCatalogoArchivo();
 }
+
+async function guardarCatalogo(datos) {
+  if (redisConfigurado()) {
+    await redisSet("catalogo", datos); // si falla, el panel recibe el error y el cambio no se da por guardado
+  }
+  // Copia en el disco local (útil en desarrollo; en Render se pierde al reiniciar, por eso manda Redis)
+  try {
+    fs.writeFileSync(CATALOGO_FILE, JSON.stringify(datos, null, 2));
+  } catch (error) {
+    console.error("No se pudo escribir la copia local de data/lotes.json:", error);
+  }
+}
+
+// ---- Límites contra abusos (en memoria: se reinician si el servidor se reinicia, suficiente para frenar ataques) ----
+const registrosLimite = new Map(); // clave -> [marcas de tiempo]
+
+// IP real del visitante. En Render la añade su proxy al FINAL de X-Forwarded-For
+// (lo que hay delante lo puede escribir cualquiera, por eso no se usa).
+function ipCliente(req) {
+  const partes = String(req.get("x-forwarded-for") || "").split(",").map(s => s.trim()).filter(Boolean);
+  return partes.length ? partes[partes.length - 1] : (req.socket && req.socket.remoteAddress) || "";
+}
+
+function vecesEnVentana(clave, ventanaMs) {
+  const ahora = Date.now();
+  const lista = (registrosLimite.get(clave) || []).filter(t => ahora - t < ventanaMs);
+  registrosLimite.set(clave, lista);
+  return lista.length;
+}
+
+function registrarVez(clave) {
+  if (registrosLimite.size > 20000) registrosLimite.clear(); // nunca crece sin límite
+  const lista = registrosLimite.get(clave) || [];
+  lista.push(Date.now());
+  registrosLimite.set(clave, lista);
+}
+
+// Compara la contraseña sin filtrar pistas por el tiempo que tarda (comparación en tiempo constante)
+function tokenCorrecto(token) {
+  const esperado = process.env.ADMIN_TOKEN;
+  if (!esperado || typeof token !== "string" || !token) return false;
+  const a = crypto.createHash("sha256").update(token).digest();
+  const b = crypto.createHash("sha256").update(esperado).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
+const ADMIN_MAX_FALLOS = 20;
+const ADMIN_VENTANA_MS = 15 * 60 * 1000;
 
 function requiereAdmin(req, res, next) {
-  const token = req.get("x-admin-token");
+  const claveFallos = `admin-fallo|${ipCliente(req)}`;
 
-  if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+  // Demasiados intentos fallidos desde esta IP: se bloquea un rato aunque ahora acierte
+  if (vecesEnVentana(claveFallos, ADMIN_VENTANA_MS) >= ADMIN_MAX_FALLOS) {
+    return res.status(429).json({ error: "Demasiados intentos. Espera unos minutos." });
+  }
+
+  if (!tokenCorrecto(req.get("x-admin-token"))) {
+    registrarVez(claveFallos);
     return res.status(401).json({ error: "No autorizado" });
   }
 
   next();
 }
 
-app.put("/api/catalogo", requiereAdmin, (req, res) => {
+app.put("/api/catalogo", requiereAdmin, async (req, res) => {
   try {
     const datos = req.body;
 
@@ -168,7 +230,7 @@ app.put("/api/catalogo", requiereAdmin, (req, res) => {
       lote.codigo = codigo;
     }
 
-    guardarCatalogoLocal(datos);
+    await guardarCatalogo(datos);
     res.json({ success: true, catalogo: datos });
 
   } catch (error) {
@@ -432,7 +494,7 @@ async function registrarMovimiento(movimiento) {
 }
 
 async function construirLotesConStock() {
-  const catalogo = leerCatalogo();
+  const catalogo = await leerCatalogo();
 
   let stockReal = {};
   let reservado = {};
@@ -490,8 +552,8 @@ app.get("/api/lotes", async (req, res) => {
 
 // Ficha de cata para el visor de cata.html. Solo responde a lotes del catálogo (el código nunca se usa
 // como ruta libre) y a peticiones del visor: abrir la URL directamente en el navegador no devuelve el PDF.
-app.get("/api/cata/:codigo", (req, res) => {
-  const catalogo = leerCatalogo();
+app.get("/api/cata/:codigo", async (req, res) => {
+  const catalogo = await leerCatalogo();
   const lote = catalogo[req.params.codigo];
 
   if (!lote || req.get("x-visor-cata") !== "1") {
@@ -511,9 +573,9 @@ app.get("/api/cata/:codigo", (req, res) => {
 
 // Dirección corta que llevan los QR impresos (fichas, empaques): aurinegracafe.com/lote/DM-2026-001.
 // Es fija a propósito: si algún día cambia la página de la ficha, se cambia aquí y los QR ya impresos siguen valiendo.
-app.get("/lote/:codigo", (req, res) => {
+app.get("/lote/:codigo", async (req, res) => {
   const codigo = String(req.params.codigo).trim().toUpperCase();
-  const catalogo = leerCatalogo();
+  const catalogo = await leerCatalogo();
 
   if (!catalogo[codigo]) {
     return res.redirect(302, "/pasaporte.html");
@@ -600,7 +662,7 @@ app.post("/api/iniciar-operacion", requiereAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Escribe EMPEZAR para confirmar' });
     }
 
-    const catalogo = leerCatalogo();
+    const catalogo = await leerCatalogo();
     const nuevoStock = {};
 
     for (const codigo of Object.keys(catalogo)) {
@@ -701,6 +763,13 @@ app.post("/api/avisos-disponibilidad", async (req, res) => {
     // Campo trampa invisible: si viene relleno es un bot. Respondemos OK sin guardar nada.
     if (b.web) return res.json({ success: true });
 
+    // Como mucho 5 avisos por hora desde la misma IP
+    const claveIp = `avisos|${ipCliente(req)}`;
+    if (vecesEnVentana(claveIp, 60 * 60 * 1000) >= 5) {
+      return res.status(429).json({ error: "Has enviado varios avisos seguidos. Inténtalo más tarde." });
+    }
+    registrarVez(claveIp);
+
     const preferencia = ["email", "whatsapp", "sms"].includes(b.preferencia) ? b.preferencia : "email";
     const email = textoCorto(b.email, 120).toLowerCase();
     const telefono = textoCorto(b.telefono, 20).replace(/[\s-]/g, "");
@@ -742,7 +811,9 @@ app.post("/api/avisos-disponibilidad", async (req, res) => {
 
     await redisSet("avisos_disponibilidad", avisos);
 
-    if (!existente) {
+    // Email a la empresa por cada interesado nuevo, con un máximo de 30 al día (el resto se ven en el panel)
+    if (!existente && vecesEnVentana("avisos-email", 24 * 60 * 60 * 1000) < 30) {
+      registrarVez("avisos-email");
       try {
         await resend.emails.send({
           from: REMITENTE_EMAIL,
@@ -1398,7 +1469,7 @@ async function enviarFacturaPorEmail(pedido, pdfBuffer) {
     to: email,
     subject: `Factura ${pedido.factura.numero} · ${EMPRESA.nombreComercial}`,
     html: `
-      <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
+      <p>Hola ${escaparHtml((pedido.cliente && pedido.cliente.nombre) || "")},</p>
       <p>Gracias por tu compra en ${EMPRESA.nombreComercial}. Adjuntamos la factura de tu pedido.</p>
       <p>Te avisaremos en cuanto el pedido salga hacia tu dirección.</p>
     `,
@@ -1562,7 +1633,7 @@ async function enviarAlbaranPorEmail(pedido, pdfBuffer) {
     to: email,
     subject: `Tu pedido va en camino · ${EMPRESA.nombreComercial}`,
     html: `
-      <p>Hola ${(pedido.cliente && pedido.cliente.nombre) || ""},</p>
+      <p>Hola ${escaparHtml((pedido.cliente && pedido.cliente.nombre) || "")},</p>
       <p>Tu pedido ya ha salido hacia tu dirección. Adjuntamos el albarán de entrega.</p>
     `,
     attachments: [{ filename: `${pedido.albaran.numero}.pdf`, content: pdfBuffer }]
@@ -2124,6 +2195,13 @@ app.post("/create-checkout-session", async (req, res) => {
   try {
     const { carrito, cliente } = req.body;
 
+    // Cada intento crea un pedido pendiente y gasta un número de pedido: como mucho 15 por hora por IP
+    const claveCheckout = `checkout|${ipCliente(req)}`;
+    if (vecesEnVentana(claveCheckout, 60 * 60 * 1000) >= 15) {
+      return res.status(429).json({ error: "Demasiados intentos de pago seguidos. Espera un poco o escríbenos por WhatsApp." });
+    }
+    registrarVez(claveCheckout);
+
     if (!Array.isArray(carrito) || carrito.length === 0) {
       return res.status(400).json({ error: "El carrito está vacío" });
     }
@@ -2138,7 +2216,28 @@ app.post("/create-checkout-session", async (req, res) => {
       cliente.preferenciaContacto = "email";
     }
 
-    const catalogo = leerCatalogo();
+    // Solo se guardan los campos conocidos, como texto, con longitud máxima y sin < > (nada de HTML/código
+    // en datos que luego se muestran en el panel, los emails y la factura).
+    const LIMITES_CLIENTE = {
+      tipoCliente: 20, nombre: 100, apellidos: 100, dni: 20, telefono: 20, email: 120,
+      direccion: 160, codigoPostal: 5, localidad: 80, provincia: 80, preferenciaContacto: 10
+    };
+    for (const campo of Object.keys(cliente)) {
+      if (!LIMITES_CLIENTE[campo]) delete cliente[campo];
+    }
+    for (const [campo, max] of Object.entries(LIMITES_CLIENTE)) {
+      if (cliente[campo] != null) {
+        cliente[campo] = String(cliente[campo]).replace(/[<>]/g, "").trim().slice(0, max);
+      }
+    }
+
+    // Se vuelve a validar tras limpiar (p. ej. un nombre que solo tuviera "<>" quedaría vacío)
+    const errorTrasLimpiar = validarClienteServidor(cliente);
+    if (errorTrasLimpiar) {
+      return res.status(400).json({ error: errorTrasLimpiar });
+    }
+
+    const catalogo = await leerCatalogo();
     const stockReal = await leerStockReal();
     const reservado = await leerReservado();
     const publicacion = await leerPublicacion();
@@ -2163,8 +2262,10 @@ app.post("/create-checkout-session", async (req, res) => {
         throw new Error(`El lote "${item.lote}" ya no está disponible`);
       }
 
-      // Lo que diga el navegador da igual: solo vendemos en grano.
+      // Lo que diga el navegador da igual: solo vendemos en grano, y el nombre del producto lo pone el servidor
+      // (antes llegaba del navegador y acababa en Stripe, la factura y el panel tal cual).
       item.molienda = MOLIENDA_UNICA;
+      item.nombre = EMPRESA.nombreComercial;
 
       const precioUnitario = Number(lote.precios[item.peso]);
 
@@ -2242,7 +2343,7 @@ app.post("/create-checkout-session", async (req, res) => {
 
     // Sin payment_method_types: Stripe enseña los métodos activados en el Dashboard
     // (Configuración → Métodos de pago): tarjeta, Bizum, PayPal y transferencia bancaria.
-    const session = await stripe.checkout.sessions.create({
+    const datosSesion = {
       client_reference_id: numeroPedido,
       payment_intent_data: {
         description: `Pedido ${numeroPedido} · ${EMPRESA.nombreComercial}`,
@@ -2278,7 +2379,20 @@ app.post("/create-checkout-session", async (req, res) => {
         localidad: cliente.localidad,
         provincia: cliente.provincia
       }
-    });
+    };
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(datosSesion);
+    } catch (error) {
+      // Si Stripe rechaza la parte de la transferencia (p. ej. transferencias en EUR aún "pendientes" en la
+      // cuenta), se repite el pago SIN transferencia para que tarjeta, Bizum, PayPal... sigan funcionando.
+      const textoError = `${error && error.message} ${error && error.param}`;
+      if (!/customer_balance|bank_transfer/i.test(textoError)) throw error;
+      console.error("Stripe rechazó la transferencia bancaria; se crea el pago sin ella:", error.message);
+      delete datosSesion.payment_method_options;
+      session = await stripe.checkout.sessions.create(datosSesion);
+    }
 
     // IMPORTANTE: aquí NO se reserva stock ni se crea movimiento todavía.
     // El pedido queda "pendiente_pago" hasta que Stripe confirme el cobro por webhook

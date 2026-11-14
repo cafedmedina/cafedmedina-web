@@ -633,13 +633,13 @@
 
       <div class="save-bar">
         <button class="btn" id="save-catalogo-btn" onclick="guardarCatalogo()">Guardar catálogo</button>
-        <button class="btn-secondary btn" onclick="descargarJson()">Descargar lotes.json</button>
+        <button class="btn-secondary btn" onclick="descargarJson()">Descargar copia (lotes.json)</button>
         <span id="catalogo-feedback"></span>
       </div>
 
       <div class="git-hint">
-        <strong>Importante:</strong> "Guardar catálogo" aplica el cambio al instante en la web, pero es temporal — se pierde si el servicio se reinicia.
-        Para que sea permanente, pulsa "Descargar lotes.json" y sube ese archivo a <code>data/lotes.json</code> en GitHub.
+        "Guardar catálogo" aplica el cambio al instante en toda la web (tienda, pasaporte, última cata…) y queda guardado de forma permanente: no hace falta subir nada a GitHub.
+        "Descargar copia" es solo una copia de seguridad del catálogo.
       </div>
     </div>
 
@@ -869,7 +869,7 @@
     }
 
     function eliminarLote(codigo) {
-      if (!confirm(`¿Eliminar el lote "${codigo}" del catálogo? Esto no se puede deshacer una vez guardes y subas el JSON a GitHub.`)) {
+      if (!confirm(`¿Eliminar el lote "${codigo}" del catálogo? Al pulsar "Guardar catálogo" se borrará de la web de forma permanente.`)) {
         return;
       }
 
@@ -1049,7 +1049,7 @@
         }
 
         feedback.className = "success-msg";
-        feedback.textContent = "Guardado (temporal). No olvides descargar y subir lotes.json a GitHub.";
+        feedback.textContent = "Guardado. Ya se ve en la web.";
 
         await cargarLotes();
 
@@ -1302,19 +1302,19 @@
               </span>
             </div>
 
-            ${pedido.avisoStock ? `<p class="error-msg">${pedido.avisoStock}</p>` : ""}
+            ${pedido.avisoStock ? `<p class="error-msg">${escaparHtml(pedido.avisoStock)}</p>` : ""}
 
             ${c.nombre ? `
               <div class="pedido-items">
-                <strong>${c.nombre} ${c.apellidos || ""}</strong> · DNI/NIE ${c.dni || "—"} · Tel. ${c.telefono || "—"}<br>
-                ${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})<br>
-                ${c.email || ""}${c.preferenciaContacto ? ` · Avisar por: <strong>${{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[c.preferenciaContacto] || "Email"}</strong>` : ""}
+                <strong>${escaparHtml(c.nombre)} ${escaparHtml(c.apellidos || "")}</strong> · DNI/NIE ${escaparHtml(c.dni || "—")} · Tel. ${escaparHtml(c.telefono || "—")}<br>
+                ${escaparHtml(c.direccion || "")}, ${escaparHtml(c.codigoPostal || "")} ${escaparHtml(c.localidad || "")} (${escaparHtml(c.provincia || "")})<br>
+                ${escaparHtml(c.email || "")}${c.preferenciaContacto ? ` · Avisar por: <strong>${{ email: "Email", whatsapp: "WhatsApp", sms: "SMS" }[c.preferenciaContacto] || "Email"}</strong>` : ""}
               </div>
             ` : ""}
 
             <div class="pedido-items">
               ${pedido.items.map(item => `
-                ${item.cantidad} × ${item.nombre} · ${item.proceso} · Lote ${item.lote} · ${item.peso === "1000" ? "1 kg" : item.peso + " g"} · ${item.molienda} · ${item.tueste}
+                ${escaparHtml(item.cantidad)} × ${escaparHtml(item.nombre)} · ${escaparHtml(item.proceso)} · Lote ${escaparHtml(item.lote)} · ${item.peso === "1000" ? "1 kg" : escaparHtml(item.peso) + " g"} · ${escaparHtml(item.molienda)} · ${escaparHtml(item.tueste)}
               `).join("<br>")}
             </div>
 
@@ -1630,19 +1630,20 @@
 
       const filas = ordenadas.map(([clave, c]) => {
         const esEmpresa = c.tipo === "empresa";
-        const nombreMostrado = esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`.trim();
-        const direccionCompleta = `${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`;
+        // Datos escritos por el cliente: se escapan siempre antes de meterlos en el HTML del panel
+        const nombreMostrado = escaparHtml(esEmpresa ? c.nombre : `${c.nombre} ${c.apellidos || ""}`.trim());
+        const direccionCompleta = escaparHtml(`${c.direccion || ""}, ${c.codigoPostal || ""} ${c.localidad || ""} (${c.provincia || ""})`);
         const facturas = (c.facturas || []).slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         return `
           <div class="cliente-card">
             <div class="cliente-fila" onclick="toggleCliente('${clave}')">
               <div title="${nombreMostrado}">${nombreMostrado}</div>
-              <div>${c.dni || ""}</div>
+              <div>${escaparHtml(c.dni || "")}</div>
               <div>${esEmpresa ? "Empresa" : "Particular"}</div>
               <div title="${direccionCompleta}">${direccionCompleta}</div>
-              <div>${c.telefono || ""}</div>
-              <div title="${c.email || ""}">${c.email || ""}</div>
+              <div>${escaparHtml(c.telefono || "")}</div>
+              <div title="${escaparHtml(c.email || "")}">${escaparHtml(c.email || "")}</div>
               <div>${facturas.length} <span class="cliente-chevron" id="chevron-${clave}">▾</span></div>
             </div>
 
