@@ -2342,7 +2342,9 @@ app.post("/create-checkout-session", async (req, res) => {
     const numeroPedido = await generarNumeroDocumento("PED");
 
     // Sin payment_method_types: Stripe enseña los métodos activados en el Dashboard
-    // (Configuración → Métodos de pago): tarjeta, Bizum, PayPal y transferencia bancaria.
+    // (Configuración → Métodos de pago): tarjeta, Bizum, PayPal, Apple/Google Pay, Klarna...
+    // La transferencia bancaria NO se ofrece: Stripe solo da IBAN extranjeros (IE, FR, DE, NL) y al cliente
+    // le genera desconfianza. Si alguna vez llega un pago diferido, el webhook ya lo gestiona (async_payment_*).
     const datosSesion = {
       client_reference_id: numeroPedido,
       payment_intent_data: {
@@ -2351,20 +2353,12 @@ app.post("/create-checkout-session", async (req, res) => {
       },
       custom_text: {
         submit: {
-          message: `Pedido ${numeroPedido}. Si pagas por transferencia, escribe ${numeroPedido} en el concepto junto con la referencia que te indique Stripe. Te enviaremos el café en cuanto recibamos el pago.`
+          message: `Pedido ${numeroPedido}. Te enviaremos la factura por email en cuanto se confirme el pago.`
         }
       },
       line_items: stripeLineItems,
       mode: "payment",
       customer_email: cliente.email,
-      // La transferencia bancaria necesita un cliente de Stripe al que asignar el IBAN de pago
-      customer_creation: "always",
-      payment_method_options: {
-        customer_balance: {
-          funding_type: "bank_transfer",
-          bank_transfer: { type: "eu_bank_transfer", eu_bank_transfer: { country: "ES" } }
-        }
-      },
       success_url: `https://cafedmedina-web.onrender.com/success.html?pedido=${encodeURIComponent(numeroPedido)}`,
       cancel_url: "https://cafedmedina-web.onrender.com/cancel.html",
       metadata: {
@@ -2381,18 +2375,7 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     };
 
-    let session;
-    try {
-      session = await stripe.checkout.sessions.create(datosSesion);
-    } catch (error) {
-      // Si Stripe rechaza la parte de la transferencia (p. ej. transferencias en EUR aún "pendientes" en la
-      // cuenta), se repite el pago SIN transferencia para que tarjeta, Bizum, PayPal... sigan funcionando.
-      const textoError = `${error && error.message} ${error && error.param}`;
-      if (!/customer_balance|bank_transfer/i.test(textoError)) throw error;
-      console.error("Stripe rechazó la transferencia bancaria; se crea el pago sin ella:", error.message);
-      delete datosSesion.payment_method_options;
-      session = await stripe.checkout.sessions.create(datosSesion);
-    }
+    const session = await stripe.checkout.sessions.create(datosSesion);
 
     // IMPORTANTE: aquí NO se reserva stock ni se crea movimiento todavía.
     // El pedido queda "pendiente_pago" hasta que Stripe confirme el cobro por webhook
