@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+
+  <title>Contenido exclusivo | AURINEGRA</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold: #c8a96a;
+      --black: #11100f;
+      --cream: #f3eadc;
+      --text: #2a2520;
+      --muted: #6d6258;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      height: 72px;
+      padding: 0 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--black);
+      border-bottom: 1px solid rgba(200,169,106,.25);
+    }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .volver { color: var(--cream); font-size: 14px; text-decoration: none; }
+    .volver:hover { color: var(--gold); }
+
+    main { max-width: 900px; margin: 0 auto; padding: 32px 16px 60px; }
+
+    .eyebrow {
+      color: #8a6d36;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--black); line-height: 1.2; margin: 6px 0 4px; }
+    h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--black); margin: 36px 0 14px; }
+
+    .subtitulo { color: var(--muted); margin-bottom: 22px; }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+
+    .dato {
+      background: #fff;
+      border: 1px solid rgba(200,169,106,.35);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .dato span { display: block; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+    .dato strong { display: block; font-size: 18px; color: var(--black); }
+
+    .perfil {
+      background: var(--black);
+      color: var(--cream);
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin-top: 14px;
+    }
+    .perfil span { display: block; color: var(--gold); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+
+    /* Visor de la ficha de cata: no se puede seleccionar, arrastrar ni imprimir */
+    #paginas { -webkit-user-select: none; user-select: none; }
+    #paginas canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-bottom: 16px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      pointer-events: none;
+    }
+
+    .estado { color: var(--muted); padding: 24px 0; text-align: center; }
+
+    .acceso {
+      background: #fff;
+      border: 1px solid rgba(200,169,106,.35);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 520px;
+    }
+    .acceso p { margin-bottom: 14px; }
+    .acceso-fila { display: flex; gap: 10px; flex-wrap: wrap; }
+    .acceso input {
+      flex: 1 1 200px;
+      min-width: 0;
+      padding: 12px 14px;
+      font-size: 17px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid #cdbb98;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .acceso button {
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--black);
+      color: var(--gold);
+      font-weight: 900;
+      font-family: inherit;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .acceso button:disabled { opacity: .6; cursor: wait; }
+    #mensaje { color: #8a3b2b; margin-top: 12px; min-height: 1.6em; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 16px; }
+      h1 { font-size: 26px; }
+    }
+
+    /* Si alguien intenta imprimir la página, no sale la ficha */
+    @media print { body * { display: none !important; } }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html" class="brand">AURINEGRA</a>
+    <a href="pasaporte.html" class="volver">← Volver al Pasaporte</a>
+  </header>
+
+  <main>
+    <!-- 1) Si no hay código (o no es válido) se pide aquí mismo -->
+    <section id="pedir-codigo" hidden>
+      <div class="eyebrow">Contenido exclusivo</div>
+      <h1>Pasaporte de tu café</h1>
+      <p class="subtitulo">Rasca la etiqueta de la parte de abajo de tu bolsa e introduce el código.</p>
+      <div class="acceso">
+        <div class="acceso-fila">
+          <input id="codigo" type="text" placeholder="Código del rasca" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button id="boton" type="button">Acceder</button>
+        </div>
+        <p id="mensaje"></p>
+      </div>
+    </section>
+
+    <!-- 2) Contenido del lote -->
+    <section id="contenido" hidden>
+      <div class="eyebrow">Contenido exclusivo</div>
+      <h1 id="titulo"></h1>
+      <p class="subtitulo" id="subtitulo"></p>
+
+      <div class="datos" id="datos"></div>
+      <div class="perfil" id="perfil" hidden>
+        <span>Perfil sensorial</span>
+        <p id="perfil-texto"></p>
+      </div>
+
+      <h2>Ficha de cata</h2>
+      <p class="estado" id="estado-ficha">Cargando la ficha de cata...</p>
+      <div id="paginas"></div>
+    </section>
+
+    <p class="estado" id="cargando">Cargando...</p>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const TUESTES = { "suave": "Suave", "medio": "Medio", "medio-plus": "Medio +", "medio-alto": "Medio-alto", "alto": "Alto" };
+
+    document.addEventListener("contextmenu", e => { if (e.target.closest("#paginas")) e.preventDefault(); });
+    document.addEventListener("dragstart", e => e.preventDefault());
+    document.addEventListener("keydown", e => {
+      const tecla = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (tecla === "s" || tecla === "p")) e.preventDefault();
+    });
+
+    const limpiar = (texto) => String(texto || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+    function leerCodigoGuardado() {
+      try { return limpiar(sessionStorage.getItem("codigoAcceso")); } catch (e) { return ""; }
+    }
+
+    function guardarCodigo(codigo) {
+      try { sessionStorage.setItem("codigoAcceso", codigo); } catch (e) {}
+    }
+
+    function pedirCodigo(mensaje) {
+      document.getElementById("cargando").hidden = true;
+      document.getElementById("contenido").hidden = true;
+      document.getElementById("pedir-codigo").hidden = false;
+      document.getElementById("mensaje").textContent = mensaje || "";
+      document.getElementById("codigo").focus();
+    }
+
+    async function pedirAlServidor(ruta, codigo) {
+      return fetch(ruta, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo })
+      });
+    }
+
+    function añadirDato(caja, etiqueta, valor) {
+      if (valor === undefined || valor === null || valor === "") return;
+      const div = document.createElement("div");
+      div.className = "dato";
+      const span = document.createElement("span");
+      span.textContent = etiqueta;
+      const strong = document.createElement("strong");
+      strong.textContent = valor;
+      div.append(span, strong);
+      caja.appendChild(div);
+    }
+
+    function mostrarLote(lote) {
+      document.getElementById("cargando").hidden = true;
+      document.getElementById("pedir-codigo").hidden = true;
+      document.getElementById("contenido").hidden = false;
+
+      document.title = `Lote ${lote.codigo} | AURINEGRA`;
+      document.getElementById("titulo").textContent = `Lote ${lote.codigo}`;
+      document.getElementById("subtitulo").textContent = lote.proceso || "";
+
+      const datos = document.getElementById("datos");
+      datos.innerHTML = "";
+      añadirDato(datos, "Proceso", lote.proceso);
+      añadirDato(datos, "Cosecha", lote.cosecha);
+      añadirDato(datos, "Fecha de tueste", lote.fechaTueste);
+      añadirDato(datos, "Tueste", TUESTES[lote.tueste] || lote.tueste);
+      añadirDato(datos, "Fecha de cata", lote.fechaCata);
+      if (Number(lote.puntaje) > 0) {
+        añadirDato(datos, "Puntaje SCA", Number(lote.puntaje).toLocaleString("es-ES", { maximumFractionDigits: 2 }));
+      }
+
+      const perfil = String(lote.perfil || "").trim();
+      document.getElementById("perfil").hidden = !perfil;
+      document.getElementById("perfil-texto").textContent = perfil;
+    }
+
+    async function mostrarFicha(codigo) {
+      const estado = document.getElementById("estado-ficha");
+      try {
+        const response = await pedirAlServidor("/api/acceso/cata", codigo);
+        if (!response.ok) throw new Error("No disponible");
+
+        const pdf = await pdfjsLib.getDocument({ data: await response.arrayBuffer() }).promise;
+        const contenedor = document.getElementById("paginas");
+        const nitidez = Math.min(window.devicePixelRatio || 1, 2);
+
+        for (let numero = 1; numero <= pdf.numPages; numero++) {
+          const pagina = await pdf.getPage(numero);
+          const anchoBase = pagina.getViewport({ scale: 1 }).width;
+          const viewport = pagina.getViewport({ scale: (contenedor.clientWidth / anchoBase) * nitidez });
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          contenedor.appendChild(canvas);
+          await pagina.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        }
+        estado.hidden = true;
+      } catch (error) {
+        estado.textContent = "La ficha de cata de este lote todavía no está disponible.";
+      }
+    }
+
+    async function entrar(codigo) {
+      const boton = document.getElementById("boton");
+      boton.disabled = true;
+      try {
+        const response = await pedirAlServidor("/api/acceso", codigo);
+        const datos = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          pedirCodigo(datos.error || "Código no válido. Revisa el código del rasca de tu bolsa.");
+          return;
+        }
+        guardarCodigo(codigo);
+        mostrarLote(datos);
+        if (datos.fichaCata) {
+          mostrarFicha(codigo);
+        } else {
+          document.getElementById("estado-ficha").textContent = "La ficha de cata de este lote todavía no está disponible.";
+        }
+      } catch (e) {
+        pedirCodigo("No se pudo comprobar el código. Revisa tu conexión y vuelve a probar.");
+      } finally {
+        boton.disabled = false;
+      }
+    }
+
+    function enviarFormulario() {
+      const codigo = limpiar(document.getElementById("codigo").value);
+      if (!codigo) {
+        document.getElementById("mensaje").textContent = "Escribe el código que aparece al rascar la etiqueta.";
+        return;
+      }
+      document.getElementById("mensaje").textContent = "Comprobando código…";
+      entrar(codigo);
+    }
+
+    document.getElementById("boton").addEventListener("click", enviarFormulario);
+    document.getElementById("codigo").addEventListener("keydown", e => { if (e.key === "Enter") enviarFormulario(); });
+
+    const codigoGuardado = leerCodigoGuardado();
+    if (codigoGuardado) entrar(codigoGuardado); else pedirCodigo();
+  </script>
+
+</body>
+</html>

@@ -633,7 +633,6 @@
     .proximamente[hidden],
     .lote-box[hidden],
     .cata-box[hidden],
-    #ficha-cata[hidden],
     .tostion-info[hidden] {
       display: none !important;
     }
@@ -1325,10 +1324,6 @@
             <a href="pasaporte.html" id="ficha-pasaporte" class="btn btn-primary cata-passport-btn">
               Ver pasaporte del café
             </a>
-
-            <a href="ficha-cata.html" id="ficha-cata" class="btn btn-primary cata-passport-btn" hidden>
-              Ver ficha de cata
-            </a>
           </div>
 
           <div class="process-info" id="process-info"></div>
@@ -1583,10 +1578,7 @@
         enlacePasaporte.href = "pasaporte.html?codigo=" + lote.codigo;
       }
 
-      // Solo se muestra si el lote tiene su PDF en la carpeta cata/ del servidor
-      const enlaceCata = document.getElementById("ficha-cata");
-      enlaceCata.hidden = !lote.fichaCata;
-      enlaceCata.href = "ficha-cata.html?lote=" + encodeURIComponent(lote.codigo);
+      // La ficha de cata ya no se enseña aquí: está en el contenido exclusivo del Pasaporte (código del rasca).
 
       actualizarTuesteInfo();
       actualizarPrecioYStock();

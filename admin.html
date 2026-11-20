@@ -848,6 +848,22 @@
       return `NUEVO-${contadorNuevos}`;
     }
 
+    // Código secreto del rasca (8 caracteres, sin letras que se confunden: 0/O, 1/I/L).
+    function generarCodigoAcceso() {
+      const letras = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+      const azar = new Uint32Array(8);
+      crypto.getRandomValues(azar);
+      return Array.from(azar, n => letras[n % letras.length]).join("");
+    }
+
+    function nuevoCodigoAccesoEn(boton) {
+      const campo = boton.closest(".field").querySelector('[data-field="codigoAcceso"]');
+      if (campo.value && !confirm("Este lote ya tiene código. Si lo cambias, el código de los rascas ya impresos dejará de funcionar. ¿Generar uno nuevo?")) {
+        return;
+      }
+      campo.value = generarCodigoAcceso();
+    }
+
     function añadirLoteNuevo() {
       const codigoTemporal = nuevoCodigoTemporal();
 
@@ -861,6 +877,7 @@
         tueste: "",
         perfil: "",
         estado: "activo",
+        codigoAcceso: generarCodigoAcceso(),
         stock: { "250": { real: 0, reservado: 0, disponible: 0 }, "500": { real: 0, reservado: 0, disponible: 0 }, "1000": { real: 0, reservado: 0, disponible: 0 } },
         precios: {}
       };
@@ -953,6 +970,14 @@
                 </select>
               </div>
 
+              <div class="field">
+                <label>Código de acceso (rasca de la bolsa)</label>
+                <div style="display:flex; gap:8px;">
+                  <input data-field="codigoAcceso" type="text" maxlength="16" style="text-transform:uppercase; letter-spacing:2px;" value="${lote.codigoAcceso || ""}" placeholder="Pulsa Generar">
+                  <button type="button" class="btn btn-small" onclick="nuevoCodigoAccesoEn(this)">Generar</button>
+                </div>
+              </div>
+
               <div class="field full">
                 <label>Perfil sensorial</label>
                 <textarea data-field="perfil" placeholder="Notas de cata...">${lote.perfil || ""}</textarea>
@@ -1007,6 +1032,7 @@
           tueste: card.querySelector('[data-field="tueste"]').value,
           perfil: card.querySelector('[data-field="perfil"]').value.trim(),
           estado: card.querySelector('[data-field="estado"]').value,
+          codigoAcceso: card.querySelector('[data-field="codigoAcceso"]').value.toUpperCase().replace(/[^A-Z0-9]/g, ""),
           precios
         };
       });

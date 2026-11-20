@@ -793,47 +793,21 @@
                 Contenido exclusivo
             </div>
             <h2>Acceso por lote, cosecha y proceso</h2>
-            <p>Introduce el código incluido en el empaque para acceder al pasaporte específico de tu café: cosecha, proceso, ficha de cata, fotos, vídeos
-                 y trazabilidad detallada.</p>
-            <div class="lot-grid">
-                <article class="lot-card">
-                    <h3>DM-2026-001</h3>
-                        <p>
-                            <strong>Proceso:</strong>
-                            Lavado doble fermentación
-                        </p>
-                        <p>
-                            <strong>Cosecha:</strong>
-                             Octubre 2026
-                        </p>
-                        <button class="btn btn-secondary" onclick="seleccionarLote('DM-2026-001')">Elegir este lote</button>
-                    </article>
-                    <article class="lot-card">
-                        <h3>Próximamente</h3>
-                        <p>
-                            <strong>Proceso:</strong>
-                            Honey
-                        </p>
-                        <p>Nuevo lote en preparación.</p>
-                    </article>
-                    <article class="lot-card">
-                        <h3>Próximamente</h3>
-                        <p>
-                            <strong>Proceso:</strong>
-                            Natural
-                        </p>
-                        <p>Nuevo lote en preparación.</p>
-                    </article>
-                        </div>
-                        <div class="password-box">
-                            <input id="codigo-lote" type="text" placeholder="Código exclusivo del empaque">
-                            <button class="btn" onclick="validarCodigo()">Acceder al contenido exclusivo</button>
-                        </div>
-                        <p class="password-help">Ejemplo interno de prueba: DM-2026-001. Después cambiamos estos códigos por los reales del empaque.</p>
-                        <div id="access-message" class="access-message">
-                        </div>
-                    </div>
-                </section>
+            <p>Rasca la etiqueta de la parte de abajo de tu bolsa e introduce el código para acceder al pasaporte específico de tu café:
+                 cosecha, proceso, ficha de cata y trazabilidad detallada.</p>
+            <div class="lot-grid" id="lotes-exclusivo">
+                <!-- Se rellena con los lotes reales del catálogo (ver mostrarLotesExclusivo) -->
+            </div>
+            <div class="password-box">
+                <input id="codigo-lote" type="text" placeholder="Código del rasca de tu bolsa" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                       onkeydown="if (event.key === 'Enter') validarCodigo()">
+                <button class="btn" id="boton-acceso" onclick="validarCodigo()">Acceder al contenido exclusivo</button>
+            </div>
+            <p class="password-help">El código está en la etiqueta para rascar, debajo de la bolsa. Cada lote tiene su propio código.</p>
+            <div id="access-message" class="access-message">
+            </div>
+        </div>
+    </section>
   </main>
 
 
@@ -911,27 +885,77 @@
     }
   })();
 
-  const paginasLote = {
-    "DM-2026-001": "lotes/dm-2026-001.html"
-  };
-
-  function seleccionarLote(codigo) {
-    const input = document.getElementById("codigo-lote");
-    if (input) {
-      input.value = codigo;
-      input.focus();
-    }
+  // ---- Contenido exclusivo: tarjetas con los lotes reales y acceso con el código del rasca ----
+  function textoSeguro(valor) {
+    const div = document.createElement("div");
+    div.textContent = valor == null ? "" : String(valor);
+    return div.innerHTML;
   }
 
-  function validarCodigo() {
+  (async function mostrarLotesExclusivo() {
+    const caja = document.getElementById("lotes-exclusivo");
+    if (!caja) return;
+    let lotes = [];
+    try {
+      const response = await fetch("/api/lotes");
+      if (response.ok) lotes = Object.values(await response.json()).filter(l => l.estado !== "archivado");
+    } catch (e) {
+      // Sin conexión: solo se muestran los «Próximamente»
+    }
+
+    const tarjetas = lotes.map(l => `
+      <article class="lot-card">
+        <h3>${textoSeguro(l.codigo)}</h3>
+        ${l.proceso ? `<p><strong>Proceso:</strong> ${textoSeguro(l.proceso)}</p>` : ""}
+        ${l.cosecha ? `<p><strong>Cosecha:</strong> ${textoSeguro(l.cosecha)}</p>` : ""}
+      </article>`);
+
+    // Procesos que aún no tienen lote: se anuncian como «Próximamente»
+    const tiene = (palabra) => lotes.some(l => String(l.proceso || "").toLowerCase().includes(palabra));
+    [["honey", "Honey"], ["natural", "Natural"]].forEach(([palabra, nombre]) => {
+      if (!tiene(palabra)) {
+        tarjetas.push(`
+      <article class="lot-card">
+        <h3>Próximamente</h3>
+        <p><strong>Proceso:</strong> ${nombre}</p>
+        <p>Nuevo lote en preparación.</p>
+      </article>`);
+      }
+    });
+    caja.innerHTML = tarjetas.join("");
+  })();
+
+  async function validarCodigo() {
     const input = document.getElementById("codigo-lote");
     const message = document.getElementById("access-message");
-    const codigo = (input.value || "").trim().toUpperCase();
+    const boton = document.getElementById("boton-acceso");
+    const codigo = (input.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
-    if (paginasLote[codigo]) {
-      window.location.href = paginasLote[codigo];
-    } else if (message) {
-      message.textContent = "Código no válido. Revisa el código impreso en tu empaque.";
+    if (!codigo) {
+      message.textContent = "Escribe el código que aparece al rascar la etiqueta de tu bolsa.";
+      return;
+    }
+
+    boton.disabled = true;
+    message.textContent = "Comprobando código…";
+    try {
+      const response = await fetch("/api/acceso", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo })
+      });
+      const datos = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        message.textContent = datos.error || "Código no válido. Revisa el código del rasca de tu bolsa.";
+        return;
+      }
+      // El código no viaja en la dirección (no queda en el historial): se guarda solo para esta pestaña.
+      try { sessionStorage.setItem("codigoAcceso", codigo); } catch (e) {}
+      window.location.href = "contenido-exclusivo.html";
+    } catch (e) {
+      message.textContent = "No se pudo comprobar el código. Revisa tu conexión y vuelve a probar.";
+    } finally {
+      boton.disabled = false;
     }
   }
 

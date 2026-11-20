@@ -227,7 +227,23 @@ app.put("/api/catalogo", requiereAdmin, async (req, res) => {
         return res.status(400).json({ error: `El lote "${codigo}" necesita al menos un precio válido` });
       }
 
+      // Código secreto del rasca (contenido exclusivo del Pasaporte): opcional, solo letras/números y único.
+      lote.codigoAcceso = normalizarCodigoAcceso(lote.codigoAcceso);
+      if (lote.codigoAcceso && !/^[A-Z0-9]{6,16}$/.test(lote.codigoAcceso)) {
+        return res.status(400).json({ error: `El código de acceso del lote "${codigo}" debe tener entre 6 y 16 letras o números` });
+      }
+
       lote.codigo = codigo;
+    }
+
+    const usados = {};
+    for (const codigo of Object.keys(datos)) {
+      const acceso = datos[codigo].codigoAcceso;
+      if (!acceso) continue;
+      if (usados[acceso]) {
+        return res.status(400).json({ error: `Los lotes "${usados[acceso]}" y "${codigo}" tienen el mismo código de acceso` });
+      }
+      usados[acceso] = codigo;
     }
 
     await guardarCatalogo(datos);
@@ -532,7 +548,8 @@ app.get("/api/lotes", async (req, res) => {
     const lotes = {};
 
     for (const codigo of Object.keys(lotesCompletos)) {
-      const { stock, ...resto } = lotesCompletos[codigo];
+      // El código secreto del rasca nunca sale en la información pública de los lotes.
+      const { stock, codigoAcceso, ...resto } = lotesCompletos[codigo];
       const stockPublico = {};
 
       for (const peso of PESOS_VALIDOS) {
@@ -569,6 +586,71 @@ app.get("/api/cata/:codigo", async (req, res) => {
   res.setHeader("Content-Disposition", "inline");
   res.setHeader("Cache-Control", "no-store");
   res.sendFile(ruta);
+});
+
+// ---- Contenido exclusivo del Pasaporte (código secreto del rasca de cada bolsa) ----
+
+// «K7M4-QX9P», «k7m4 qx9p» → «K7M4QX9P» (se ignoran guiones, espacios y mayúsculas al teclearlo).
+function normalizarCodigoAcceso(valor) {
+  return String(valor || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+const ACCESO_MAX_FALLOS = 10;                 // intentos fallidos por IP...
+const ACCESO_VENTANA_MS = 15 * 60 * 1000;     // ...cada 15 minutos (para que no se pueda adivinar probando)
+
+async function loteDeCodigoAcceso(req, res) {
+  const claveFallos = `acceso-fallo|${ipCliente(req)}`;
+  if (vecesEnVentana(claveFallos, ACCESO_VENTANA_MS) >= ACCESO_MAX_FALLOS) {
+    res.status(429).json({ error: "Demasiados intentos. Espera unos minutos y vuelve a probar." });
+    return null;
+  }
+  const codigo = normalizarCodigoAcceso(req.body && req.body.codigo);
+  const catalogo = await leerCatalogo();
+  const lote = codigo ? Object.values(catalogo).find(l => normalizarCodigoAcceso(l.codigoAcceso) === codigo) : null;
+  if (!lote || lote.estado === "archivado") {
+    registrarVez(claveFallos);
+    res.status(404).json({ error: "Código no válido. Revisa el código del rasca de tu bolsa." });
+    return null;
+  }
+  return lote;
+}
+
+// Comprueba el código del rasca y devuelve los datos públicos del lote para la página de contenido exclusivo.
+app.post("/api/acceso", async (req, res) => {
+  try {
+    const lote = await loteDeCodigoAcceso(req, res);
+    if (!lote) return;
+    const { codigoAcceso, precios, ...publico } = lote;
+    res.json({ ...publico, fichaCata: fs.existsSync(rutaFichaCata(lote.codigo)) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo comprobar el código" });
+  }
+});
+
+// Ficha de cata del contenido exclusivo (con el código del rasca, para el visor de contenido-exclusivo.html).
+app.post("/api/acceso/cata", async (req, res) => {
+  try {
+    const lote = await loteDeCodigoAcceso(req, res);
+    if (!lote) return;
+    const ruta = rutaFichaCata(lote.codigo);
+    if (!fs.existsSync(ruta)) {
+      return res.status(404).json({ error: "Ficha de cata no disponible" });
+    }
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    res.setHeader("Cache-Control", "no-store");
+    res.sendFile(ruta);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo leer la ficha de cata" });
+  }
+});
+
+// Dirección FIJA del QR impreso en todas las bolsas: aurinegracafe.com/lote → Pasaporte, «Contenido exclusivo».
+// Es fija a propósito: si algún día cambia la página, se cambia aquí y las bolsas ya impresas siguen valiendo.
+app.get("/lote", (req, res) => {
+  res.redirect(302, "/pasaporte.html#exclusivo");
 });
 
 // Dirección corta que llevan los QR impresos (fichas, empaques): aurinegracafe.com/lote/DM-2026-001.
