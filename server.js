@@ -2774,7 +2774,8 @@ async function excelSolicitudes(lista) {
     { clave: "pais", titulo: "País", ancho: 12 },
     { clave: "tipo", titulo: "Tipo de cliente", ancho: 18 },
     { clave: "volumen", titulo: "Volumen", ancho: 20 },
-    { clave: "mensaje", titulo: "Mensaje", ancho: 60 }
+    { clave: "mensaje", titulo: "Mensaje", ancho: 60 },
+    { clave: "respondido", titulo: "Respondido", ancho: 16 }
   ];
   hoja.columns = columnas.map(c => ({ key: c.clave, width: c.ancho }));
 
@@ -2809,7 +2810,10 @@ async function excelSolicitudes(lista) {
   lista.forEach((s, n) => {
     const fila = hoja.addRow({
       fecha: horaMadrid(s.fecha), nombre: s.nombre, empresa: s.empresa, email: s.email,
-      telefono: String(s.telefono || ""), pais: s.pais, tipo: s.tipo, volumen: s.volumen, mensaje: s.mensaje
+      telefono: String(s.telefono || ""), pais: s.pais, tipo: s.tipo, volumen: s.volumen, mensaje: s.mensaje,
+      respondido: s.respondido
+        ? `☑ Sí${s.fechaRespondido ? " · " + new Date(s.fechaRespondido).toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" }) : ""}`
+        : "☐ Pendiente"
     });
     fila.getCell("fecha").numFmt = "dd/mm/yyyy hh:mm";
     fila.getCell("email").value = s.email ? { text: s.email, hyperlink: `mailto:${s.email}` } : "";
@@ -2819,11 +2823,52 @@ async function excelSolicitudes(lista) {
       if (n % 2 === 1) celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFBF7F0" } };
       celda.border = { bottom: { style: "hair", color: { argb: "FFE5D9C3" } } };
     });
+    const r = fila.getCell("respondido");
+    r.font = { bold: true, color: { argb: s.respondido ? "FF2E7D32" : "FFB23A1E" } };
+    r.fill = { type: "pattern", pattern: "solid", fgColor: { argb: s.respondido ? "FFE6F2E2" : "FFFBE9E4" } };
   });
 
   hoja.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: columnas.length } };
   return Buffer.from(await libro.xlsx.writeBuffer());
 }
+
+// Panel de administración: lista, casilla «Respondido» y descarga del Excel acumulado
+app.get("/api/solicitudes-profesionales", requiereAdmin, async (req, res) => {
+  try {
+    res.json(await redisGet("solicitudes_profesionales", []));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudieron leer las solicitudes" });
+  }
+});
+
+app.post("/api/solicitudes-profesionales/:id/respondido", requiereAdmin, async (req, res) => {
+  try {
+    const lista = await redisGet("solicitudes_profesionales", []);
+    const s = lista.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: "Solicitud no encontrada" });
+    s.respondido = req.body && typeof req.body.respondido === "boolean" ? req.body.respondido : !s.respondido;
+    s.fechaRespondido = s.respondido ? new Date().toISOString() : null;
+    await redisSet("solicitudes_profesionales", lista);
+    res.json(s);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo guardar" });
+  }
+});
+
+app.get("/api/solicitudes-profesionales/excel", requiereAdmin, async (req, res) => {
+  try {
+    const lista = await redisGet("solicitudes_profesionales", []);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", 'attachment; filename="Solicitudes profesionales AURINEGRA.xlsx"');
+    res.setHeader("Cache-Control", "no-store");
+    res.send(await excelSolicitudes(lista));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo generar el Excel" });
+  }
+});
 
 app.post("/contacto", async (req, res) => {
   try {
@@ -2845,7 +2890,7 @@ app.post("/contacto", async (req, res) => {
     if (datos.telefono.replace(/\D/g, "").length < 9) return res.status(400).json({ campo: "telefono", error: "El teléfono no es válido." });
     registrarVez(claveIp);
 
-    const solicitud = { id: Date.now().toString(36), fecha: new Date().toISOString(), ...datos };
+    const solicitud = { id: Date.now().toString(36), fecha: new Date().toISOString(), ...datos, respondido: false, fechaRespondido: null };
     let todas = [solicitud];
     try {
       const previas = await redisGet("solicitudes_profesionales", []);

@@ -521,6 +521,11 @@
       color: var(--gold, #c8a96a);
     }
 
+    .interesado-row.prof-row {
+      grid-template-columns: .7fr 1.2fr 1fr 1.4fr 2fr .9fr;
+      align-items: start;
+    }
+
     .interesado-row.avisado {
       opacity: .55;
     }
@@ -618,6 +623,7 @@
       <button class="tab-btn" id="tab-btn-pedidos" onclick="cambiarTab('pedidos')">Pedidos</button>
       <button class="tab-btn" id="tab-btn-clientes" onclick="cambiarTab('clientes')">Clientes</button>
       <button class="tab-btn" id="tab-btn-interesados" onclick="cambiarTab('interesados')">Interesados</button>
+      <button class="tab-btn" id="tab-btn-profesionales" onclick="cambiarTab('profesionales')">Profesionales</button>
       <button class="tab-btn" id="tab-btn-tienda" onclick="cambiarTab('tienda')">Tienda</button>
       <button class="tab-btn" id="tab-btn-envio" onclick="cambiarTab('envio')">Envío</button>
       <button class="tab-btn" id="tab-btn-movimientos" onclick="cambiarTab('movimientos')">Movimientos</button>
@@ -692,6 +698,17 @@
         <button class="btn-secondary btn" onclick="exportarInteresados()">Exportar a Excel</button>
       </div>
       <div id="interesados-container"></div>
+    </div>
+
+    <!-- ===================== PROFESIONALES ===================== -->
+    <div id="tab-profesionales" hidden>
+      <p class="subtitle">Solicitudes del formulario «Contacto comercial». Marca «Respondido» cuando contestes: queda guardado y sale en el Excel.</p>
+      <div class="toolbar">
+        <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="prof-pendientes" onchange="renderProfesionales()"> Solo pendientes</label>
+        <button class="btn-secondary btn" onclick="cargarProfesionales()">Actualizar lista</button>
+        <button class="btn-secondary btn" onclick="descargarExcelProfesionales()">Descargar Excel</button>
+      </div>
+      <div id="profesionales-container"></div>
     </div>
 
     <!-- ===================== TIENDA ===================== -->
@@ -788,7 +805,7 @@
     }
 
     function cambiarTab(nombre) {
-      ["catalogo", "stock", "pedidos", "clientes", "interesados", "tienda", "envio", "movimientos"].forEach(t => {
+      ["catalogo", "stock", "pedidos", "clientes", "interesados", "profesionales", "tienda", "envio", "movimientos"].forEach(t => {
         document.getElementById(`tab-${t}`).hidden = (t !== nombre);
         document.getElementById(`tab-btn-${t}`).classList.toggle("active", t === nombre);
       });
@@ -796,6 +813,7 @@
       if (nombre === "pedidos") cargarPedidos();
       if (nombre === "clientes") cargarClientes();
       if (nombre === "interesados") cargarInteresados();
+      if (nombre === "profesionales") cargarProfesionales();
       if (nombre === "tienda") cargarTienda();
       if (nombre === "envio") cargarConfigEnvio();
       if (nombre === "movimientos") cargarMovimientos();
@@ -1905,6 +1923,83 @@
         renderInteresados();
       } catch (error) {
         container.innerHTML = `<p class="error-msg">${escaparHtml(error.message)}</p>`;
+      }
+    }
+
+    // ---- Solicitudes de profesionales ----
+    let profesionalesCache = [];
+
+    async function cargarProfesionales() {
+      const container = document.getElementById("profesionales-container");
+      container.innerHTML = `<p class="subtitle">Cargando...</p>`;
+      try {
+        const response = await fetch("/api/solicitudes-profesionales", { headers: { "x-admin-token": getToken() } });
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          return;
+        }
+        const datos = await response.json();
+        if (!response.ok) throw new Error(datos.error || "No se pudieron cargar las solicitudes");
+        profesionalesCache = Array.isArray(datos) ? datos : [];
+        renderProfesionales();
+      } catch (error) {
+        container.innerHTML = `<p class="error-msg">${escaparHtml(error.message)}</p>`;
+      }
+    }
+
+    function renderProfesionales() {
+      const container = document.getElementById("profesionales-container");
+      const soloPendientes = document.getElementById("prof-pendientes").checked;
+      const lista = profesionalesCache.filter(s => !soloPendientes || !s.respondido);
+      const pendientes = profesionalesCache.filter(s => !s.respondido).length;
+      if (!lista.length) {
+        container.innerHTML = `<p class="subtitle">${profesionalesCache.length ? "No hay solicitudes pendientes." : "Todavía no ha llegado ninguna solicitud."}</p>`;
+        return;
+      }
+      container.innerHTML = `<p class="subtitle">${profesionalesCache.length} solicitud(es) · <strong>${pendientes} pendiente(s) de responder</strong></p>` +
+        lista.map(s => `
+        <div class="interesado-row prof-row ${s.respondido ? "avisado" : ""}">
+          <div>${new Date(s.fecha).toLocaleDateString("es-ES")}</div>
+          <div><strong>${escaparHtml(s.empresa)}</strong><br>${escaparHtml(s.nombre)}</div>
+          <div>${escaparHtml(s.tipo)}<br>${escaparHtml(s.volumen)}</div>
+          <div><a href="mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent("AURINEGRA · Su solicitud de información comercial")}">${escaparHtml(s.email)}</a><br>${escaparHtml(s.telefono)} · ${escaparHtml(s.pais)}</div>
+          <div style="white-space:pre-wrap">${escaparHtml(s.mensaje)}</div>
+          <div>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:700">
+              <input type="checkbox" ${s.respondido ? "checked" : ""} onchange="marcarProfesionalRespondido('${s.id}', this.checked)"> Respondido
+            </label>
+            ${s.respondido && s.fechaRespondido ? `<small>${new Date(s.fechaRespondido).toLocaleDateString("es-ES")}</small>` : ""}
+          </div>
+        </div>`).join("");
+    }
+
+    async function marcarProfesionalRespondido(id, valor) {
+      try {
+        const r = await fetch(`/api/solicitudes-profesionales/${encodeURIComponent(id)}/respondido`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-admin-token": getToken() },
+          body: JSON.stringify({ respondido: valor })
+        });
+        const s = await r.json();
+        if (!r.ok) throw new Error(s.error || "No se pudo guardar");
+        const i = profesionalesCache.findIndex(x => x.id === id);
+        if (i >= 0) profesionalesCache[i] = s;
+        renderProfesionales();
+      } catch (e) {
+        alert(e.message);
+        cargarProfesionales();
+      }
+    }
+
+    async function descargarExcelProfesionales() {
+      try {
+        const r = await fetch("/api/solicitudes-profesionales/excel", { headers: { "x-admin-token": getToken() } });
+        if (!r.ok) throw new Error("No se pudo generar el Excel");
+        descargarBlob(await r.blob(), "Solicitudes profesionales AURINEGRA.xlsx");
+      } catch (e) {
+        alert(e.message);
       }
     }
 
