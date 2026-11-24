@@ -270,8 +270,16 @@ const PUBLICACION_DEFECTO = {
   ]
 };
 
-// Solo vendemos café en grano: la molienda la hace el cliente (la tienda le recomienda cómo según su método).
+// En grano o molido bajo pedido (se muele después de recibir el pedido). Solo se aceptan estas opciones.
 const MOLIENDA_UNICA = "En grano";
+const MOLIENDAS_VALIDAS = [
+  "En grano",
+  "Molido bajo pedido · Espresso (fina)",
+  "Molido bajo pedido · Moka / italiana (media-fina)",
+  "Molido bajo pedido · Filtro V60 / Chemex (media)",
+  "Molido bajo pedido · Goteo / cafetera eléctrica (media)",
+  "Molido bajo pedido · Prensa francesa (gruesa)"
+];
 
 async function leerPublicacion() {
   const guardada = await redisGet("tienda_publicacion", null);
@@ -2589,9 +2597,9 @@ app.post("/create-checkout-session", async (req, res) => {
         throw new Error(`El lote "${item.lote}" ya no está disponible`);
       }
 
-      // Lo que diga el navegador da igual: solo vendemos en grano, y el nombre del producto lo pone el servidor
+      // La molienda solo puede ser una de las permitidas (si no, en grano); el nombre del producto lo pone el servidor
       // (antes llegaba del navegador y acababa en Stripe, la factura y el panel tal cual).
-      item.molienda = MOLIENDA_UNICA;
+      item.molienda = MOLIENDAS_VALIDAS.includes(item.molienda) ? item.molienda : MOLIENDA_UNICA;
       item.nombre = EMPRESA.nombreComercial;
 
       const precioUnitario = Number(lote.precios[item.peso]);

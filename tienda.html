@@ -304,15 +304,23 @@
       grid-column: 1 / -1;
     }
 
-    /* Tipo fijo "En grano": se ve como los demás, pero no se puede cambiar */
-    #tipo:disabled {
-      opacity: 1;
-      color: #2f1b12;
-      cursor: default;
-      -webkit-appearance: none;
-      appearance: none;
-      background-image: none;
+    /* Molienda (solo si se elige «Molido bajo pedido»): ocupa toda la fila */
+    .option-molienda { grid-column: 1 / -1; }
+    .option-molienda[hidden] { display: none; }
+    #molienda.invalid { border-color: #d64525; }
+
+    .aviso-molido {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid rgba(200,169,106,.30);
+      border-left: 4px solid var(--gold);
+      color: #4f3729;
+      font-size: 13px;
+      line-height: 1.45;
     }
+    .aviso-molido[hidden] { display: none; }
 
     /* Recomendación de molienda (no se elige: solo vendemos en grano) */
     .molienda-box {
@@ -1279,7 +1287,7 @@
   </div>
 
   <h1>Tienda</h1>
-  <p class="intro">Elige el proceso y el lote. Te lo enviamos en grano para que conserve todo su aroma.</p>
+  <p class="intro">Elige el proceso y el lote. En grano, o molido bajo pedido justo antes de enviártelo.</p>
 
   <div class="container">
 
@@ -1348,12 +1356,31 @@
 
             <div class="option-field option-tipo">
               <label for="tipo">Tipo</label>
-              <select id="tipo" disabled title="De momento solo vendemos café en grano">
+              <select id="tipo" onchange="onTipoChange()">
                 <option value="grano">En grano</option>
+                <option value="molido">Molido (bajo pedido)</option>
+              </select>
+            </div>
+
+            <!-- Solo si se elige «Molido»: qué molienda quiere -->
+            <div class="option-field option-molienda" id="molienda-field" hidden>
+              <label for="molienda">Tipo de molienda</label>
+              <select id="molienda" onchange="onTipoChange()">
+                <option value="">Elige tu cafetera</option>
+                <option value="Espresso (fina)">Espresso · molienda fina</option>
+                <option value="Moka / italiana (media-fina)">Moka / italiana · media-fina</option>
+                <option value="Filtro V60 / Chemex (media)">Filtro V60 / Chemex · media</option>
+                <option value="Goteo / cafetera eléctrica (media)">Goteo / cafetera eléctrica · media</option>
+                <option value="Prensa francesa (gruesa)">Prensa francesa · gruesa</option>
               </select>
             </div>
 
           </div>
+
+          <p class="aviso-molido" id="aviso-molido" hidden>
+            <strong>Molido bajo pedido:</strong> molemos tu café justo después de recibir el pedido, para conservar al máximo
+            su aroma y sus propiedades. Por eso el envío puede tardar un poco más que en grano.
+          </p>
 
           <div class="price" id="precio">Selecciona un lote</div>
           <p class="tax" id="stock-info">Impuestos incluidos</p>
@@ -1779,6 +1806,20 @@
       }
     }
 
+    // «En grano», «Molido bajo pedido · …» o null si eligió molido sin decir la molienda
+    function moliendaElegida() {
+      if (document.getElementById("tipo").value !== "molido") return "En grano";
+      const m = document.getElementById("molienda").value;
+      return m ? `Molido bajo pedido · ${m}` : null;
+    }
+
+    function onTipoChange() {
+      const molido = document.getElementById("tipo").value === "molido";
+      document.getElementById("molienda-field").hidden = !molido;
+      document.getElementById("aviso-molido").hidden = !molido;
+      document.getElementById("molienda").classList.remove("invalid");
+    }
+
     function añadirAlternativa() {
       if (!alternativaActual) return;
       addToCart(alternativaActual.peso, alternativaActual.cantidad, document.getElementById("alternativa-btn"));
@@ -1790,8 +1831,15 @@
       const tueste = (lote && tuestes[lote.tueste]) ? tuestes[lote.tueste].nombre : "";
       const cantidad = Number(cantidadElegida || document.getElementById("cantidad").value);
 
-      // Solo vendemos en grano (el servidor también lo fuerza).
-      const molienda = "En grano";
+      // En grano o molido bajo pedido (el servidor solo acepta estas opciones).
+      const molienda = moliendaElegida();
+      if (molienda === null) {
+        const sel = document.getElementById("molienda");
+        sel.classList.add("invalid");
+        sel.focus();
+        alert("Elige el tipo de molienda según tu cafetera.");
+        return;
+      }
 
       if (!vendible(lote, peso)) {
         alert("Selecciona un lote y un peso.");
