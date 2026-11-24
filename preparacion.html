@@ -1292,6 +1292,87 @@
       .prep-card-molienda {
         grid-column: 1 / -1;
       }
+    }
+
+    /* =====================================================
+       VERSIÓN CLARA (crema, como la tienda). Cabecera y pie siguen en negro.
+    ===================================================== */
+    main {
+      background: linear-gradient(180deg, #f6efe3 0%, #efe4d2 100%);
+      color: #2a2520;
+    }
+    main .historia-back-link,
+    .historia-back-link { color: #8a6a36 !important; }
+    .historia-back-wrap { background: #f6efe3 !important; }
+    main .prep-eyebrow, main .prep-label { color: #8a6a36; }
+    main .prep-hero h1,
+    main .prep-receta h2,
+    main .prep-consejos h2 { color: #3a2418; }
+    main .prep-hero p,
+    main .prep-intro,
+    main .prep-cta p { color: #5f554b; }
+
+    main .prep-metodo {
+      background: #fffaf2;
+      color: #3a2418;
+      border-color: rgba(138,106,54,.35);
+      box-shadow: 0 8px 20px rgba(58,36,24,.06);
+    }
+    main .prep-metodo-icono { background-color: #8a6a36; }
+    main .prep-metodo.activo { color: #11100f; }
+    main .prep-metodo.activo .prep-metodo-icono { background-color: #11100f; }
+
+    main .prep-receta {
+      background: #fffaf2;
+      border-color: rgba(138,106,54,.3);
+      box-shadow: 0 18px 40px rgba(58,36,24,.08);
+    }
+    main .prep-card {
+      background: #f7efe2;
+      border-color: rgba(138,106,54,.25);
+    }
+    main .prep-card h3 { color: #8a6a36; }
+    main .prep-ingredientes strong,
+    main .prep-grado { color: #2a2520; }
+    main .prep-ingredientes span,
+    main .prep-utensilios li,
+    main .prep-textura,
+    main .prep-escala-textos { color: #5f554b; }
+    main .prep-utensilios li::before { color: #8a6a36; }
+    main .prep-proporcion { color: #8a6a36; border-top-color: rgba(138,106,54,.25); }
+
+    main .prep-stepper { border-color: rgba(138,106,54,.45); }
+    main .prep-stepper button { color: #8a6a36; }
+    main .prep-stepper output { color: #2a2520; }
+
+    main .prep-card select {
+      background: #fffaf2;
+      color: #2a2520;
+      border-color: rgba(138,106,54,.45);
+    }
+    main .prep-ajuste { background: rgba(200,169,106,.18); color: #3a2418; }
+    main .prep-ajuste strong { color: #8a6a36; }
+
+    main .prep-pasos li { color: #2a2520; }
+    main .prep-pasos .prep-tiempo { background: rgba(200,169,106,.22); color: #6e5326; }
+
+    main .prep-video-pronto {
+      color: #5f554b;
+      border-color: rgba(138,106,54,.45);
+      background: #f7efe2;
+    }
+    main .prep-video-pronto span { background: rgba(200,169,106,.25); color: #8a6a36; }
+    main .prep-video-pronto strong { color: #2a2520; }
+
+    main .prep-consejo {
+      background: #fffaf2;
+      border-color: rgba(138,106,54,.25);
+      box-shadow: 0 8px 20px rgba(58,36,24,.05);
+    }
+    main .prep-consejo strong { color: #8a6a36; }
+    main .prep-consejo p { color: #5f554b; }
+
+    @media (max-width: 1px) {
 
       .prep-consejos-grid {
         grid-template-columns: 1fr 1fr;
