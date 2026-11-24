@@ -61,6 +61,7 @@
     .page-content {
       width: 100%;
       padding: 32px 7% 80px;
+      background: linear-gradient(180deg, #f6efe3 0%, #efe4d2 100%);   /* fondo claro, recuadros oscuros */
     }
 
     /* Dos columnas: datos (izquierda) y carrito (derecha, fijo al bajar) */
@@ -71,7 +72,7 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);      /* formulario y carrito del mismo ancho */
       gap: 28px;
-      align-items: start;              /* el carrito con su tamaño natural (pequeño) */
+      align-items: stretch;            /* el carrito siempre con la misma altura que los datos de envío */
     }
 
     .checkout.vacio {
@@ -93,13 +94,16 @@
       border-radius: 24px;
       background: var(--black-soft);
       border: 1px solid rgba(200,169,106,.28);
-      box-shadow: 0 22px 50px rgba(0,0,0,.28);
+      box-shadow: 0 22px 50px rgba(58,36,24,.22);
     }
 
     .cart-box {
-      position: sticky;
-      top: 100px;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* el total y el botón de pago, abajo del todo, alineados con el final del formulario */
+    .cart-box .cart-total { margin-top: auto; }
 
     .cart-box h1 {
       font-family: 'Playfair Display', serif;
@@ -393,8 +397,8 @@
     /* Particular / Empresa como interruptor de dos botones */
     .tipo-toggle {
       display: inline-flex;
-      margin-bottom: 16px;
-      padding: 3px;
+      margin-bottom: 12px;
+      padding: 2px;
 
       border: 1px solid rgba(200,169,106,.4);
       border-radius: 999px;
@@ -414,11 +418,11 @@
 
     .tipo-opcion span {
       display: block;
-      padding: 7px 18px;
+      padding: 3px 14px;               /* más pequeño, a juego con las casillas */
       border-radius: 999px;
 
       color: var(--muted);
-      font-size: 13.5px;
+      font-size: 12px;
       font-weight: 700;
     }
 
@@ -922,14 +926,14 @@
 ===================================================== */
 
 .page-back-wrap {
-  background: #11100f !important;
+  background: #f6efe3 !important;
   padding: 12px 7% 0 !important;
   margin: 0 !important;
 }
 
 .page-back-link {
   display: inline-block !important;
-  color: #e2c47d !important;
+  color: #8a6a36 !important;
   text-decoration: none !important;
 
   font-size: 15px !important;
