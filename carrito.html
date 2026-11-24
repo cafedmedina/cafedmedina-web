@@ -306,17 +306,21 @@
     /* Rejilla de 6 columnas: c3 = media fila, c6 = fila entera, c2 = un tercio */
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 12px 14px;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 8px 12px;                       /* más justo */
     }
 
-    .form-field.c2 { grid-column: span 2; }
-    .form-field.c3 { grid-column: span 3; }
+    .form-field.c2 { grid-column: span 4; }
+    .form-field.c3 { grid-column: span 6; }
     .form-field.c6 { grid-column: 1 / -1; }
+    /* código postal más estrecho para que la localidad quepa entera */
+    .form-field.c-cp   { grid-column: span 3; }
+    .form-field.c-loc  { grid-column: span 5; }
+    .form-field.c-prov { grid-column: span 4; }
 
     .form-field label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 3px;
       color: var(--muted);
       font-size: 11px;
       font-weight: 900;
@@ -327,7 +331,7 @@
     .form-field input {
       width: 100%;
       height: 36px;
-      padding: 6px 12px;
+      padding: 6px 10px;
       background: #0f0d0c;
       color: var(--white);
       border: 1px solid rgba(200,169,106,.4);
@@ -1245,19 +1249,19 @@
           <div class="form-error" id="error-direccion"></div>
         </div>
 
-        <div class="form-field c2">
+        <div class="form-field c2 c-cp">
           <label for="cliente-cp">Código postal</label>
           <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001" maxlength="5" inputmode="numeric" oninput="onCodigoPostalInput(this)">
           <div class="form-error" id="error-cp"></div>
         </div>
 
-        <div class="form-field c2">
+        <div class="form-field c2 c-loc">
           <label for="cliente-localidad">Localidad</label>
           <input id="cliente-localidad" type="text" autocomplete="address-level2" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-localidad"></div>
         </div>
 
-        <div class="form-field c2 campo-provincia">
+        <div class="form-field c2 c-prov campo-provincia">
           <label for="cliente-provincia">Provincia</label>
           <input id="cliente-provincia" type="text" autocomplete="address-level1" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-provincia"></div>
@@ -1564,7 +1568,7 @@
       const s = sugerenciasActuales[i];
       if (!s) return;
       const input = document.getElementById("cliente-direccion");
-      input.value = s.direccion + ", ";
+      input.value = s.direccion;
       if (s.cp) {
         const cp = document.getElementById("cliente-cp");
         cp.value = s.cp;
