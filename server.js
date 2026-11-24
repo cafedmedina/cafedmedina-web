@@ -2743,60 +2743,85 @@ app.post("/create-checkout-session", async (req, res) => {
 
 
 
+// ---- Solicitudes de profesionales (contacto.html) ----
+// Llegan a info@ con el formato de AURINEGRA, con «Responder» directo al cliente y un Excel (CSV) adjunto
+// con TODAS las solicitudes recibidas (se guardan en Redis, «solicitudes_profesionales»).
+const CAMPOS_CONTACTO = {
+  nombre: ["Nombre", 100], empresa: ["Empresa", 120], email: ["Email", 120], telefono: ["Teléfono", 25],
+  pais: ["País", 60], tipo: ["Tipo de cliente", 40], volumen: ["Volumen", 40], mensaje: ["Mensaje", 3000]
+};
+
+function csvSolicitudes(lista) {
+  const cab = ["Fecha", ...Object.values(CAMPOS_CONTACTO).map(c => c[0])];
+  const celda = v => {
+    let t = String(v == null ? "" : v).replace(/\r?\n/g, " ").trim();
+    if (/^[=+\-@]/.test(t)) t = "'" + t;              // evita fórmulas al abrirlo en Excel
+    return `"${t.replace(/"/g, '""')}"`;
+  };
+  const filas = lista.map(s => [new Date(s.fecha).toLocaleString("es-ES", { timeZone: "Europe/Madrid" }), ...Object.keys(CAMPOS_CONTACTO).map(k => s[k])]);
+  return "﻿" + [cab, ...filas].map(f => f.map(celda).join(";")).join("\r\n");   // ; y BOM: Excel en español lo abre bien
+}
+
 app.post("/contacto", async (req, res) => {
-
   try {
+    const claveIp = `contacto|${ipCliente(req)}`;
+    if (vecesEnVentana(claveIp, 60 * 60 * 1000) >= 8) {
+      return res.status(429).json({ error: "Has enviado varias solicitudes seguidas. Inténtalo de nuevo en un rato." });
+    }
 
-    const {
-      nombre,
-      empresa,
-      email,
-      telefono,
-      pais,
-      tipo,
-      volumen,
-      mensaje
-    } = req.body;
+    const b = req.body || {};
+    const datos = {};
+    for (const [campo, [etiqueta, max]] of Object.entries(CAMPOS_CONTACTO)) {
+      datos[campo] = String(b[campo] || "").trim().slice(0, max);
+      if (!datos[campo]) return res.status(400).json({ campo, error: `Falta el dato «${etiqueta}».` });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) return res.status(400).json({ campo: "email", error: "El email no es válido." });
+    if (datos.telefono.replace(/\D/g, "").length < 9) return res.status(400).json({ campo: "telefono", error: "El teléfono no es válido." });
+    registrarVez(claveIp);
+
+    const solicitud = { id: Date.now().toString(36), fecha: new Date().toISOString(), ...datos };
+    let todas = [solicitud];
+    try {
+      const previas = await redisGet("solicitudes_profesionales", []);
+      todas = [solicitud, ...(Array.isArray(previas) ? previas : [])];
+      await redisSet("solicitudes_profesionales", todas);
+    } catch (e) {
+      console.error("No se pudo guardar la solicitud profesional en Redis:", e);
+    }
+
+    const fila = (k) => `<tr>
+        <td style="padding:6px 12px 6px 0;color:#8a6a36;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;vertical-align:top;">${CAMPOS_CONTACTO[k][0]}</td>
+        <td style="padding:6px 0;color:#2b1a12;font-size:15px;">${escaparHtml(datos[k])}</td></tr>`;
+    const contenido = `
+      <h2 style="font-family:Georgia,serif;color:#2b1a12;margin:0 0 4px;">Nueva solicitud profesional</h2>
+      <p style="margin:0 0 16px;color:#7a6e60;">Recibida desde aurinegracafe.com/contacto · ${escaparHtml(new Date(solicitud.fecha).toLocaleString("es-ES", { timeZone: "Europe/Madrid" }))}</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;border-top:2px solid #C9A24B;">
+        ${["nombre", "empresa", "email", "telefono", "pais", "tipo", "volumen"].map(fila).join("")}
+      </table>
+      <div style="margin-top:16px;padding:14px 16px;background:#f5efe6;border-left:3px solid #C9A24B;border-radius:6px;white-space:pre-wrap;color:#2b1a12;">${escaparHtml(datos.mensaje)}</div>
+      <p style="margin-top:18px;">
+        <a href="mailto:${encodeURIComponent(datos.email)}?subject=${encodeURIComponent("AURINEGRA · Su solicitud de información comercial")}"
+           style="display:inline-block;background:#C9A24B;color:#11100f;text-decoration:none;font-weight:bold;padding:10px 20px;border-radius:30px;">Responder a ${escaparHtml(datos.nombre)}</a>
+      </p>
+      <p style="font-size:12px;color:#7a6e60;">Adjunto: Excel con todas las solicitudes profesionales recibidas (${todas.length}). También puedes pulsar «Responder» en tu correo: la respuesta irá directamente al cliente.</p>`;
 
     await enviarCorreo({
-
       from: REMITENTE_EMAIL,
-
       to: EMPRESA.email,
-
-      subject: "Nueva solicitud comercial AURINEGRA",
-
-      html: `
-        <h2>Nueva solicitud comercial</h2>
-
-        <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Empresa:</strong> ${empresa}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Teléfono:</strong> ${telefono}</p>
-        <p><strong>País:</strong> ${pais}</p>
-        <p><strong>Tipo:</strong> ${tipo}</p>
-        <p><strong>Volumen:</strong> ${volumen}</p>
-
-        <hr>
-
-        <p>${mensaje}</p>
-      `
+      replyTo: datos.email,                          // «Responder» va al cliente
+      subject: `Solicitud profesional · ${datos.empresa} (${datos.tipo})`,
+      html: plantillaCorreoCliente(contenido),       // formato AURINEGRA (cabecera y firma)
+      attachments: [{
+        filename: `solicitudes-profesionales-aurinegra-${new Date().toISOString().slice(0, 10)}.csv`,
+        content: Buffer.from(csvSolicitudes(todas), "utf8")
+      }]
     });
 
-    res.status(200).json({
-      success: true
-    });
-
-  } catch(error){
-
-    console.log(error);
-
-    res.status(500).json({
-      error: error.message
-    });
-
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error en solicitud profesional:", error);
+    res.status(500).json({ error: "No se pudo enviar la solicitud. Inténtalo de nuevo o escríbenos a info@aurinegracafe.com." });
   }
-
 });
 
 

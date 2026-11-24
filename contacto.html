@@ -115,29 +115,55 @@
       margin-bottom:40px;
     }
 
+    /* Formulario compacto, como el del carrito */
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px 12px;
+    }
+    .campo.ancho{ grid-column:1 / -1; }
+
     label{
       display:block;
-      margin-bottom:8px;
-      margin-top:20px;
-      color:#c8a96a;
-      font-size:13px;
+      margin-bottom:3px;
+      color:rgba(255,255,255,.82);
+      font-size:11px;
       font-weight:900;
-      letter-spacing:1.5px;
+      letter-spacing:.6px;
       text-transform:uppercase;
     }
+    label.obligatorio::after{ content:" *"; color:#c8a96a; font-weight:900; }
 
     input,
     textarea,
     select{
       width:100%;
-      padding:15px 18px;
-      border-radius:12px;
-      border:1px solid rgba(200,169,106,.3);
-      background:#11100f;
+      height:26px;
+      padding:2px 9px;
+      border-radius:7px;
+      border:1px solid rgba(200,169,106,.4);
+      background:#0f0d0c;
       color:#fff;
-      font-size:15px;
+      font-size:13px;
+      font-family:inherit;
       box-sizing:border-box;
       outline:none;
+    }
+    input.invalid, textarea.invalid, select.invalid{ border-color:#d64525; }
+
+    .error-campo{ color:#ff8a8a; font-size:11.5px; margin-top:3px; }
+    .error-campo:empty{ display:none; }
+
+    .obligatorios{ margin-top:8px; color:rgba(255,255,255,.7); font-size:12px; }
+    .obligatorios b{ color:#c8a96a; }
+
+    .aviso-envio{ margin-top:14px; text-align:center; font-size:14px; min-height:1em; }
+    .aviso-envio.ok{ color:#e2c47d; }
+    .aviso-envio.error{ color:#ff8a8a; }
+
+    @media(max-width:700px){
+      .form-grid{ grid-template-columns:1fr; }
+      input, textarea, select{ height:32px; font-size:16px; }
     }
 
     input:focus,
@@ -148,14 +174,16 @@
     }
 
     textarea{
-      min-height:140px;
+      height:auto;
+      min-height:90px;
+      padding:6px 9px;
       resize:vertical;
     }
 
     .btn{
       width:100%;
-      margin-top:34px;
-      padding:18px;
+      margin-top:18px;
+      padding:13px;
       border:0;
       border-radius:40px;
       background:#c8a96a;
@@ -424,47 +452,79 @@
       tiendas gourmet y clientes profesionales interesados en café de origen premium colombiano.
     </p>
 
-    <form id="contact-form">
+    <form id="contact-form" novalidate>
+      <div class="form-grid">
 
-      <label>Nombre completo</label>
-      <input type="text" name="nombre" required>
+        <div class="campo">
+          <label for="c-nombre" class="obligatorio">Nombre completo</label>
+          <input id="c-nombre" type="text" name="nombre" autocomplete="name" maxlength="100">
+          <div class="error-campo" id="e-nombre"></div>
+        </div>
 
-      <label>Empresa / Negocio</label>
-      <input type="text" name="empresa">
+        <div class="campo">
+          <label for="c-empresa" class="obligatorio">Empresa / Negocio</label>
+          <input id="c-empresa" type="text" name="empresa" autocomplete="organization" maxlength="120">
+          <div class="error-campo" id="e-empresa"></div>
+        </div>
 
-      <label>Email</label>
-      <input type="email" name="email" required>
+        <div class="campo">
+          <label for="c-email" class="obligatorio">Email</label>
+          <input id="c-email" type="email" name="email" autocomplete="email" inputmode="email" maxlength="120" placeholder="tu@empresa.com">
+          <div class="error-campo" id="e-email"></div>
+        </div>
 
-      <label>Teléfono</label>
-      <input type="tel" name="telefono">
+        <div class="campo">
+          <label for="c-telefono" class="obligatorio">Teléfono</label>
+          <input id="c-telefono" type="tel" name="telefono" autocomplete="tel" inputmode="tel" maxlength="25" placeholder="+34 612 345 678">
+          <div class="error-campo" id="e-telefono"></div>
+        </div>
 
-      <label>País</label>
-      <input type="text" name="pais">
+        <div class="campo">
+          <label for="c-pais" class="obligatorio">País</label>
+          <input id="c-pais" type="text" name="pais" autocomplete="country-name" maxlength="60" value="España">
+          <div class="error-campo" id="e-pais"></div>
+        </div>
 
-      <label>Tipo de cliente</label>
-      <select name="tipo">
-        <option>Distribuidor</option>
-        <option>Cafetería</option>
-        <option>Hotel</option>
-        <option>Restaurante</option>
-        <option>Tienda gourmet</option>
-        <option>Otro</option>
-      </select>
+        <div class="campo">
+          <label for="c-tipo" class="obligatorio">Tipo de cliente</label>
+          <select id="c-tipo" name="tipo">
+            <option value="">Elige una opción</option>
+            <option>Distribuidor</option>
+            <option>Cafetería</option>
+            <option>Hotel</option>
+            <option>Restaurante</option>
+            <option>Tienda gourmet</option>
+            <option>Otro</option>
+          </select>
+          <div class="error-campo" id="e-tipo"></div>
+        </div>
 
-      <label>Volumen aproximado</label>
-      <select name="volumen">
-        <option>Menos de 10 kg / mes</option>
-        <option>10 - 50 kg / mes</option>
-        <option>50 - 100 kg / mes</option>
-        <option>Más de 100 kg / mes</option>
-      </select>
+        <div class="campo ancho">
+          <label for="c-volumen" class="obligatorio">Volumen aproximado</label>
+          <select id="c-volumen" name="volumen">
+            <option value="">Elige una opción</option>
+            <option>Menos de 10 kg / mes</option>
+            <option>10 - 50 kg / mes</option>
+            <option>50 - 100 kg / mes</option>
+            <option>Más de 100 kg / mes</option>
+          </select>
+          <div class="error-campo" id="e-volumen"></div>
+        </div>
 
-      <label>Mensaje</label>
-      <textarea name="mensaje"></textarea>
+        <div class="campo ancho">
+          <label for="c-mensaje" class="obligatorio">Mensaje</label>
+          <textarea id="c-mensaje" name="mensaje" maxlength="3000" placeholder="Cuéntanos qué necesitas: tipo de café, formatos, frecuencia..."></textarea>
+          <div class="error-campo" id="e-mensaje"></div>
+        </div>
 
-      <button type="submit" class="btn">
+      </div>
+
+      <p class="obligatorios"><b>(*)</b> Datos obligatorios</p>
+
+      <button type="submit" class="btn" id="btn-enviar">
         Solicitar información comercial
       </button>
+      <p class="aviso-envio" id="aviso-envio"></p>
 
     </form>
 
@@ -478,38 +538,57 @@
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------->
 <script>
-document.getElementById("contact-form").addEventListener("submit", async function(e){
+const CAMPOS = ["nombre", "empresa", "email", "telefono", "pais", "tipo", "volumen", "mensaje"];
 
-  e.preventDefault();
-
-  const formData = {
-    nombre: document.querySelector('[name="nombre"]').value,
-    empresa: document.querySelector('[name="empresa"]').value,
-    email: document.querySelector('[name="email"]').value,
-    telefono: document.querySelector('[name="telefono"]').value,
-    pais: document.querySelector('[name="pais"]').value,
-    tipo: document.querySelector('[name="tipo"]').value,
-    volumen: document.querySelector('[name="volumen"]').value,
-    mensaje: document.querySelector('[name="mensaje"]').value
-  };
-
-  const response = await fetch("https://cafedmedina-web.onrender.com/contacto",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify(formData)
-  });
-
-
-  if(response.ok){
-  alert("Solicitud enviada correctamente.");
-  document.getElementById("contact-form").reset();
-} else {
-  const errorText = await response.text();
-  console.log("ERROR DEL SERVIDOR:", errorText);
-  alert("Error enviando solicitud. Mira la consola.");
+function marcarError(campo, texto) {
+  document.getElementById("c-" + campo).classList.toggle("invalid", !!texto);
+  document.getElementById("e-" + campo).textContent = texto || "";
 }
+
+document.getElementById("contact-form").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const aviso = document.getElementById("aviso-envio");
+  const boton = document.getElementById("btn-enviar");
+  aviso.textContent = ""; aviso.className = "aviso-envio";
+
+  const datos = {};
+  CAMPOS.forEach(c => { datos[c] = document.getElementById("c-" + c).value.trim(); marcarError(c, ""); });
+
+  // Todos los datos son obligatorios
+  let valido = true;
+  CAMPOS.forEach(c => { if (!datos[c]) { marcarError(c, "Este dato es obligatorio."); valido = false; } });
+  if (datos.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) { marcarError("email", "El email no es válido."); valido = false; }
+  if (datos.telefono && datos.telefono.replace(/\D/g, "").length < 9) { marcarError("telefono", "El teléfono no es válido."); valido = false; }
+  if (!valido) {
+    const primero = document.querySelector("#contact-form .invalid");
+    if (primero) primero.focus();
+    return;
+  }
+
+  boton.disabled = true;
+  aviso.textContent = "Enviando…";
+  try {
+    const response = await fetch("/contacto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos)
+    });
+    const r = await response.json().catch(() => ({}));
+    if (response.ok) {
+      aviso.textContent = "¡Gracias! Hemos recibido tu solicitud. Te responderemos lo antes posible.";
+      aviso.className = "aviso-envio ok";
+      document.getElementById("contact-form").reset();
+    } else {
+      if (r.campo) marcarError(r.campo, r.error);
+      aviso.textContent = r.error || "No se pudo enviar la solicitud. Inténtalo de nuevo o escríbenos a info@aurinegracafe.com.";
+      aviso.className = "aviso-envio error";
+    }
+  } catch (err) {
+    aviso.textContent = "No se pudo enviar la solicitud. Revisa tu conexión o escríbenos a info@aurinegracafe.com.";
+    aviso.className = "aviso-envio error";
+  } finally {
+    boton.disabled = false;
+  }
 });
 </script>
 
