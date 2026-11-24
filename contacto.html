@@ -11,32 +11,79 @@
 
     body{
       margin:0;
-      background:#11100f;
+      background:linear-gradient(180deg,#f6efe3 0%,#efe4d2 100%);   /* fondo claro, recuadro oscuro */
       color:#f5f5f5;
       font-family:'Lato',sans-serif;
+      min-height:100vh;
     }
 
-    header{
-      padding:22px 7%;
+    /* ---- Menú superior (igual que el resto de la web) ---- */
+    header.menu-web{
+      position:sticky; top:0; z-index:100;
+      height:80px;
+      padding:0 7%;
       display:flex;
-      justify-content:space-between;
       align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      background:#11100f;
       border-bottom:1px solid rgba(200,169,106,.2);
-      background:#0f0f0f;
     }
-
-    header a{
-      color:#c8a96a;
-      text-decoration:none;
-      font-weight:900;
-    }
-
-    header span{
+    header.menu-web .brand{ text-decoration:none; }
+    header.menu-web .brand span{
       font-family:'Playfair Display',serif;
-      color:#c8a96a;
-      font-size:24px;
+      color:#e2c47d;
+      font-size:28px;
       font-weight:700;
+      letter-spacing:.5px;
     }
+    header.menu-web #main-menu{ display:flex; gap:22px; }
+    header.menu-web #main-menu a{
+      color:#fff;
+      text-decoration:none;
+      font-size:12.5px;
+      font-weight:900;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+    header.menu-web #main-menu a:hover{ color:#e2c47d; }
+    header.menu-web .cart-link{ position:relative; text-decoration:none; font-size:20px; }
+    header.menu-web .cart-count{
+      position:absolute; top:-8px; right:-12px;
+      min-width:18px; height:18px; padding:0 5px;
+      border-radius:999px;
+      background:#e2c47d; color:#11100f;
+      font-size:11px; font-weight:900;
+      display:flex; align-items:center; justify-content:center;
+    }
+    header.menu-web .menu-toggle{
+      display:none;
+      background:none; border:0; color:#e2c47d; font-size:26px; cursor:pointer;
+    }
+    header.menu-web .mobile-menu{ display:none; }
+    @media (max-width:980px){
+      header.menu-web{ height:66px; padding:0 6%; }
+      header.menu-web #main-menu{ display:none; }
+      header.menu-web .menu-toggle{ display:block; }
+      header.menu-web .brand span{ font-size:24px; }
+      header.menu-web .mobile-menu{
+        position:absolute; top:66px; left:0; right:0;
+        flex-direction:column;
+        background:rgba(17,16,15,.98);
+        border-bottom:1px solid rgba(200,169,106,.25);
+        padding:10px 6% 16px;
+      }
+      header.menu-web .mobile-menu.open{ display:flex; }
+      header.menu-web .mobile-menu a{
+        color:#fff; text-decoration:none; font-weight:900; font-size:14px;
+        text-transform:uppercase; letter-spacing:.6px;
+        padding:12px 0; border-bottom:1px solid rgba(255,255,255,.08);
+      }
+    }
+
+    .volver-wrap{ padding:16px 7% 0; }
+    .volver-link{ color:#8a6a36; text-decoration:none; font-weight:900; font-size:15px; }
+    .volver-link:hover{ opacity:.75; }
 
     .container{
       max-width:760px;
@@ -45,10 +92,11 @@
     }
 
     .box{
-      background:#1a1a1a;
-      border:1px solid rgba(200,169,106,.2);
+      background:#1a1714;
+      border:1px solid rgba(200,169,106,.28);
       border-radius:30px;
       padding:50px;
+      box-shadow:0 22px 50px rgba(58,36,24,.22);
     }
 
     h1{
@@ -322,12 +370,48 @@
 </head>
 <body>
 
-<header>
-  <a href="index.html">
-    ← Volver al inicio
-  </a>
-  <span>AURINEGRA</span>
+<header class="menu-web">
+  <button class="menu-toggle" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
+
+  <a href="index.html#inicio" class="brand"><span>AURINEGRA</span></a>
+
+  <nav id="main-menu">
+    <a href="index.html#origen">Nuestro café</a>
+    <a href="preparacion.html">Preparación</a>
+    <a href="index.html#historia">Historia</a>
+    <a href="index.html#cata">Cata</a>
+    <a href="index.html#empaque">Producto</a>
+    <a href="index.html#area-profesional">Profesionales</a>
+    <a href="index.html#contacto">Contacto</a>
+    <a href="tienda.html">Tienda</a>
+  </nav>
+
+  <a href="carrito.html" class="cart-link" aria-label="Carrito">🛒<span id="cart-count" class="cart-count">0</span></a>
+
+  <nav id="mobile-menu" class="mobile-menu">
+    <a href="index.html#origen" onclick="closeMenu()">Nuestro café</a>
+    <a href="preparacion.html" onclick="closeMenu()">Preparación</a>
+    <a href="index.html#historia" onclick="closeMenu()">Historia</a>
+    <a href="index.html#cata" onclick="closeMenu()">Cata</a>
+    <a href="index.html#empaque" onclick="closeMenu()">Producto</a>
+    <a href="index.html#area-profesional" onclick="closeMenu()">Profesionales</a>
+    <a href="index.html#contacto" onclick="closeMenu()">Contacto</a>
+    <a href="tienda.html" onclick="closeMenu()">Tienda</a>
+  </nav>
 </header>
+
+<div class="volver-wrap"><a href="index.html" class="volver-link">← Volver al inicio</a></div>
+
+<script>
+  function toggleMenu() { document.getElementById("mobile-menu").classList.toggle("open"); }
+  function closeMenu() { document.getElementById("mobile-menu").classList.remove("open"); }
+  document.addEventListener("DOMContentLoaded", () => {
+    try {
+      const c = JSON.parse(localStorage.getItem("carrito")) || [];
+      document.getElementById("cart-count").textContent = c.reduce((s, i) => s + Number(i.cantidad || 0), 0);
+    } catch (e) {}
+  });
+</script>
 
 <div class="container">
 
