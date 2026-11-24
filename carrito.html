@@ -440,12 +440,12 @@
     /* Fila de arriba: Particular/Empresa a la izquierda y la preferencia de aviso a la derecha */
     .fila-toggles {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);   /* mismas columnas que Nombre | Apellidos */
       grid-template-areas:
         ".    etiqueta"
         "tipo pref"
         ".    nota";
-      column-gap: 16px;
+      column-gap: 12px;
       row-gap: 3px;
       align-items: center;
       margin-bottom: 10px;
@@ -459,8 +459,18 @@
       letter-spacing: .6px;
       text-transform: uppercase;
     }
+    .fila-tipo, .fila-pref { justify-self: start; }
     .fila-pref      { grid-area: pref; }
     .fila-nota      { grid-area: nota; margin-top: 2px; }
+
+    /* Campos obligatorios: asterisco dorado junto al título */
+    label.obligatorio::after {
+      content: " *";
+      color: var(--gold);
+      font-weight: 900;
+    }
+    .asterisco-txt { color: var(--gold); font-weight: 900; }
+    .form-obligatorios { margin-top: 2px; }
 
     @media (max-width: 520px) {
       .fila-toggles {
@@ -1233,15 +1243,15 @@
         <label id="label-preferencia" class="fila-etiqueta">¿Cómo te avisamos del pedido?</label>
         <div class="tipo-toggle preferencia-toggle fila-pref" role="radiogroup" aria-labelledby="label-preferencia">
           <label class="tipo-opcion">
-            <input type="radio" name="preferencia-contacto" value="email" checked>
+            <input type="radio" name="preferencia-contacto" value="email" checked onchange="actualizarMovilObligatorio()">
             <span>Email</span>
           </label>
           <label class="tipo-opcion">
-            <input type="radio" name="preferencia-contacto" value="whatsapp">
+            <input type="radio" name="preferencia-contacto" value="whatsapp" onchange="actualizarMovilObligatorio()">
             <span>WhatsApp</span>
           </label>
           <label class="tipo-opcion">
-            <input type="radio" name="preferencia-contacto" value="sms">
+            <input type="radio" name="preferencia-contacto" value="sms" onchange="actualizarMovilObligatorio()">
             <span>SMS</span>
           </label>
         </div>
@@ -1250,37 +1260,37 @@
 
       <div class="form-grid">
         <div class="form-field c3" id="campo-nombre">
-          <label for="cliente-nombre" id="label-nombre">Nombre</label>
+          <label for="cliente-nombre" id="label-nombre" class="obligatorio">Nombre</label>
           <input id="cliente-nombre" type="text" autocomplete="given-name" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-nombre"></div>
         </div>
 
         <div class="form-field c3" id="campo-apellidos">
-          <label for="cliente-apellidos">Apellidos</label>
+          <label for="cliente-apellidos" class="obligatorio">Apellidos</label>
           <input id="cliente-apellidos" type="text" autocomplete="family-name" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-apellidos"></div>
         </div>
 
         <div class="form-field c3">
-          <label for="cliente-dni" id="label-dni">DNI / NIF / NIE</label>
+          <label for="cliente-dni" id="label-dni" class="obligatorio">DNI / NIF / NIE</label>
           <input id="cliente-dni" type="text" autocomplete="off" placeholder="12345678A" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-dni"></div>
         </div>
 
         <div class="form-field c3">
-          <label for="cliente-telefono">Móvil</label>
+          <label for="cliente-telefono" id="label-telefono" class="obligatorio">Móvil</label>
           <input id="cliente-telefono" type="tel" autocomplete="tel" inputmode="tel" placeholder="612345678">
           <div class="form-error" id="error-telefono"></div>
         </div>
 
         <div class="form-field c6">
-          <label for="cliente-email">Email</label>
+          <label for="cliente-email" class="obligatorio">Email</label>
           <input id="cliente-email" type="email" autocomplete="email" inputmode="email" placeholder="tu@email.com">
           <div class="form-error" id="error-email"></div>
         </div>
 
         <div class="form-field c6 campo-direccion">
-          <label for="cliente-direccion">Dirección de envío</label>
+          <label for="cliente-direccion" class="obligatorio">Dirección de envío</label>
           <input id="cliente-direccion" type="text" autocomplete="off" placeholder="Empieza a escribir: calle y número..."
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugerencias-direccion"
                  oninput="this.value = this.value.toUpperCase(); buscarDirecciones(this.value)"
@@ -1291,24 +1301,25 @@
         </div>
 
         <div class="form-field c2 c-cp">
-          <label for="cliente-cp">Código postal</label>
+          <label for="cliente-cp" class="obligatorio" style="white-space:nowrap">Cód. postal</label>
           <input id="cliente-cp" type="text" autocomplete="postal-code" placeholder="28001" maxlength="5" inputmode="numeric" oninput="onCodigoPostalInput(this)">
           <div class="form-error" id="error-cp"></div>
         </div>
 
         <div class="form-field c2 c-loc">
-          <label for="cliente-localidad">Localidad</label>
+          <label for="cliente-localidad" class="obligatorio">Localidad</label>
           <input id="cliente-localidad" type="text" autocomplete="address-level2" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-localidad"></div>
         </div>
 
         <div class="form-field c2 c-prov campo-provincia">
-          <label for="cliente-provincia">Provincia</label>
+          <label for="cliente-provincia" class="obligatorio">Provincia</label>
           <input id="cliente-provincia" type="text" autocomplete="address-level1" oninput="this.value = this.value.toUpperCase()">
           <div class="form-error" id="error-provincia"></div>
         </div>
       </div>
       <p class="form-ayuda">Al escribir el código postal rellenamos la localidad y la provincia.</p>
+      <p class="form-ayuda form-obligatorios"><span class="asterisco-txt">(*)</span> Datos obligatorios</p>
     </section>
 
     <!-- DERECHA: carrito (se queda fijo al bajar en ordenador) -->
@@ -1709,6 +1720,12 @@
       return /^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(v);
     }
 
+    // Todos los datos son obligatorios, también el móvil (siempre lleva *)
+    function actualizarMovilObligatorio() {
+      document.getElementById("label-telefono").classList.add("obligatorio");
+    }
+    document.addEventListener("DOMContentLoaded", () => setTimeout(actualizarMovilObligatorio, 0));
+
     function onTipoClienteChange() {
       const tipo = document.querySelector('input[name="tipo-cliente"]:checked').value;
       const esEmpresa = tipo === "empresa";
@@ -1792,7 +1809,7 @@
         valido = false;
       }
 
-      if (!cliente.telefono) { marcarErrorCliente("telefono", "Introduce el teléfono."); valido = false; }
+      if (!cliente.telefono) { marcarErrorCliente("telefono", "Introduce el móvil."); valido = false; }
       else if (!validarTelefonoMovil(cliente.telefono)) { marcarErrorCliente("telefono", "Debe ser un móvil español (9 dígitos, empieza por 6 o 7)."); valido = false; }
 
       if (!cliente.email) { marcarErrorCliente("email", "Introduce el email."); valido = false; }
@@ -1826,6 +1843,7 @@
         const radioPref = document.querySelector(`input[name="preferencia-contacto"][value="${guardado.preferenciaContacto}"]`);
         if (radioPref) radioPref.checked = true;
       }
+      actualizarMovilObligatorio();
 
       Object.keys(guardado).forEach(campo => {
         if (campo === "tipoCliente" || campo === "preferenciaContacto") return;
