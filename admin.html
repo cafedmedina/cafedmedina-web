@@ -666,6 +666,10 @@
     <!-- ===================== STOCK ===================== -->
     <div id="tab-stock" hidden>
       <p class="subtitle">El stock se guarda al instante, sin pasar por GitHub. "Disponible" ya descuenta lo vendido y aún no enviado.</p>
+      <div class="toolbar">
+        <button class="btn" onclick="nuevoLoteDesdeStock()">+ Añadir lote</button>
+        <span class="subtitle" style="margin:0">Los lotes se crean en «Catálogo y precios». Al pulsar «Guardar catálogo» aparecen aquí y en «Empezar a operar».</span>
+      </div>
       <div id="stock-container"></div>
 
       <div class="git-hint" style="margin-top:32px">
@@ -1134,6 +1138,19 @@
     }
 
     // ---------------------------------------------------------------- STOCK ----------------------------------------------------------------
+
+    // «+ Añadir lote» desde Stock: abre el catálogo con una ficha de lote nueva para rellenar
+    function nuevoLoteDesdeStock() {
+      cambiarTab("catalogo");
+      añadirLoteNuevo();
+      const fichas = document.querySelectorAll(".lote-card");
+      const ultima = fichas[fichas.length - 1];
+      if (ultima) {
+        ultima.scrollIntoView({ behavior: "smooth", block: "start" });
+        const campo = ultima.querySelector('[data-field="codigo"]');
+        if (campo) setTimeout(() => campo.focus(), 400);
+      }
+    }
 
     function renderStock() {
       const container = document.getElementById("stock-container");
