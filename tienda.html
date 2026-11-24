@@ -1879,7 +1879,17 @@
       await cargarLotes();
       await cargarPublicacion();
       poblarProcesos();
+      // tienda.html?lote=DM-2026-001 (enlace «Nuevo lote» del inicio): se abre con ese lote elegido
+      const pedido = (new URLSearchParams(location.search).get("lote") || "").toUpperCase();
+      if (pedido && lotes[pedido]) {
+        const sel = document.getElementById("proceso");
+        if ([...sel.options].some(o => o.value === lotes[pedido].proceso)) sel.value = lotes[pedido].proceso;
+      }
       onProcesoChange();
+      if (pedido && [...document.getElementById("lote").options].some(o => o.value === pedido)) {
+        document.getElementById("lote").value = pedido;
+        onLoteChange();
+      }
       actualizarIconoCarrito();
     })();
   </script>

@@ -1235,6 +1235,134 @@
     </section>
 
 
+   <!-- ======================================== ABRE - NUEVO LOTE (se rellena sola con el lote de cata más reciente) ======================================== -->
+
+    <style>
+      .nuevo-lote {
+        background: linear-gradient(180deg, #f6efe3 0%, #efe4d2 100%);
+        border-top: 1px solid rgba(138,106,54,.25);
+        border-bottom: 1px solid rgba(138,106,54,.25);
+        padding: 22px 7%;
+      }
+      .nuevo-lote[hidden] { display: none; }
+      .nuevo-lote a {
+        max-width: 980px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 28px;
+        text-decoration: none;
+        color: #2a2520;
+      }
+      .nl-puntos {
+        text-align: center;
+        padding-right: 28px;
+        border-right: 1px solid rgba(138,106,54,.35);
+      }
+      .nl-puntos strong {
+        display: block;
+        font-family: 'Playfair Display', serif;
+        font-size: 44px;
+        line-height: 1;
+        color: #8a6a36;
+        font-variant-numeric: tabular-nums;
+      }
+      .nl-puntos span {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #6d6258;
+      }
+      .nl-eyebrow {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 2.4px;
+        text-transform: uppercase;
+        color: #8a6a36;
+        margin-bottom: 4px;
+      }
+      .nl-texto p {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.45;
+        color: #3a2418;
+      }
+      .nl-texto em {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        color: #2a2520;
+      }
+      .nl-ir {
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: .5px;
+        color: #8a6a36;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(138,106,54,.5);
+        padding-bottom: 2px;
+        transition: color .2s, border-color .2s;
+      }
+      .nuevo-lote a:hover .nl-ir { color: #3a2418; border-color: #3a2418; }
+      @media (max-width: 700px) {
+        .nuevo-lote a { grid-template-columns: auto 1fr; gap: 16px; }
+        .nl-puntos { padding-right: 16px; }
+        .nl-puntos strong { font-size: 34px; }
+        .nl-ir { grid-column: 1 / -1; justify-self: start; }
+        .nl-texto p { font-size: 15px; }
+      }
+    </style>
+
+    <section class="nuevo-lote" id="nuevo-lote" hidden aria-label="Nuestro último lote">
+      <a id="nl-enlace" href="tienda.html">
+        <div class="nl-puntos">
+          <strong id="nl-puntaje">0,00</strong>
+          <span>PUNTOS SCA</span>
+        </div>
+        <div class="nl-texto">
+          <div class="nl-eyebrow" id="nl-eyebrow">Nuevo lote</div>
+          <p><em>Cada lote es único.</em> Conoce nuestro último café<span id="nl-proceso"></span>, catado el <span id="nl-fecha"></span>.</p>
+        </div>
+        <span class="nl-ir">Descúbrelo &rarr;</span>
+      </a>
+    </section>
+
+    <script>
+      (async function mostrarNuevoLote() {
+        const aFecha = t => { const m = String(t || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null; };
+        try {
+          const r = await fetch("/api/lotes");
+          if (!r.ok) return;
+          const lote = Object.values(await r.json())
+            .filter(l => l.estado !== "archivado" && aFecha(l.fechaCata) && Number(l.puntaje) > 0)
+            .sort((a, b) => aFecha(b.fechaCata) - aFecha(a.fechaCata))[0];
+          if (!lote) return;
+          const puntos = Number(lote.puntaje);
+          document.getElementById("nl-eyebrow").textContent = `Nuevo lote · ${lote.codigo}`;
+          document.getElementById("nl-proceso").textContent = lote.proceso ? `: ${lote.proceso.toLowerCase()}` : "";
+          document.getElementById("nl-fecha").textContent = lote.fechaCata;
+          document.getElementById("nl-enlace").href = "tienda.html?lote=" + encodeURIComponent(lote.codigo);
+          const caja = document.getElementById("nuevo-lote");
+          caja.hidden = false;
+          const num = document.getElementById("nl-puntaje");
+          const fmt = v => v.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          // la puntuación sube una sola vez, cuando la franja aparece en pantalla
+          const animar = () => {
+            const t0 = performance.now(), dur = 1200;
+            const paso = t => { const k = Math.min(1, (t - t0) / dur); num.textContent = fmt(puntos * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(paso); };
+            requestAnimationFrame(paso);
+          };
+          if ("IntersectionObserver" in window) {
+            const io = new IntersectionObserver(e => { if (e[0].isIntersecting) { io.disconnect(); animar(); } }, { threshold: .6 });
+            io.observe(caja);
+          } else { num.textContent = fmt(puntos); }
+        } catch (e) { /* sin conexión: la franja no se muestra */ }
+      })();
+    </script>
+
+   <!-- ======================================== CIERRA - NUEVO LOTE ======================================== -->
+
+
    <!-- ======================================== ABRE - EL ORIGEN DE NUESTRO NOMBRE (tángara aurinegra) ======================================== -->
 
     <section class="cream split" id="nombre">
