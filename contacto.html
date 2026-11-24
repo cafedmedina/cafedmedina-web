@@ -457,13 +457,13 @@
 
         <div class="campo">
           <label for="c-nombre" class="obligatorio">Nombre completo</label>
-          <input id="c-nombre" type="text" name="nombre" autocomplete="name" maxlength="100">
+          <input id="c-nombre" oninput="this.value = this.value.toUpperCase()" type="text" name="nombre" autocomplete="name" maxlength="100">
           <div class="error-campo" id="e-nombre"></div>
         </div>
 
         <div class="campo">
           <label for="c-empresa" class="obligatorio">Empresa / Negocio</label>
-          <input id="c-empresa" type="text" name="empresa" autocomplete="organization" maxlength="120">
+          <input id="c-empresa" oninput="this.value = this.value.toUpperCase()" type="text" name="empresa" autocomplete="organization" maxlength="120">
           <div class="error-campo" id="e-empresa"></div>
         </div>
 
@@ -475,26 +475,26 @@
 
         <div class="campo">
           <label for="c-telefono" class="obligatorio">Teléfono</label>
-          <input id="c-telefono" type="tel" name="telefono" autocomplete="tel" inputmode="tel" maxlength="25" placeholder="+34 612 345 678">
+          <input id="c-telefono" oninput="this.value = this.value.toUpperCase()" type="tel" name="telefono" autocomplete="tel" inputmode="tel" maxlength="25" placeholder="+34 612 345 678">
           <div class="error-campo" id="e-telefono"></div>
         </div>
 
         <div class="campo">
           <label for="c-pais" class="obligatorio">País</label>
-          <input id="c-pais" type="text" name="pais" autocomplete="country-name" maxlength="60" value="España">
+          <input id="c-pais" oninput="this.value = this.value.toUpperCase()" type="text" name="pais" autocomplete="country-name" maxlength="60" value="ESPAÑA">
           <div class="error-campo" id="e-pais"></div>
         </div>
 
         <div class="campo">
           <label for="c-tipo" class="obligatorio">Tipo de cliente</label>
           <select id="c-tipo" name="tipo">
-            <option value="">Elige una opción</option>
-            <option>Distribuidor</option>
-            <option>Cafetería</option>
-            <option>Hotel</option>
-            <option>Restaurante</option>
-            <option>Tienda gourmet</option>
-            <option>Otro</option>
+            <option value="">ELIGE UNA OPCIÓN</option>
+            <option>DISTRIBUIDOR</option>
+            <option>CAFETERÍA</option>
+            <option>HOTEL</option>
+            <option>RESTAURANTE</option>
+            <option>TIENDA GOURMET</option>
+            <option>OTRO</option>
           </select>
           <div class="error-campo" id="e-tipo"></div>
         </div>
@@ -502,11 +502,11 @@
         <div class="campo ancho">
           <label for="c-volumen" class="obligatorio">Volumen aproximado</label>
           <select id="c-volumen" name="volumen">
-            <option value="">Elige una opción</option>
-            <option>Menos de 10 kg / mes</option>
-            <option>10 - 50 kg / mes</option>
-            <option>50 - 100 kg / mes</option>
-            <option>Más de 100 kg / mes</option>
+            <option value="">ELIGE UNA OPCIÓN</option>
+            <option>MENOS DE 10 KG / MES</option>
+            <option>10 - 50 KG / MES</option>
+            <option>50 - 100 KG / MES</option>
+            <option>MÁS DE 100 KG / MES</option>
           </select>
           <div class="error-campo" id="e-volumen"></div>
         </div>
