@@ -65,13 +65,13 @@
 
     /* Dos columnas: datos (izquierda) y carrito (derecha, fijo al bajar) */
     .checkout {
-      max-width: 1180px;
+      max-width: 1000px;
       margin: 0 auto;
 
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);      /* formulario y carrito del mismo ancho */
       gap: 28px;
-      align-items: stretch;            /* los dos recuadros con la misma altura */
+      align-items: start;              /* el carrito con su tamaño natural (pequeño) */
     }
 
     .checkout.vacio {
@@ -97,12 +97,9 @@
     }
 
     .cart-box {
-      display: flex;
-      flex-direction: column;
+      position: sticky;
+      top: 100px;
     }
-
-    /* el total y el botón de pago quedan abajo, alineados con el final del formulario */
-    .cart-box .cart-total { margin-top: auto; }
 
     .cart-box h1 {
       font-family: 'Playfair Display', serif;
