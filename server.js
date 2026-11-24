@@ -588,6 +588,48 @@ app.get("/api/cata/:codigo", async (req, res) => {
   res.sendFile(ruta);
 });
 
+// ---- Autocompletado de direcciones (carrito): callejero oficial de CartoCiudad (IGN, Gobierno de España) ----
+// La consulta la hace el servidor (el navegador del cliente no se conecta a terceros). Gratis y sin clave.
+const DIRECCIONES_MAX = 120;                      // consultas por IP...
+const DIRECCIONES_VENTANA_MS = 10 * 60 * 1000;    // ...cada 10 minutos
+
+app.get("/api/direcciones", async (req, res) => {
+  const q = String(req.query.q || "").trim().slice(0, 120);
+  if (q.length < 4) return res.json([]);
+  const clave = `direcciones|${ipCliente(req)}`;
+  if (vecesEnVentana(clave, DIRECCIONES_VENTANA_MS) >= DIRECCIONES_MAX) return res.json([]);
+  registrarVez(clave);
+  try {
+    const url = "https://www.cartociudad.es/geocoder/api/geocoder/candidates?limit=8&q=" + encodeURIComponent(q);
+    const control = new AbortController();
+    const espera = setTimeout(() => control.abort(), 5000);
+    const respuesta = await fetch(url, { signal: control.signal });
+    clearTimeout(espera);
+    if (!respuesta.ok) return res.json([]);
+    const lista = await respuesta.json();
+    const vistas = new Set();
+    const resultado = [];
+    for (const c of Array.isArray(lista) ? lista : []) {
+      if (!c || !c.address || !["portal", "callejero"].includes(c.type)) continue;
+      const direccion = String(c.address).split(",")[0].trim().toUpperCase();
+      const item = {
+        direccion,
+        cp: c.postalCode ? String(c.postalCode) : "",
+        localidad: String(c.poblacion || c.muni || "").toUpperCase(),
+        provincia: String(c.province || "").toUpperCase()
+      };
+      const id = `${item.direccion}|${item.cp}|${item.localidad}`;
+      if (vistas.has(id)) continue;
+      vistas.add(id);
+      resultado.push(item);
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.json(resultado.slice(0, 8));
+  } catch (error) {
+    res.json([]);   // si el servicio no responde, el cliente escribe la dirección a mano
+  }
+});
+
 // ---- Contenido exclusivo del Pasaporte (código secreto del rasca de cada bolsa) ----
 
 // «K7M4-QX9P», «k7m4 qx9p» → «K7M4QX9P» (se ignoran guiones, espacios y mayúsculas al teclearlo).
