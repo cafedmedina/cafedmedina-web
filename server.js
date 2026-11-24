@@ -2751,15 +2751,78 @@ const CAMPOS_CONTACTO = {
   pais: ["País", 60], tipo: ["Tipo de cliente", 40], volumen: ["Volumen", 40], mensaje: ["Mensaje", 3000]
 };
 
-function csvSolicitudes(lista) {
-  const cab = ["Fecha", ...Object.values(CAMPOS_CONTACTO).map(c => c[0])];
-  const celda = v => {
-    let t = String(v == null ? "" : v).replace(/\r?\n/g, " ").trim();
-    if (/^[=+\-@]/.test(t)) t = "'" + t;              // evita fórmulas al abrirlo en Excel
-    return `"${t.replace(/"/g, '""')}"`;
-  };
-  const filas = lista.map(s => [new Date(s.fecha).toLocaleString("es-ES", { timeZone: "Europe/Madrid" }), ...Object.keys(CAMPOS_CONTACTO).map(k => s[k])]);
-  return "﻿" + [cab, ...filas].map(f => f.map(celda).join(";")).join("\r\n");   // ; y BOM: Excel en español lo abre bien
+// Excel (.xlsx) con formato AURINEGRA: cabecera negra y dorada, columnas a medida, filtros, fila fija y fechas reales.
+// Excel guarda las fechas sin zona horaria: se pasa a la hora de Madrid para que se vea la hora real.
+function horaMadrid(iso) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+    .formatToParts(new Date(iso)).map(x => [x.type, x.value]));
+  return new Date(Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second));
+}
+
+async function excelSolicitudes(lista) {
+  const ExcelJS = require("exceljs");
+  const libro = new ExcelJS.Workbook();
+  libro.creator = "AURINEGRA";
+  const hoja = libro.addWorksheet("Solicitudes", { views: [{ state: "frozen", ySplit: 3 }] });
+
+  const columnas = [
+    { clave: "fecha", titulo: "Fecha", ancho: 18 },
+    { clave: "nombre", titulo: "Nombre", ancho: 26 },
+    { clave: "empresa", titulo: "Empresa", ancho: 26 },
+    { clave: "email", titulo: "Email", ancho: 30 },
+    { clave: "telefono", titulo: "Teléfono", ancho: 17 },
+    { clave: "pais", titulo: "País", ancho: 12 },
+    { clave: "tipo", titulo: "Tipo de cliente", ancho: 18 },
+    { clave: "volumen", titulo: "Volumen", ancho: 20 },
+    { clave: "mensaje", titulo: "Mensaje", ancho: 60 }
+  ];
+  hoja.columns = columnas.map(c => ({ key: c.clave, width: c.ancho }));
+
+  // Título
+  hoja.mergeCells(1, 1, 1, columnas.length);
+  const titulo = hoja.getCell(1, 1);
+  titulo.value = "AURINEGRA · Solicitudes de profesionales";
+  titulo.font = { name: "Georgia", size: 15, bold: true, color: { argb: "FFE2C47D" } };
+  titulo.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF11100F" } };
+  titulo.alignment = { vertical: "middle", indent: 1 };
+  hoja.getRow(1).height = 28;
+  hoja.mergeCells(2, 1, 2, columnas.length);
+  const sub = hoja.getCell(2, 1);
+  sub.value = `Generado el ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })} · ${lista.length} solicitud(es)`;
+  sub.font = { italic: true, size: 10, color: { argb: "FF7A6E60" } };
+  sub.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF5EFE6" } };
+  sub.alignment = { indent: 1 };
+
+  // Cabecera
+  const cab = hoja.getRow(3);
+  columnas.forEach((c, i) => {
+    const celda = cab.getCell(i + 1);
+    celda.value = c.titulo;
+    celda.font = { bold: true, color: { argb: "FF11100F" } };
+    celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC9A24B" } };
+    celda.alignment = { vertical: "middle" };
+    celda.border = { bottom: { style: "thin", color: { argb: "FF8A6A36" } } };
+  });
+  cab.height = 20;
+
+  // Datos (lo más reciente arriba); filas alternas en crema
+  lista.forEach((s, n) => {
+    const fila = hoja.addRow({
+      fecha: horaMadrid(s.fecha), nombre: s.nombre, empresa: s.empresa, email: s.email,
+      telefono: String(s.telefono || ""), pais: s.pais, tipo: s.tipo, volumen: s.volumen, mensaje: s.mensaje
+    });
+    fila.getCell("fecha").numFmt = "dd/mm/yyyy hh:mm";
+    fila.getCell("email").value = s.email ? { text: s.email, hyperlink: `mailto:${s.email}` } : "";
+    fila.getCell("email").font = { color: { argb: "FF8A6A36" }, underline: true };
+    fila.eachCell({ includeEmpty: true }, celda => {
+      celda.alignment = { vertical: "top", wrapText: true };
+      if (n % 2 === 1) celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFBF7F0" } };
+      celda.border = { bottom: { style: "hair", color: { argb: "FFE5D9C3" } } };
+    });
+  });
+
+  hoja.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: columnas.length } };
+  return Buffer.from(await libro.xlsx.writeBuffer());
 }
 
 app.post("/contacto", async (req, res) => {
@@ -2774,6 +2837,9 @@ app.post("/contacto", async (req, res) => {
     for (const [campo, [etiqueta, max]] of Object.entries(CAMPOS_CONTACTO)) {
       datos[campo] = String(b[campo] || "").trim().slice(0, max);
       if (!datos[campo]) return res.status(400).json({ campo, error: `Falta el dato «${etiqueta}».` });
+      // todo en MAYÚSCULAS salvo el email (en minúsculas) y el mensaje (tal cual lo escribe el cliente)
+      if (campo === "email") datos[campo] = datos[campo].toLowerCase();
+      else if (campo !== "mensaje") datos[campo] = datos[campo].toUpperCase();
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) return res.status(400).json({ campo: "email", error: "El email no es válido." });
     if (datos.telefono.replace(/\D/g, "").length < 9) return res.status(400).json({ campo: "telefono", error: "El teléfono no es válido." });
@@ -2812,8 +2878,8 @@ app.post("/contacto", async (req, res) => {
       subject: `Solicitud profesional · ${datos.empresa} (${datos.tipo})`,
       html: plantillaCorreoCliente(contenido),       // formato AURINEGRA (cabecera y firma)
       attachments: [{
-        filename: `solicitudes-profesionales-aurinegra-${new Date().toISOString().slice(0, 10)}.csv`,
-        content: Buffer.from(csvSolicitudes(todas), "utf8")
+        filename: `solicitudes-profesionales-aurinegra-${new Date().toISOString().slice(0, 10)}.xlsx`,
+        content: await excelSolicitudes(todas)
       }]
     });
 
