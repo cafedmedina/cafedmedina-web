@@ -611,6 +611,24 @@
   cursor: pointer;
 }
 
+/* Alternancia de fondos: …marrón (fincas) · CREMA (recorrido) · marrón (acceso con código) */
+section.trace.light { background: var(--cream); }
+.trace.light .eyebrow { color: #9f7b3c; }
+.trace.light .trace-line { background: rgba(255,250,240,.7); border-color: rgba(200,169,106,.45); box-shadow: 0 24px 60px rgba(58,36,24,.10); }
+.trace.light .trace-lote { color: #806845; }
+.trace.light .trace-lote strong { color: var(--coffee); }
+.trace.light .trace-step { background: #fffaf2; border-color: rgba(200,169,106,.38); box-shadow: 0 12px 28px rgba(58,36,24,.07); }
+.trace.light .trace-step:hover { border-color: rgba(159,123,60,.7); }
+.trace.light .trace-step:not(:nth-child(4n))::after { border-top-color: rgba(159,123,60,.55); }
+.trace.light .trace-icon { stroke: #9f7b3c; }
+.trace.light .trace-step h3 { color: var(--coffee); }
+.trace.light .trace-step p { color: #67594d; }
+.trace.light .trace-dato { color: #7a5a24; border-color: rgba(159,123,60,.55); background: rgba(226,196,125,.16); }
+.trace.light .trace-cta { background: var(--coffee); border-color: var(--coffee); }
+.trace.light .trace-cta p { color: rgba(255,255,255,.86); }
+.trace.light .trace-cta strong { color: var(--gold-light); }
+section.exclusive { background: var(--dark); }
+
 @media (max-width: 1000px) {
   .trace-steps { grid-template-columns: repeat(2, 1fr); }
   .trace-step:not(:nth-child(4n))::after { display: none; }
@@ -920,7 +938,7 @@
         </div>
     </section>
 
-    <section class="trace">
+    <section class="trace light">
         <div class="section-head reveal">
             <div class="eyebrow">
                 Trazabilidad completa
@@ -930,20 +948,20 @@
         </div>
         <!-- Recorrido completo del café. Los datos marcados con id="tr-…" se rellenan con el lote en venta (/api/lotes). -->
         <div class="trace-line reveal">
-            <div class="trace-lote" id="tr-lote" hidden>Recorrido del lote <strong id="tr-lote-codigo"></strong></div>
+            <div class="trace-lote" id="tr-lote" hidden>Recorrido del lote <strong id="tr-lote-codigo"></strong><span id="tr-lote-resumen"></span></div>
             <ol class="trace-steps">
                 <li class="trace-step">
                     <span class="trace-num">1</span>
                     <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42V22"/><path d="M24 26c0-8 6-13 14-13 0 8-6 13-14 13z"/><path d="M24 22c0-6-5-10-12-10 0 6 5 10 12 10z"/><path d="M14 42h20"/></svg>
                     <h3>Semilla</h3>
-                    <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1: semillas certificadas por CENICAFÉ, resistentes a la roya.</p>
-                    <span class="trace-dato">4 variedades arábicas</span>
+                    <p id="tr-semilla-texto">Variedades arábicas de semilla certificada por CENICAFÉ, elegidas por su adaptación al origen y su resistencia a la roya.</p>
+                    <span class="trace-dato" id="tr-variedad">Arábica</span>
                 </li>
                 <li class="trace-step">
                     <span class="trace-num">2</span>
                     <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 40l14-22 8 12 6-8 12 18z"/><path d="M14 24l4 3 4-3"/></svg>
                     <h3>Cultivo</h3>
-                    <p>Fincas familiares La Estrella y El Tango, en Mistrató (Risaralda), trabajadas por tres generaciones.</p>
+                    <p id="tr-cultivo-texto">Fincas familiares en Mistrató (Risaralda), trabajadas por tres generaciones de caficultores.</p>
                     <span class="trace-dato">1.550 m s. n. m.</span>
                 </li>
                 <li class="trace-step">
@@ -1133,6 +1151,8 @@
     const tarjetas = lotes.map(l => `
       <article class="lot-card">
         <h3>${textoSeguro(l.codigo)}</h3>
+        ${l.variedad ? `<p><strong>Variedad:</strong> ${textoSeguro(l.variedad)}</p>` : ""}
+        ${l.finca ? `<p><strong>Finca:</strong> ${textoSeguro(l.finca)}</p>` : ""}
         ${l.proceso ? `<p><strong>Proceso:</strong> ${textoSeguro(l.proceso)}</p>` : ""}
         ${l.cosecha ? `<p><strong>Cosecha:</strong> ${textoSeguro(l.cosecha)}</p>` : ""}
       </article>`);
@@ -1200,7 +1220,17 @@
       if (!lote) return;
       const poner = (id, texto) => { if (texto) document.getElementById(id).textContent = texto; };
       document.getElementById("tr-lote-codigo").textContent = lote.codigo;
+      // «Castillo · Lavado doble fermentación · Finca La Estrella»: lo propio de este lote
+      const resumen = [lote.variedad, lote.proceso, lote.finca && `Finca ${lote.finca}`].filter(Boolean).join(" · ");
+      if (resumen) document.getElementById("tr-lote-resumen").textContent = ` · ${resumen}`;
       document.getElementById("tr-lote").hidden = false;
+      if (lote.variedad) {
+        poner("tr-variedad", lote.variedad);
+        poner("tr-semilla-texto", `Este lote es de variedad ${lote.variedad}, de semilla certificada por CENICAFÉ y adaptada al origen.`);
+      }
+      if (lote.finca) {
+        poner("tr-cultivo-texto", `Este lote sale de la finca ${lote.finca}, en Mistrató (Risaralda), trabajada por tres generaciones de caficultores.`);
+      }
       poner("tr-cosecha", lote.cosecha && `Cosecha ${lote.cosecha.toLowerCase()}`);
       poner("tr-proceso", lote.proceso);
       const tueste = String(lote.tueste || "").replace(/-/g, " ");

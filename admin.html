@@ -926,6 +926,8 @@
         codigo: codigoTemporal,
         proceso: "",
         cosecha: "",
+        finca: "",
+        variedad: "",
         fechaTueste: "",
         fechaCata: "",
         puntaje: "",
@@ -989,6 +991,16 @@
               <div class="field">
                 <label>Cosecha</label>
                 <input data-field="cosecha" type="text" value="${lote.cosecha || ""}" placeholder="Octubre 2026">
+              </div>
+
+              <div class="field">
+                <label>Finca de este lote</label>
+                <input data-field="finca" type="text" maxlength="80" value="${String(lote.finca || "").replace(/"/g, "&quot;")}" placeholder="La Estrella">
+              </div>
+
+              <div class="field">
+                <label>Variedad de este lote</label>
+                <input data-field="variedad" type="text" maxlength="80" value="${String(lote.variedad || "").replace(/"/g, "&quot;")}" placeholder="Castillo">
               </div>
 
               <div class="field">
@@ -1081,6 +1093,8 @@
           codigo,
           proceso: card.querySelector('[data-field="proceso"]').value.trim(),
           cosecha: card.querySelector('[data-field="cosecha"]').value.trim(),
+          finca: card.querySelector('[data-field="finca"]').value.trim(),
+          variedad: card.querySelector('[data-field="variedad"]').value.trim(),
           fechaTueste: card.querySelector('[data-field="fechaTueste"]').value.trim(),
           fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
           puntaje: Math.round((Number(card.querySelector('[data-field="puntaje"]').value) || 0) * 100) / 100,

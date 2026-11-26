@@ -233,6 +233,11 @@ app.put("/api/catalogo", requiereAdmin, async (req, res) => {
         return res.status(400).json({ error: `El código de acceso del lote "${codigo}" debe tener entre 6 y 16 letras o números` });
       }
 
+      // Finca y variedad de ESTE lote (cada lote es distinto: no se generaliza). Opcionales, texto corto.
+      for (const campo of ["finca", "variedad"]) {
+        lote[campo] = String(lote[campo] || "").trim().replace(/\s+/g, " ").slice(0, 80);
+      }
+
       lote.codigo = codigo;
     }
 
