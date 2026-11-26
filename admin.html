@@ -928,6 +928,7 @@
         cosecha: "",
         finca: "",
         variedad: "",
+        altitud: "",
         fechaTueste: "",
         fechaCata: "",
         puntaje: "",
@@ -1001,6 +1002,11 @@
               <div class="field">
                 <label>Variedad(es) de este lote — si son varias, sepáralas con comas</label>
                 <input data-field="variedad" type="text" maxlength="120" value="${String(lote.variedad || "").replace(/"/g, "&quot;")}" placeholder="Castillo, Colombia">
+              </div>
+
+              <div class="field">
+                <label>Altitud de este lote (la del SICA)</label>
+                <input data-field="altitud" type="text" maxlength="60" value="${String(lote.altitud || "").replace(/"/g, "&quot;")}" placeholder="1.463 m s. n. m.">
               </div>
 
               <div class="field">
@@ -1095,6 +1101,7 @@
           cosecha: card.querySelector('[data-field="cosecha"]').value.trim(),
           finca: card.querySelector('[data-field="finca"]').value.trim(),
           variedad: card.querySelector('[data-field="variedad"]').value.trim(),
+          altitud: card.querySelector('[data-field="altitud"]').value.trim(),
           fechaTueste: card.querySelector('[data-field="fechaTueste"]').value.trim(),
           fechaCata: card.querySelector('[data-field="fechaCata"]').value.trim(),
           puntaje: Math.round((Number(card.querySelector('[data-field="puntaje"]').value) || 0) * 100) / 100,

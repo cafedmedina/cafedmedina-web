@@ -260,6 +260,7 @@
       const fincas = lista(lote.finca), variedades = lista(lote.variedad);
       añadirDato(datos, fincas.length > 1 ? "Fincas" : "Finca", unir(fincas));
       añadirDato(datos, variedades.length > 1 ? "Variedades" : "Variedad", unir(variedades));
+      añadirDato(datos, "Altitud", lote.altitud);
       añadirDato(datos, "Proceso", lote.proceso);
       añadirDato(datos, "Cosecha", lote.cosecha);
       añadirDato(datos, "Fecha de tueste", lote.fechaTueste);

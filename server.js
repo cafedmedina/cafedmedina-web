@@ -39,6 +39,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Despertador: un servicio externo (UptimeRobot, cron-job.org) la visita cada pocos minutos para que Render
+// no duerma el servidor. Responde al instante, sin tocar Redis ni leer archivos.
+app.get("/salud", (req, res) => {
+  res.set("Cache-Control", "no-store").type("text/plain").send("ok");
+});
+
 app.use(express.static(__dirname, { dotfiles: "deny" }));
 
 //-------------------------------------------------------------------------------------------------ABRE - STRIPE--------------------------------------------------------------------------------------------//
@@ -234,7 +240,7 @@ app.put("/api/catalogo", requiereAdmin, async (req, res) => {
       }
 
       // Finca y variedad de ESTE lote (cada lote es distinto: no se generaliza). Opcionales, texto corto.
-      for (const campo of ["finca", "variedad"]) {
+      for (const campo of ["finca", "variedad", "altitud"]) {
         lote[campo] = String(lote[campo] || "").trim().replace(/\s+/g, " ").slice(0, 120);   // varias: separadas por comas
       }
 
