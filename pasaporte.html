@@ -445,6 +445,182 @@
   }
 }
 
+/* =====================================================
+   DEL CULTIVO AL EMPAQUE (8 pasos)
+===================================================== */
+.trace-lote {
+  text-align: center;
+  margin: 0 0 22px;
+  color: rgba(255,255,255,.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.trace-lote strong { color: var(--gold-light); }
+.trace-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 34px 18px;
+  counter-reset: none;
+}
+.trace-step {
+  position: relative;
+  padding: 30px 18px 20px;
+  border-radius: 20px;
+  background: rgba(0,0,0,.24);
+  border: 1px solid rgba(255,255,255,.08);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: border-color .25s, transform .25s;
+}
+.trace-step:hover { border-color: rgba(226,196,125,.45); transform: translateY(-3px); }
+/* línea que une un paso con el siguiente (en la misma fila) */
+.trace-step:not(:nth-child(4n))::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  width: 18px;
+  border-top: 1px dashed rgba(226,196,125,.5);
+}
+.trace-num {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--dark);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+}
+.trace-icon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 12px;
+  fill: none;
+  stroke: var(--gold-light);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trace-step h3 {
+  color: var(--gold-light);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.trace-step p {
+  color: rgba(255,255,255,.74);
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin-bottom: 14px;
+  flex: 1;
+}
+.trace-dato {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(226,196,125,.45);
+  color: var(--gold-light);
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: .4px;
+}
+.trace-cta {
+  margin-top: 30px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: rgba(226,196,125,.08);
+  border: 1px solid rgba(226,196,125,.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.trace-cta p { color: rgba(255,255,255,.82); font-size: 15.5px; margin: 0; }
+.trace-cta strong { color: var(--gold-light); }
+
+/* =====================================================
+   AVISO DEL RASCA (al entrar por el QR)
+===================================================== */
+.aviso-rasca {
+  position: fixed;
+  inset: 0;
+  z-index: 100001; /* por encima del aviso de cookies: al cerrarlo, se ve el de cookies */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10,9,8,.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.aviso-rasca[hidden] { display: none; }
+.aviso-rasca-caja {
+  position: relative;
+  width: min(520px, 100%);
+  padding: 34px 30px 26px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #fffaf0, #eadfce);
+  border: 1px solid rgba(200,169,106,.5);
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  color: var(--brown-text);
+  text-align: center;
+}
+.aviso-rasca-caja h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--coffee);
+  font-size: clamp(26px, 5vw, 34px);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+.aviso-rasca-caja p { color: #67594d; font-size: 15.5px; }
+.aviso-rasca-caja .password-box { margin-top: 20px; }
+.aviso-rasca-cerrar {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  border: 0;
+  background: transparent;
+  color: #806845;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+.aviso-rasca-luego {
+  margin-top: 14px;
+  border: 0;
+  background: transparent;
+  color: #806845;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+  .trace-steps { grid-template-columns: repeat(2, 1fr); }
+  .trace-step:not(:nth-child(4n))::after { display: none; }
+}
+@media (max-width: 850px) {
+  .trace-steps { grid-template-columns: 1fr; gap: 30px; }
+  .trace-cta { flex-direction: column; align-items: stretch; text-align: center; }
+  .aviso-rasca-caja .password-box { flex-direction: column; align-items: stretch; }
+  .aviso-rasca-caja .password-box input, .aviso-rasca-caja .password-box .btn { width: 100%; min-width: 0; }
+}
 
 </style>
 
@@ -752,37 +928,71 @@
             <h2>Del cultivo al empaque</h2>
             <p>Cada lote puede consultarse de forma individual para conocer su cosecha, proceso, perfil sensorial y contenido exclusivo.</p>
         </div>
+        <!-- Recorrido completo del café. Los datos marcados con id="tr-…" se rellenan con el lote en venta (/api/lotes). -->
         <div class="trace-line reveal">
-            <div class="trace-items">
-                <article class="trace-item">
-                    <div class="icon">🌱</div>
-                    <h3>1. Semilla</h3>
-                    <p>Variedades seleccionadas y adaptadas al origen.</p>
-                </article>
-                <article class="trace-item">
-                    <div class="icon">⛰️</div>
-                    <h3>2. Cultivo</h3><p>Fincas familiares en Mistrató, Risaralda.</p>
-                </article>
-                <article class="trace-item">
-                    <div class="icon">🧺</div>
-                    <h3>3. Cosecha</h3>
-                    <p>Recolección manual de cerezas maduras.</p>
-                </article>
-                <article class="trace-item">
-                    <div class="icon">💧</div>
-                    <h3>4. Beneficio</h3>
-                    <p>Proceso definido según el perfil buscado.</p>
-                </article>
-                <article class="trace-item">
-                    <div class="icon">☀️</div>
-                    <h3>5. Secado</h3>
-                    <p>Control del secado y cuidado del grano.</p>
-                </article>
-                <article class="trace-item">
-                    <div class="icon">☕</div>
-                    <h3>6. Tueste</h3>
-                    <p>Perfil de tueste adaptado al mercado y al lote.</p>
-                </article>
+            <div class="trace-lote" id="tr-lote" hidden>Recorrido del lote <strong id="tr-lote-codigo"></strong></div>
+            <ol class="trace-steps">
+                <li class="trace-step">
+                    <span class="trace-num">1</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42V22"/><path d="M24 26c0-8 6-13 14-13 0 8-6 13-14 13z"/><path d="M24 22c0-6-5-10-12-10 0 6 5 10 12 10z"/><path d="M14 42h20"/></svg>
+                    <h3>Semilla</h3>
+                    <p>Colombia, F6, Castillo Zona Centro y Cenicafé 1: semillas certificadas por CENICAFÉ, resistentes a la roya.</p>
+                    <span class="trace-dato">4 variedades arábicas</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">2</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 40l14-22 8 12 6-8 12 18z"/><path d="M14 24l4 3 4-3"/></svg>
+                    <h3>Cultivo</h3>
+                    <p>Fincas familiares La Estrella y El Tango, en Mistrató (Risaralda), trabajadas por tres generaciones.</p>
+                    <span class="trace-dato">1.550 m s. n. m.</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">3</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="28" r="7"/><circle cx="30" cy="30" r="7"/><path d="M18 21c0-6 4-10 10-12"/><path d="M30 23c-1-5 0-10-2-14"/></svg>
+                    <h3>Cosecha</h3>
+                    <p>Recolección a mano y selectiva: solo se recogen las cerezas en su punto justo de maduración.</p>
+                    <span class="trace-dato" id="tr-cosecha">Recolección manual</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">4</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c8 10 13 17 13 23a13 13 0 0 1-26 0c0-6 5-13 13-23z"/><path d="M18 31a6 6 0 0 0 6 6"/></svg>
+                    <h3>Beneficio</h3>
+                    <p>Despulpado y fermentación controlada. El proceso marca el perfil de la taza: lavado, honey o natural.</p>
+                    <span class="trace-dato" id="tr-proceso">Proceso según el lote</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">5</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="8"/><path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M38 10l-4 4M14 34l-4 4"/></svg>
+                    <h3>Secado</h3>
+                    <p>Secado lento y vigilado hasta la humedad adecuada para que el grano conserve todo su carácter.</p>
+                    <span class="trace-dato">Secado lento</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">6</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="24" rx="10" ry="15" transform="rotate(30 24 24)"/><path d="M19 13c6 6 4 16 10 22"/></svg>
+                    <h3>Tueste</h3>
+                    <p>Tostado en Colombia con un perfil pensado para cada lote, para sacar lo mejor de su origen.</p>
+                    <span class="trace-dato" id="tr-tueste">Perfil propio por lote</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">7</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 20h26v8a13 13 0 0 1-26 0z"/><path d="M34 22h3a5 5 0 0 1 0 10h-4"/><path d="M16 8c-2 3 2 5 0 8M24 8c-2 3 2 5 0 8"/></svg>
+                    <h3>Cata</h3>
+                    <p>Cada lote se cata y se puntúa con el protocolo SCA antes de llegar a la tienda.</p>
+                    <span class="trace-dato" id="tr-cata">Desde 86 puntos SCA</span>
+                </li>
+                <li class="trace-step">
+                    <span class="trace-num">8</span>
+                    <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M13 12h22l3 30H10z"/><path d="M13 12l2-6h18l2 6"/><circle cx="24" cy="26" r="5"/></svg>
+                    <h3>Empaque</h3>
+                    <p>Empacado en origen por la Asociación de productores Cuchilla del San Juan, en Belén de Umbría.</p>
+                    <span class="trace-dato">Hecho en Colombia</span>
+                </li>
+            </ol>
+            <div class="trace-cta">
+                <p><strong>¿Ya tienes tu bolsa?</strong> Busca el rasca <span class="rasca-donde">debajo de la bolsa</span> y consulta
+                    la ficha completa de tu lote.</p>
+                <a href="#exclusivo" class="btn">Ver mi lote</a>
             </div>
         </div>
     </section>
@@ -793,7 +1003,7 @@
                 Contenido exclusivo
             </div>
             <h2>Acceso por lote, cosecha y proceso</h2>
-            <p>Rasca la etiqueta de la parte de abajo de tu bolsa e introduce el código para acceder al pasaporte específico de tu café:
+            <p>Busca el rasca <span class="rasca-donde">debajo de la bolsa</span>, ráscalo e introduce el código para acceder al pasaporte específico de tu café:
                  cosecha, proceso, ficha de cata y trazabilidad detallada.</p>
             <div class="lot-grid" id="lotes-exclusivo">
                 <!-- Se rellena con los lotes reales del catálogo (ver mostrarLotesExclusivo) -->
@@ -803,12 +1013,29 @@
                        onkeydown="if (event.key === 'Enter') validarCodigo()">
                 <button class="btn" id="boton-acceso" onclick="validarCodigo()">Acceder al contenido exclusivo</button>
             </div>
-            <p class="password-help">El código está en la etiqueta para rascar, debajo de la bolsa. Cada lote tiene su propio código.</p>
+            <p class="password-help">El código está en el rasca, <span class="rasca-donde">debajo de la bolsa</span>. Cada lote tiene su propio código.</p>
             <div id="access-message" class="access-message">
             </div>
         </div>
     </section>
   </main>
+
+  <!-- Aviso de bienvenida para quien llega por el QR de la bolsa (aurinegracafe.com/lote). Texto editable en el panel. -->
+  <div class="aviso-rasca" id="aviso-rasca" hidden role="dialog" aria-modal="true" aria-labelledby="aviso-rasca-titulo">
+    <div class="aviso-rasca-caja">
+      <button class="aviso-rasca-cerrar" type="button" aria-label="Cerrar" onclick="cerrarAvisoRasca()">×</button>
+      <div class="eyebrow">Contenido exclusivo</div>
+      <h2 id="aviso-rasca-titulo">¿Ya tienes tu bolsa de AURINEGRA?</h2>
+      <p>Busca el rasca <strong class="rasca-donde">debajo de la bolsa</strong>, ráscalo con una moneda y escribe el código:
+         verás la ficha de cata y el recorrido completo de tu lote.</p>
+      <div class="password-box">
+        <input id="aviso-codigo" type="text" placeholder="Código del rasca" autocomplete="off" autocapitalize="characters" spellcheck="false"
+               onkeydown="if (event.key === 'Enter') entrarDesdeAviso()">
+        <button class="btn" type="button" onclick="entrarDesdeAviso()">Ver mi lote</button>
+      </div>
+      <button class="aviso-rasca-luego" type="button" onclick="cerrarAvisoRasca()">Ahora no, quiero ver el pasaporte</button>
+    </div>
+  </div>
 
 
 <a href="https://wa.me/34660736866"
@@ -925,6 +1152,67 @@
     caja.innerHTML = tarjetas.join("");
   })();
 
+  // ---- Aviso del rasca: dónde está (editable en el panel) y bienvenida a quien llega por el QR de la bolsa ----
+  function cerrarAvisoRasca() {
+    document.getElementById("aviso-rasca").hidden = true;
+    try { sessionStorage.setItem("avisoRascaVisto", "1"); } catch (e) {}
+  }
+
+  function entrarDesdeAviso() {
+    const codigo = document.getElementById("aviso-codigo").value;
+    document.getElementById("codigo-lote").value = codigo;
+    cerrarAvisoRasca();
+    validarCodigo();
+  }
+
+  (async function aplicarAvisoRasca() {
+    let aviso = { activo: true, ubicacion: "debajo de la bolsa" };
+    try {
+      const response = await fetch("/api/aviso-rasca");
+      if (response.ok) aviso = await response.json();
+    } catch (e) {
+      // Sin conexión: se queda el texto por defecto
+    }
+    document.querySelectorAll(".rasca-donde").forEach(el => { el.textContent = aviso.ubicacion; });
+
+    // El QR de la bolsa (aurinegracafe.com/lote) abre pasaporte.html#exclusivo: ahí sale el aviso, una vez por visita.
+    let visto = false;
+    try { visto = sessionStorage.getItem("avisoRascaVisto") === "1"; } catch (e) {}
+    if (aviso.activo !== false && location.hash === "#exclusivo" && !visto) {
+      document.getElementById("aviso-rasca").hidden = false;
+      setTimeout(() => document.getElementById("aviso-codigo").focus(), 50);
+    }
+  })();
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !document.getElementById("aviso-rasca").hidden) cerrarAvisoRasca();
+  });
+
+  // ---- Del cultivo al empaque: datos reales del lote en venta (el más reciente catado) ----
+  (async function rellenarRecorrido() {
+    try {
+      const response = await fetch("/api/lotes");
+      if (!response.ok) return;
+      const aFecha = (t) => { const m = String(t || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? new Date(m[3], m[2] - 1, m[1]) : new Date(0); };
+      const lote = Object.values(await response.json())
+        .filter(l => l.estado === "activo")
+        .sort((a, b) => aFecha(b.fechaCata) - aFecha(a.fechaCata))[0];
+      if (!lote) return;
+      const poner = (id, texto) => { if (texto) document.getElementById(id).textContent = texto; };
+      document.getElementById("tr-lote-codigo").textContent = lote.codigo;
+      document.getElementById("tr-lote").hidden = false;
+      poner("tr-cosecha", lote.cosecha && `Cosecha ${lote.cosecha.toLowerCase()}`);
+      poner("tr-proceso", lote.proceso);
+      const tueste = String(lote.tueste || "").replace(/-/g, " ");
+      poner("tr-tueste", tueste && `Tueste ${tueste}${lote.fechaTueste ? " · " + lote.fechaTueste : ""}`);
+      if (Number(lote.puntaje) > 0) {
+        poner("tr-cata", `${Number(lote.puntaje).toLocaleString("es-ES", { maximumFractionDigits: 2 })} puntos SCA`);
+      }
+    } catch (e) {
+      // Sin conexión: se quedan los textos generales
+    }
+  })();
+
   async function validarCodigo() {
     const input = document.getElementById("codigo-lote");
     const message = document.getElementById("access-message");
@@ -932,7 +1220,7 @@
     const codigo = (input.value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
     if (!codigo) {
-      message.textContent = "Escribe el código que aparece al rascar la etiqueta de tu bolsa.";
+      message.textContent = "Escribe el código que aparece en el rasca de tu bolsa.";
       return;
     }
 

@@ -58,7 +58,7 @@ Cambia `VERIFACTU_ENTORNO` a `produccion` y vuelve a desplegar. La primera factu
 
 - Las facturas llevan el QR y la leyenda VERI*FACTU.
 - «Iniciar operación» del admin queda bloqueado: con VERI*FACTU no se pueden borrar facturas ni reiniciar contadores.
-- Una factura expedida por error se **anula** desde el ERP (VERI*FACTU → Anular). Una factura correcta que hay que corregir se **rectifica**: el sistema ya admite los tipos R1-R5, pero falta la pantalla en el ERP.
+- Una factura expedida por error se **anula** desde el ERP (VERI*FACTU → Anular). Una factura correcta que hay que corregir se **rectifica**: desde la factura en el ERP, botón «Emitir rectificativa» (serie R).
 
 > **Importante:** quien opta por VERI*FACTU debe mantenerlo todo el año natural. Activa producción el 1/1/2027, no antes, salvo que la asesoría indique otra cosa.
 
@@ -81,7 +81,7 @@ El productor del sistema es la propia empresa, porque el software se ha desarrol
    - Servidor web Node.js (`server.js`, `verifactu.js`) alojado en Render, con base de datos Upstash Redis. Emite y numera las facturas de la tienda online (serie FACT) y de clientes mayoristas (serie FM), genera los registros de facturación con huella SHA-256 encadenada, los remite a la AEAT por servicio web y genera el código QR.
    - Aplicación ERP local (Python/Flask) que prepara las facturas de mayoristas y las solicita al servidor. El ERP no numera ni registra facturas.
 5. **Tipo de uso**: exclusivamente como sistema VERI*FACTU (TipoUsoPosibleSoloVerifactu = S). No multiusuario (TipoUsoPosibleMultiOT = N); un único obligado tributario.
-6. **Productor**: D’Medina Global Trade, S.L., NIF B05653621, Calle San Pedro del Pinatar, 24, 28939 Arroyomolinos (Madrid).
+6. **Productor**: D’Medina Global Trade, S.L., NIF B05653621, Vía Dos Castillas, 33, Ática 4, 1º, 28224 Pozuelo de Alarcón (Madrid).
 7. **Declaración**: el productor declara que este sistema informático cumple lo dispuesto en el artículo 29.2.j) de la Ley 58/2003, General Tributaria, en el Reglamento aprobado por el Real Decreto 1007/2023, de 5 de diciembre, y en la Orden HAC/1177/2024, de 17 de octubre, y en sus especificaciones técnicas.
 8. **Fecha y lugar**: ____________________, a ___ de __________ de 20__
 

@@ -764,6 +764,25 @@
           <span id="tienda-feedback"></span>
         </div>
       </div>
+
+      <h3 style="margin:32px 0 6px">Aviso del rasca (contenido exclusivo)</h3>
+      <p class="subtitle">
+        La bolsa no dice dónde está el rasca: lo dice la web. Escribe aquí dónde está ahora
+        (por ejemplo «debajo de la bolsa» o «en la etiqueta de la bolsa»). Sale en el aviso que ve quien entra por el QR
+        y en los textos del Pasaporte. Se guarda al instante.
+      </p>
+      <div class="box" style="margin:0;max-width:860px">
+        <label for="rasca-ubicacion">Dónde está el rasca</label>
+        <input id="rasca-ubicacion" type="text" maxlength="80" placeholder="debajo de la bolsa" oninput="previaRasca()">
+        <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:normal">
+          <input id="rasca-activo" type="checkbox" style="width:auto" onchange="previaRasca()"> Mostrar el aviso al entrar en el Pasaporte
+        </label>
+        <p style="margin:14px 0 0;color:#7A6E60">Así se verá: <em id="rasca-previa"></em></p>
+        <div class="save-bar" style="margin-top:20px;padding:0;border:none;background:transparent">
+          <button class="btn" id="save-rasca-btn" onclick="guardarAvisoRasca()">Guardar</button>
+          <span id="rasca-feedback"></span>
+        </div>
+      </div>
     </div>
 
     <!-- ===================== ENVÍO ===================== -->
@@ -832,7 +851,7 @@
       if (nombre === "clientes") cargarClientes();
       if (nombre === "interesados") cargarInteresados();
       if (nombre === "profesionales") cargarProfesionales();
-      if (nombre === "tienda") cargarTienda();
+      if (nombre === "tienda") { cargarTienda(); cargarAvisoRasca(); }
       if (nombre === "envio") cargarConfigEnvio();
       if (nombre === "movimientos") cargarMovimientos();
     }
@@ -1563,6 +1582,66 @@
       } catch (error) {
         feedback.className = "error-msg";
         feedback.textContent = error.message || "No se pudo guardar la configuración de la tienda.";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ---------------------------------------------------------------- AVISO DEL RASCA ----------------------------------------------------------------
+
+    function previaRasca() {
+      const ubicacion = document.getElementById("rasca-ubicacion").value.trim() || "debajo de la bolsa";
+      document.getElementById("rasca-previa").textContent = document.getElementById("rasca-activo").checked
+        ? `«¿Ya tienes tu bolsa de AURINEGRA? Busca el rasca ${ubicacion}, rasca y escribe el código para ver la ficha de cata de tu lote.»`
+        : "(aviso desactivado: solo cambian los textos del Pasaporte)";
+    }
+
+    async function cargarAvisoRasca() {
+      const feedback = document.getElementById("rasca-feedback");
+      feedback.className = "";
+      feedback.textContent = "";
+      try {
+        const response = await fetch("/api/aviso-rasca");
+        const aviso = await response.json();
+        document.getElementById("rasca-ubicacion").value = aviso.ubicacion || "";
+        document.getElementById("rasca-activo").checked = aviso.activo !== false;
+        previaRasca();
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = "No se pudo cargar el aviso del rasca.";
+      }
+    }
+
+    async function guardarAvisoRasca() {
+      const feedback = document.getElementById("rasca-feedback");
+      const btn = document.getElementById("save-rasca-btn");
+      btn.disabled = true;
+      feedback.className = "";
+      feedback.textContent = "Guardando...";
+      try {
+        const response = await fetch("/api/aviso-rasca", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-admin-token": getToken() },
+          body: JSON.stringify({
+            ubicacion: document.getElementById("rasca-ubicacion").value,
+            activo: document.getElementById("rasca-activo").checked
+          })
+        });
+        if (response.status === 401) {
+          sessionStorage.removeItem("adminToken");
+          document.getElementById("admin-panel").hidden = true;
+          document.getElementById("login-box").hidden = false;
+          document.getElementById("login-error").textContent = "Contraseña incorrecta.";
+          document.getElementById("login-error").hidden = false;
+          return;
+        }
+        const resultado = await response.json();
+        if (!response.ok) throw new Error(resultado.error || "Error al guardar");
+        feedback.className = "success-msg";
+        feedback.textContent = "Guardado. El Pasaporte ya lo muestra así.";
+      } catch (error) {
+        feedback.className = "error-msg";
+        feedback.textContent = error.message || "No se pudo guardar el aviso del rasca.";
       } finally {
         btn.disabled = false;
       }

@@ -162,7 +162,7 @@
     <section id="pedir-codigo" hidden>
       <div class="eyebrow">Contenido exclusivo</div>
       <h1>Pasaporte de tu café</h1>
-      <p class="subtitulo">Rasca la etiqueta de la parte de abajo de tu bolsa e introduce el código.</p>
+      <p class="subtitulo">Busca el rasca <span class="rasca-donde">debajo de la bolsa</span>, ráscalo e introduce el código.</p>
       <div class="acceso">
         <div class="acceso-fila">
           <input id="codigo" type="text" placeholder="Código del rasca" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -321,7 +321,7 @@
     function enviarFormulario() {
       const codigo = limpiar(document.getElementById("codigo").value);
       if (!codigo) {
-        document.getElementById("mensaje").textContent = "Escribe el código que aparece al rascar la etiqueta.";
+        document.getElementById("mensaje").textContent = "Escribe el código que aparece al rascar.";
         return;
       }
       document.getElementById("mensaje").textContent = "Comprobando código…";
@@ -333,6 +333,11 @@
 
     const codigoGuardado = leerCodigoGuardado();
     if (codigoGuardado) entrar(codigoGuardado); else pedirCodigo();
+
+    // Dónde está el rasca (se cambia en el panel admin, pestaña Tienda)
+    fetch("/api/aviso-rasca").then(r => r.ok ? r.json() : null).then(aviso => {
+      if (aviso && aviso.ubicacion) document.querySelectorAll(".rasca-donde").forEach(el => { el.textContent = aviso.ubicacion; });
+    }).catch(() => {});
   </script>
 
 </body>

@@ -336,6 +336,43 @@ app.put("/api/tienda-publicacion", requiereAdmin, async (req, res) => {
 
 //-------------------------------------------------------------------------------------------------CIERRA - PUBLICACIÓN EN TIENDA--------------------------------------------------------------------------------------------//
 
+//-------------------------------------------------------------------------------------------------ABRE - AVISO DEL RASCA (PASAPORTE)--------------------------------------------------------------------------------------------//
+
+// Dónde está el rasca con el código del contenido exclusivo. No va impreso en la bolsa: se cambia desde el panel
+// (pestaña Tienda) y lo usan el aviso de bienvenida del Pasaporte y los textos de acceso.
+const AVISO_RASCA_DEFECTO = { activo: true, ubicacion: "debajo de la bolsa" };
+
+async function leerAvisoRasca() {
+  const guardado = await redisGet("aviso_rasca", null);
+  return guardado && typeof guardado.ubicacion === "string" ? { ...AVISO_RASCA_DEFECTO, ...guardado } : AVISO_RASCA_DEFECTO;
+}
+
+app.get("/api/aviso-rasca", async (req, res) => {
+  try {
+    res.json(await leerAvisoRasca());
+  } catch (error) {
+    console.error(error);
+    res.json(AVISO_RASCA_DEFECTO);
+  }
+});
+
+app.put("/api/aviso-rasca", requiereAdmin, async (req, res) => {
+  try {
+    const ubicacion = String((req.body && req.body.ubicacion) || "").trim().replace(/\s+/g, " ");
+    if (ubicacion.length < 3 || ubicacion.length > 80) {
+      return res.status(400).json({ error: "Escribe dónde está el rasca (entre 3 y 80 caracteres), por ejemplo «debajo de la bolsa»." });
+    }
+    const aviso = { activo: Boolean(req.body.activo), ubicacion };
+    await redisSet("aviso_rasca", aviso);
+    res.json({ success: true, aviso });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "No se pudo guardar el aviso del rasca" });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------CIERRA - AVISO DEL RASCA (PASAPORTE)--------------------------------------------------------------------------------------------//
+
 //-------------------------------------------------------------------------------------------------ABRE - ENVÍO (GASTOS DE ENVÍO: PENÍNSULA Y BALEARES)--------------------------------------------------------------------------------------------//
 
 // Los portes que cobramos junto con el café son una prestación accesoria de la venta (art. 78.Dos.2º
@@ -1260,7 +1297,7 @@ const firmaCorreoHtml = () => `
         <span style="color:#B8923E;font-weight:bold;">T</span>&nbsp; ${EMPRESA.telefono}<br>
         <span style="color:#B8923E;font-weight:bold;">E</span>&nbsp; <a href="mailto:${EMPRESA.email}" style="color:#2B1A12;text-decoration:none;">${EMPRESA.email}</a><br>
         <span style="color:#B8923E;font-weight:bold;">W</span>&nbsp; <a href="${URL_WEB}" style="color:#2B1A12;text-decoration:none;">aurinegracafe.com</a><br>
-        Calle San Pedro del Pinatar, 24 · 28939 Arroyomolinos, Madrid
+        Vía Dos Castillas, 33, Ática 4, 1º · 28224 Pozuelo de Alarcón, Madrid
       </div>
     </td>
   </tr>
@@ -1322,10 +1359,22 @@ const EMPRESA = {
   nombre: "D’Medina Global Trade, S.L.",
   nombreComercial: "AURINEGRA",
   cif: "B05653621",
-  direccion: "Calle San Pedro del Pinatar, 24, 28939 Arroyomolinos, Madrid",
+  direccion: "Vía Dos Castillas, 33, Ática 4, 1º, 28224 Pozuelo de Alarcón, Madrid",
   email: "info@aurinegracafe.com",
   telefono: "+34 660 736 866"
 };
+
+// Domicilios anteriores: una factura o albarán con fecha anterior a «desde» se vuelve a generar con el domicilio
+// que tenía la empresa ese día (una copia debe ser idéntica a la original).
+const DOMICILIOS_ANTERIORES = [
+  { hasta: "2026-11-27", direccion: "Calle San Pedro del Pinatar, 24, 28939 Arroyomolinos, Madrid" }
+];
+
+function direccionEmpresaEn(fecha) {
+  const dia = fecha ? new Date(fecha).toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" }) : "";
+  const anterior = dia && DOMICILIOS_ANTERIORES.find(d => dia < d.hasta);
+  return anterior ? anterior.direccion : EMPRESA.direccion;
+}
 
 // Remitente de todos los emails (facturas, albaranes, solicitudes). El dominio tiene que estar verificado en Resend.
 const REMITENTE_EMAIL = `${EMPRESA.nombreComercial} <${EMPRESA.email}>`;
@@ -1491,7 +1540,7 @@ function dibujarCabeceraEmpresa(doc, tituloDocumento, numero, fecha) {
   y += 25;
 
   doc.font("Helvetica").fontSize(8.5).fillColor(COLOR_MUTED);
-  [EMPRESA.nombre, `CIF: ${EMPRESA.cif}`, EMPRESA.direccion, `${EMPRESA.email} · ${EMPRESA.telefono}`].forEach(linea => {
+  [EMPRESA.nombre, `CIF: ${EMPRESA.cif}`, direccionEmpresaEn(fecha), `${EMPRESA.email} · ${EMPRESA.telefono}`].forEach(linea => {
     doc.text(linea, xTexto, y);
     y += 11;
   });
