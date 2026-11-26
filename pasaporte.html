@@ -815,7 +815,7 @@ section.exclusive { background: var(--dark); }
 
       <div>
         <strong>Altitud</strong>
-        <span>1.550 msnm</span>
+        <span>Aprox. 1.550 m s. n. m.</span>
       </div>
     </div>
 
@@ -893,7 +893,7 @@ section.exclusive { background: var(--dark); }
       </div>
       <div class="flip-back">
         <p>
-          Cultivado a 1.550 msnm, una altitud ideal para café arábica de especialidad.
+          Cultivado a aprox. 1.550 m s. n. m., una altitud ideal para café arábica de especialidad.
           La maduración lenta del grano favorece el dulzor natural, una acidez elegante
           y mayor complejidad aromática en taza.
         </p>
@@ -987,7 +987,7 @@ section.exclusive { background: var(--dark); }
                     <svg class="trace-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 40l14-22 8 12 6-8 12 18z"/><path d="M14 24l4 3 4-3"/></svg>
                     <h3>Cultivo</h3>
                     <p id="tr-cultivo-texto">Fincas familiares en Mistrató (Risaralda), trabajadas por tres generaciones de caficultores.</p>
-                    <span class="trace-dato">1.550 m s. n. m.</span>
+                    <span class="trace-dato" id="tr-altitud">Aprox. 1.550 m s. n. m.</span>
                 </li>
                 <li class="trace-step">
                     <span class="trace-num">3</span>
@@ -1235,7 +1235,7 @@ section.exclusive { background: var(--dark); }
 
   // ---- Del cultivo al empaque: datos reales del lote en venta (el más reciente catado) ----
   // Textos generales de cada paso (se recuperan al cambiar a un lote al que le falte algún dato)
-  const RECORRIDO_IDS = ["tr-semilla-texto", "tr-variedad", "tr-cultivo-texto", "tr-cosecha", "tr-proceso", "tr-tueste", "tr-cata"];
+  const RECORRIDO_IDS = ["tr-semilla-texto", "tr-variedad", "tr-cultivo-texto", "tr-altitud", "tr-cosecha", "tr-proceso", "tr-tueste", "tr-cata"];
   const RECORRIDO_GENERAL = {};
   RECORRIDO_IDS.forEach(id => { RECORRIDO_GENERAL[id] = document.getElementById(id).textContent; });
   let lotesRecorrido = {};
@@ -1298,6 +1298,7 @@ section.exclusive { background: var(--dark); }
       } else if (fincas.length > 1) {
         poner("tr-cultivo-texto", `Este lote sale de las fincas ${unirLista(fincas)}, en Mistrató (Risaralda), trabajadas por tres generaciones de caficultores.`);
       }
+      poner("tr-altitud", lote.altitud);
       poner("tr-cosecha", lote.cosecha && `Cosecha ${lote.cosecha.toLowerCase()}`);
       poner("tr-proceso", lote.proceso);
       const tueste = String(lote.tueste || "").replace(/-/g, " ");
