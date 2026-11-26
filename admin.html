@@ -994,13 +994,13 @@
               </div>
 
               <div class="field">
-                <label>Finca de este lote</label>
-                <input data-field="finca" type="text" maxlength="80" value="${String(lote.finca || "").replace(/"/g, "&quot;")}" placeholder="La Estrella">
+                <label>Finca(s) de este lote — si son varias, sepáralas con comas</label>
+                <input data-field="finca" type="text" maxlength="120" value="${String(lote.finca || "").replace(/"/g, "&quot;")}" placeholder="La Estrella, El Tango">
               </div>
 
               <div class="field">
-                <label>Variedad de este lote</label>
-                <input data-field="variedad" type="text" maxlength="80" value="${String(lote.variedad || "").replace(/"/g, "&quot;")}" placeholder="Castillo">
+                <label>Variedad(es) de este lote — si son varias, sepáralas con comas</label>
+                <input data-field="variedad" type="text" maxlength="120" value="${String(lote.variedad || "").replace(/"/g, "&quot;")}" placeholder="Castillo, Colombia">
               </div>
 
               <div class="field">

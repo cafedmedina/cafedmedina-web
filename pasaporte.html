@@ -458,6 +458,27 @@
   text-transform: uppercase;
 }
 .trace-lote strong { color: var(--gold-light); }
+.trace-lote label { margin-right: 8px; }
+.trace-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 38px 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(159,123,60,.6);
+  background: #fffaf2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239f7b3c' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;
+  color: var(--coffee);
+  font: 900 13px 'Lato', Arial, sans-serif;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+}
+.trace-select:focus { outline: 2px solid rgba(200,169,106,.5); outline-offset: 2px; }
+.trace-resumen {
+  margin-top: 10px;
+  color: var(--coffee);
+  font-size: 13px;
+  letter-spacing: 1.5px;
+}
+.trace-resumen:empty { display: none; }
 .trace-steps {
   list-style: none;
   display: grid;
@@ -948,7 +969,11 @@ section.exclusive { background: var(--dark); }
         </div>
         <!-- Recorrido completo del café. Los datos marcados con id="tr-…" se rellenan con el lote en venta (/api/lotes). -->
         <div class="trace-line reveal">
-            <div class="trace-lote" id="tr-lote" hidden>Recorrido del lote <strong id="tr-lote-codigo"></strong><span id="tr-lote-resumen"></span></div>
+            <div class="trace-lote" id="tr-lote" hidden>
+                <label for="tr-select">Recorrido del lote</label>
+                <select id="tr-select" class="trace-select" onchange="mostrarRecorrido(this.value)"></select>
+                <div class="trace-resumen" id="tr-lote-resumen"></div>
+            </div>
             <ol class="trace-steps">
                 <li class="trace-step">
                     <span class="trace-num">1</span>
@@ -1151,8 +1176,8 @@ section.exclusive { background: var(--dark); }
     const tarjetas = lotes.map(l => `
       <article class="lot-card">
         <h3>${textoSeguro(l.codigo)}</h3>
-        ${l.variedad ? `<p><strong>Variedad:</strong> ${textoSeguro(l.variedad)}</p>` : ""}
-        ${l.finca ? `<p><strong>Finca:</strong> ${textoSeguro(l.finca)}</p>` : ""}
+        ${l.variedad ? `<p><strong>${separarLista(l.variedad).length > 1 ? "Variedades" : "Variedad"}:</strong> ${textoSeguro(unirLista(separarLista(l.variedad)))}</p>` : ""}
+        ${l.finca ? `<p><strong>${separarLista(l.finca).length > 1 ? "Fincas" : "Finca"}:</strong> ${textoSeguro(unirLista(separarLista(l.finca)))}</p>` : ""}
         ${l.proceso ? `<p><strong>Proceso:</strong> ${textoSeguro(l.proceso)}</p>` : ""}
         ${l.cosecha ? `<p><strong>Cosecha:</strong> ${textoSeguro(l.cosecha)}</p>` : ""}
       </article>`);
@@ -1209,27 +1234,69 @@ section.exclusive { background: var(--dark); }
   });
 
   // ---- Del cultivo al empaque: datos reales del lote en venta (el más reciente catado) ----
+  // Textos generales de cada paso (se recuperan al cambiar a un lote al que le falte algún dato)
+  const RECORRIDO_IDS = ["tr-semilla-texto", "tr-variedad", "tr-cultivo-texto", "tr-cosecha", "tr-proceso", "tr-tueste", "tr-cata"];
+  const RECORRIDO_GENERAL = {};
+  RECORRIDO_IDS.forEach(id => { RECORRIDO_GENERAL[id] = document.getElementById(id).textContent; });
+  let lotesRecorrido = {};
+
   (async function rellenarRecorrido() {
     try {
       const response = await fetch("/api/lotes");
       if (!response.ok) return;
       const aFecha = (t) => { const m = String(t || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? new Date(m[3], m[2] - 1, m[1]) : new Date(0); };
-      const lote = Object.values(await response.json())
-        .filter(l => l.estado === "activo")
-        .sort((a, b) => aFecha(b.fechaCata) - aFecha(a.fechaCata))[0];
-      if (!lote) return;
-      const poner = (id, texto) => { if (texto) document.getElementById(id).textContent = texto; };
-      document.getElementById("tr-lote-codigo").textContent = lote.codigo;
-      // «Castillo · Lavado doble fermentación · Finca La Estrella»: lo propio de este lote
-      const resumen = [lote.variedad, lote.proceso, lote.finca && `Finca ${lote.finca}`].filter(Boolean).join(" · ");
-      if (resumen) document.getElementById("tr-lote-resumen").textContent = ` · ${resumen}`;
+      // Primero los lotes a la venta (el catado más reciente arriba); después los anteriores (archivados)
+      const lista = Object.values(await response.json()).sort((a, b) =>
+        (a.estado === "activo" ? 0 : 1) - (b.estado === "activo" ? 0 : 1) || aFecha(b.fechaCata) - aFecha(a.fechaCata));
+      if (!lista.length) return;
+      const select = document.getElementById("tr-select");
+      lista.forEach(l => {
+        lotesRecorrido[l.codigo] = l;
+        const op = document.createElement("option");
+        op.value = l.codigo;
+        op.textContent = l.codigo + (l.estado === "activo" ? "" : " (lote anterior)");
+        select.appendChild(op);
+      });
       document.getElementById("tr-lote").hidden = false;
-      if (lote.variedad) {
-        poner("tr-variedad", lote.variedad);
-        poner("tr-semilla-texto", `Este lote es de variedad ${lote.variedad}, de semilla certificada por CENICAFÉ y adaptada al origen.`);
+      mostrarRecorrido(lista[0].codigo);
+    } catch (e) {
+      // Sin conexión: se quedan los textos generales
+    }
+  })();
+
+  // «Castillo, Colombia» / «La Estrella y El Tango» → ["Castillo", "Colombia"]; y vuelta a texto: «A, B y C»
+  function separarLista(texto) {
+    return String(texto || "").split(/\s*(?:,|;|\/|·|\+|\s+y\s+)\s*/i).map(s => s.trim()).filter(Boolean);
+  }
+  function unirLista(lista) {
+    return lista.length > 1 ? `${lista.slice(0, -1).join(", ")} y ${lista[lista.length - 1]}` : (lista[0] || "");
+  }
+
+  function mostrarRecorrido(codigo) {
+    const lote = lotesRecorrido[codigo];
+    if (!lote) return;
+    document.getElementById("tr-select").value = codigo;
+    RECORRIDO_IDS.forEach(id => { document.getElementById(id).textContent = RECORRIDO_GENERAL[id]; });
+    const poner = (id, texto) => { if (texto) document.getElementById(id).textContent = texto; };
+    {
+      // «Castillo · Lavado doble fermentación · Finca La Estrella»: lo propio de este lote
+      const variedades = separarLista(lote.variedad);
+      const fincas = separarLista(lote.finca);
+      const textoVariedad = variedades.length > 1 ? `Blend ${unirLista(variedades)}` : variedades[0];
+      const textoFinca = fincas.length ? `${fincas.length > 1 ? "Fincas" : "Finca"} ${unirLista(fincas)}` : "";
+      const resumen = [textoVariedad, lote.proceso, textoFinca].filter(Boolean).join(" · ");
+      document.getElementById("tr-lote-resumen").textContent = resumen;
+      if (variedades.length === 1) {
+        poner("tr-variedad", variedades[0]);
+        poner("tr-semilla-texto", `Este lote es de variedad ${variedades[0]}, de semilla certificada por CENICAFÉ y adaptada al origen.`);
+      } else if (variedades.length > 1) {
+        poner("tr-variedad", `Blend de ${variedades.length} variedades`);
+        poner("tr-semilla-texto", `Este lote es un blend de las variedades ${unirLista(variedades)}, de semilla certificada por CENICAFÉ y adaptada al origen.`);
       }
-      if (lote.finca) {
-        poner("tr-cultivo-texto", `Este lote sale de la finca ${lote.finca}, en Mistrató (Risaralda), trabajada por tres generaciones de caficultores.`);
+      if (fincas.length === 1) {
+        poner("tr-cultivo-texto", `Este lote sale de la finca ${fincas[0]}, en Mistrató (Risaralda), trabajada por tres generaciones de caficultores.`);
+      } else if (fincas.length > 1) {
+        poner("tr-cultivo-texto", `Este lote sale de las fincas ${unirLista(fincas)}, en Mistrató (Risaralda), trabajadas por tres generaciones de caficultores.`);
       }
       poner("tr-cosecha", lote.cosecha && `Cosecha ${lote.cosecha.toLowerCase()}`);
       poner("tr-proceso", lote.proceso);
@@ -1238,10 +1305,8 @@ section.exclusive { background: var(--dark); }
       if (Number(lote.puntaje) > 0) {
         poner("tr-cata", `${Number(lote.puntaje).toLocaleString("es-ES", { maximumFractionDigits: 2 })} puntos SCA`);
       }
-    } catch (e) {
-      // Sin conexión: se quedan los textos generales
     }
-  })();
+  }
 
   async function validarCodigo() {
     const input = document.getElementById("codigo-lote");

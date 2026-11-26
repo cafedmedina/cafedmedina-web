@@ -235,7 +235,7 @@ app.put("/api/catalogo", requiereAdmin, async (req, res) => {
 
       // Finca y variedad de ESTE lote (cada lote es distinto: no se generaliza). Opcionales, texto corto.
       for (const campo of ["finca", "variedad"]) {
-        lote[campo] = String(lote[campo] || "").trim().replace(/\s+/g, " ").slice(0, 80);
+        lote[campo] = String(lote[campo] || "").trim().replace(/\s+/g, " ").slice(0, 120);   // varias: separadas por comas
       }
 
       lote.codigo = codigo;

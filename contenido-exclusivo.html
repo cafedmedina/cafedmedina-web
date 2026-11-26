@@ -254,8 +254,12 @@
 
       const datos = document.getElementById("datos");
       datos.innerHTML = "";
-      añadirDato(datos, "Finca", lote.finca);
-      añadirDato(datos, "Variedad", lote.variedad);
+      // Varias fincas o variedades separadas por comas: «La Estrella, El Tango» → «Fincas: La Estrella y El Tango»
+      const lista = (t) => String(t || "").split(/\s*(?:,|;|\/|·|\+|\s+y\s+)\s*/i).map(s => s.trim()).filter(Boolean);
+      const unir = (l) => l.length > 1 ? `${l.slice(0, -1).join(", ")} y ${l[l.length - 1]}` : (l[0] || "");
+      const fincas = lista(lote.finca), variedades = lista(lote.variedad);
+      añadirDato(datos, fincas.length > 1 ? "Fincas" : "Finca", unir(fincas));
+      añadirDato(datos, variedades.length > 1 ? "Variedades" : "Variedad", unir(variedades));
       añadirDato(datos, "Proceso", lote.proceso);
       añadirDato(datos, "Cosecha", lote.cosecha);
       añadirDato(datos, "Fecha de tueste", lote.fechaTueste);
